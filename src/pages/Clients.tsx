@@ -61,8 +61,7 @@ export default function Clients() {
   const [activeFilter, setActiveFilter] = useState<ClientFilterType>('all');
   const [sortField, setSortField] = useState<ClientSortField>('created_at');
   const [sortDirection, setSortDirection] = useState<ClientSortDirection>('desc');
-  // LÍNEA CORREGIDA: Usar useState para inicializar el Set
-  const [selectedClientIds, setSelectedClientIds] = useState(new Set<string>());
+  const [selectedClientIds, setSelectedClientIds] = useState<Set<string>>(new Set());
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [profileClientId, setProfileClientId] = useState<string | null>(null);
   const [isAssignReferrerModalOpen, setIsAssignReferrerModalOpen] = useState(false);
@@ -253,7 +252,7 @@ export default function Clients() {
     if (checked) {
       setSelectedClientIds(new Set(filteredAndSortedClients.map((c) => c.id)));
     } else {
-      setSelectedClientIds(new Set<string>());
+      setSelectedClientIds(new Set());
     }
   };
 
@@ -282,7 +281,7 @@ export default function Clients() {
     setBulkActionLoading(true);
     try {
       await clientService.deleteMultipleClients(Array.from(selectedClientIds));
-      setSelectedClientIds(new Set<string>());
+      setSelectedClientIds(new Set());
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
     } catch (error) {
       alert('Error al eliminar clientes');
@@ -300,7 +299,7 @@ export default function Clients() {
       const promises = idsToUse.map((id) => clientService.duplicateClient(id));
       await Promise.all(promises);
       if (!clientIdsToDuplicate) {
-        setSelectedClientIds(new Set<string>());
+        setSelectedClientIds(new Set());
       }
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
     } catch (error) {
@@ -339,7 +338,7 @@ export default function Clients() {
     setBulkActionLoading(true);
     try {
       await clientService.updateMultipleClientsReferrer(Array.from(selectedClientIds), referrerId);
-      setSelectedClientIds(new Set<string>());
+      setSelectedClientIds(new Set());
       setIsAssignReferrerModalOpen(false);
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
     } catch (error) {
@@ -368,8 +367,11 @@ export default function Clients() {
   return (
     <div className="space-y-4 sm:space-y-6">
       
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        {/* Ajuste 1: Contenedor flex con párrafo truncado y en una sola línea en pantallas chicas */}
+      {/* Ajuste 1: Título y Botón
+        - Contenedor principal: usa 'flex' para mantener las dos columnas horizontales en todas las pantallas.
+        - Título/Párrafo: contenedor 'flex-1 min-w-0' para que ocupe el espacio y 'truncate whitespace-nowrap overflow-hidden' para el truncamiento del párrafo.
+      */}
+      <div className="flex items-center justify-between gap-4">
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             Clientes
@@ -378,14 +380,19 @@ export default function Clients() {
             Gestiona tu base de clientes
           </p>
         </div>
-        <Button onClick={handleCreateClient} className="w-full sm:w-auto">
+        <Button onClick={handleCreateClient} className="w-full sm:w-auto min-w-max">
           <Plus className="w-5 h-5 mr-2" />
           Nuevo Cliente
         </Button>
       </div>
 
-      {/* Ajuste 2: Invertir orden y hacer que la barra de búsqueda sea flexible */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Ajuste 2: Filtros y Búsqueda
+        - Contenedor principal: usa 'flex' para mantener dos columnas horizontales en todas las pantallas.
+        - Invertir orden: la búsqueda es el primer div.
+        - Búsqueda: contenedor 'flex-1' para que sea flexible horizontalmente.
+      */}
+      <div className="flex items-center justify-between gap-4">
+        {/* Barra de Búsqueda (Izquierda) */}
         <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
@@ -396,6 +403,7 @@ export default function Clients() {
             className="pl-10 w-full"
           />
         </div>
+        {/* Filtros (Derecha) */}
         <ClientFilters
           activeFilter={activeFilter}
           onFilterChange={setActiveFilter}
@@ -413,7 +421,7 @@ export default function Clients() {
           onDuplicate={() => handleBulkDuplicate()}
           onExport={() => handleBulkExport()}
           onAssignReferrer={() => setIsAssignReferrerModalOpen(true)}
-          onClearSelection={() => setSelectedClientIds(new Set<string>())}
+          onClearSelection={() => setSelectedClientIds(new Set())}
           isLoading={bulkActionLoading}
         />
       )}

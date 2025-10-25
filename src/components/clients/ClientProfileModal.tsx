@@ -147,7 +147,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
     	<div>
     		<h2 className="text-lg text-foreground mb-3">Información básica</h2>
     		<div className="space-y-2">
-    			<div className="flex items-center text-muted-foreground">
+    			<div className="flex items-center text-muted-foreground text-sm">
     				<Phone className="w-4 h-4 mr-2" />
     				<span>{formatPhone(client.phone)}</span>
     			</div>

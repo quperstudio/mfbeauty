@@ -19,7 +19,7 @@ import TagInput from '@/components/ui/TagInput';
 import { useTagsQuery, useClientTagsQuery } from '../../hooks/queries/useTags.query';
 import { useAuth } from '../../contexts/AuthContext';
 import * as clientService from '../../services/client.service';
-import { toast } from 'sonner'; // ✨ Importación de Sonner
+import { toast } from 'sonner';
 
 // ===================================
 // TIPOS DE DATOS

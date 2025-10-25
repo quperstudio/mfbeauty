@@ -17,7 +17,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <Toaster position="bottom-left" richColors />
+          <Toaster position="bottom-left" />
           <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />

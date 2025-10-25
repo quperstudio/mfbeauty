@@ -355,7 +355,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                         id="client-name"
                                         name="name"
                                         value={formData.name}
-                                        onChange={handleFormChange as (e: React.ChangeEvent<HTMLInputElement>) => void} {/* Se fuerza el tipo para Input */}
+                                        onChange={handleFormChange as (e: React.ChangeEvent<HTMLInputElement>) => void}
                                         error={errors.name}
                                         placeholder="Ej. Marisela Félix"
                                         disabled={loading}

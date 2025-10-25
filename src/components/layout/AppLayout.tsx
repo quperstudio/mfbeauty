@@ -1,6 +1,7 @@
 import { ReactNode, useState } from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
+import { Toaster } from "@/components/ui/toaster"; // <-- 1. Importa el Toaster
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -26,6 +27,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           {children}
         </div>
       </main>
+      <Toaster /> {/* <-- 2. Añádelo aquí, al final del div principal */}
     </div>
   );
 }

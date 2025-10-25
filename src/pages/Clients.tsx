@@ -61,7 +61,8 @@ export default function Clients() {
   const [activeFilter, setActiveFilter] = useState<ClientFilterType>('all');
   const [sortField, setSortField] = useState<ClientSortField>('created_at');
   const [sortDirection, setSortDirection] = useState<ClientSortDirection>('desc');
-  const [selectedClientIds, setSelectedClientIds] = new Set());
+  // LÍNEA CORREGIDA: Usar useState para inicializar el Set
+  const [selectedClientIds, setSelectedClientIds] = useState(new Set<string>());
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [profileClientId, setProfileClientId] = useState<string | null>(null);
   const [isAssignReferrerModalOpen, setIsAssignReferrerModalOpen] = useState(false);
@@ -252,7 +253,7 @@ export default function Clients() {
     if (checked) {
       setSelectedClientIds(new Set(filteredAndSortedClients.map((c) => c.id)));
     } else {
-      setSelectedClientIds(new Set());
+      setSelectedClientIds(new Set<string>());
     }
   };
 
@@ -281,7 +282,7 @@ export default function Clients() {
     setBulkActionLoading(true);
     try {
       await clientService.deleteMultipleClients(Array.from(selectedClientIds));
-      setSelectedClientIds(new Set());
+      setSelectedClientIds(new Set<string>());
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
     } catch (error) {
       alert('Error al eliminar clientes');
@@ -299,7 +300,7 @@ export default function Clients() {
       const promises = idsToUse.map((id) => clientService.duplicateClient(id));
       await Promise.all(promises);
       if (!clientIdsToDuplicate) {
-        setSelectedClientIds(new Set());
+        setSelectedClientIds(new Set<string>());
       }
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
     } catch (error) {
@@ -338,7 +339,7 @@ export default function Clients() {
     setBulkActionLoading(true);
     try {
       await clientService.updateMultipleClientsReferrer(Array.from(selectedClientIds), referrerId);
-      setSelectedClientIds(new Set());
+      setSelectedClientIds(new Set<string>());
       setIsAssignReferrerModalOpen(false);
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
     } catch (error) {
@@ -412,7 +413,7 @@ export default function Clients() {
           onDuplicate={() => handleBulkDuplicate()}
           onExport={() => handleBulkExport()}
           onAssignReferrer={() => setIsAssignReferrerModalOpen(true)}
-          onClearSelection={() => setSelectedClientIds(new Set())}
+          onClearSelection={() => setSelectedClientIds(new Set<string>())}
           isLoading={bulkActionLoading}
         />
       )}

@@ -107,7 +107,7 @@ export default function TagInput({
   return (
     <div className="space-y-2">
       {label && (
-        <Label className="text-sm font-regular text-muted-foreground">
+        <Label className="text-sm font-medium text-muted-foreground">
           {label} {selectedTags.length > 0 && `(${selectedTags.length}/${maxTags})`}
         </Label>
       )}

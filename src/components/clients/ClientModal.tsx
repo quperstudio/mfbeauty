@@ -133,7 +133,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
 
         setErrors({});
         setSocialMediaInputError('');
-    }, [client, isOpen]); // clientTags removido de las dependencias
+    }, [client, isOpen]);
 
     const socialMediaOptions = useMemo(() => {
         const existingTypes = new Set(socialMediaList.map(sm => sm.type));
@@ -316,6 +316,8 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                 <form onSubmit={handleSubmit} id="client-form" className="flex flex-col flex-grow h-0 min-h-0">
                     <ScrollArea className="flex-grow h-0 min-h-0">
                         <div className="space-y-3 p-2 sm:space-y-4">
+                            
+                            {/* CAMPOS: Nombre y Teléfono (Fila 1) */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                                 <div>
                                     <label htmlFor="client-name" className="block text-sm font-medium text-muted-foreground mb-1.5">Nombre Completo *</label>
@@ -351,7 +353,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                 </div>
                             </div>
 
-                            {/* Sección Redes Sociales */}
+                            {/* Sección Redes Sociales (Fila 2 - Input/Select) */}
                             <div className="space-y-1">
                                 <Label className="text-sm font-medium text-muted-foreground">Redes sociales</Label>
                                 <div className="grid grid-cols-2 gap-3 sm:gap-4 items-end">
@@ -391,6 +393,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                     <p className="text-sm text-destructive">{socialMediaInputError}</p>
                                 )}
 
+                                {/* Lista de Redes Sociales añadidas */}
                                 <div className="space-y-2">
                                     {socialMediaList.map((sm) => (
                                         <div
@@ -415,6 +418,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                 </div>
                             </div>
 
+                            {/* CAMPOS: Cumpleaños y Referido Por (Fila 3) */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                                 <DatePicker
                                     label="Fecha de Cumpleaños"
@@ -449,23 +453,9 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                         <p className="text-sm text-destructive mt-1.5">{errors.referrer_id}</p>
                                     )}
                                 </div>
-
                             </div>
 
-                            {/* CAMPO: Notas */}
-                            <div>
-                                <label htmlFor="client-notes" className="block text-sm font-medium text-muted-foreground mb-1.5">Notas</label>
-                                <Textarea
-                                    id="client-notes"
-                                    name="notes"
-                                    value={formData.notes}
-                                    onChange={handleFormChange as (e: React.ChangeEvent<HTMLTextAreaElement>) => void}
-                                    rows={3}
-                                    placeholder="Notas adicionales sobre el cliente..."
-                                    disabled={loading}
-                                />
-
-                            {/* CAMPO: Etiquetas */}
+                            {/* CAMPO: Etiquetas (Fila 4 - Separado) */}
                             <TagInput
                                 label="Etiquetas"
                                 placeholder="Escribe y presiona Enter para agregar..."
@@ -488,6 +478,19 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                 disabled={loading}
                                 canDeleteGlobally={true}
                             />
+
+                            {/* CAMPO: Notas (Fila 5 - Ancho Completo) */}
+                            <div>
+                                <label htmlFor="client-notes" className="block text-sm font-medium text-muted-foreground mb-1.5">Notas</label>
+                                <Textarea
+                                    id="client-notes"
+                                    name="notes"
+                                    value={formData.notes}
+                                    onChange={handleFormChange as (e: React.ChangeEvent<HTMLTextAreaElement>) => void}
+                                    rows={3}
+                                    placeholder="Notas adicionales sobre el cliente..."
+                                    disabled={loading}
+                                />
                             </div>
 
                             {errors.submit && (

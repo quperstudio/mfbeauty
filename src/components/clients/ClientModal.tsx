@@ -1,5 +1,3 @@
-// ClientModal.tsx
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { z } from 'zod';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -149,7 +147,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     // MANEJADORES DE CAMBIOS Y ACCIONES
     // ===================================
 
-    // Función general para inputs de texto (Nombre, Notas)
+    // Función general para inputs de texto (Nombre, Notas, Redes Sociales)
     const handleFormChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -253,15 +251,15 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         }
     };
 
-    // Ajustado para manejar el estado del formulario directamente
+    // Manejador específico para el teléfono
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const rawValue = e.target.value;
-        const cleaned = parsePhoneInput(rawValue); // Limpia el valor antes de guardarlo en el estado
+        const cleaned = parsePhoneInput(rawValue); // Limpia el valor (solo dígitos)
         
-        // Actualiza el estado del teléfono
+        // Actualiza el estado del teléfono con el valor limpio
         setFormData(prev => ({ ...prev, phone: cleaned }));
 
-        // Lógica para vincular el WhatsApp al número de teléfono si es un cliente nuevo
+        // Lógica para vincular el WhatsApp
         if (!client) {
             const whatsappExists = socialMediaList.some(sm => sm.type === 'whatsapp');
             if (newSocialMediaType === 'whatsapp' && !whatsappExists) {
@@ -375,7 +373,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                         id="client-phone"
                                         name="phone"
                                         value={formatPhoneRealTime(formData.phone)}
-                                        onChange={handlePhoneChange} // Usamos la función que recibe el evento
+                                        onChange={handlePhoneChange} 
                                         error={errors.phone}
                                         placeholder="(667) 341 2404"
                                         maxLength={15}
@@ -415,7 +413,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                     </Select>
                                     <Input
                                         value={newSocialMediaLink}
-                                        // Usamos un onChange simple aquí para el input de enlace de red social
+                                        // Este input usa un set de estado local, no el handleFormChange
                                         onChange={(e) => setNewSocialMediaLink(e.target.value)} 
                                         onKeyDown={handleSocialMediaKeyDown}
                                         placeholder={newSocialMediaType === 'whatsapp' ? 'Número de teléfono (presiona Enter)' : 'Usuario o enlace (presiona Enter)'}
@@ -521,7 +519,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                     id="client-notes"
                                     name="notes"
                                     value={formData.notes}
-                                    onChange={handleFormChange as (e: React.ChangeEvent<HTMLTextAreaElement>) => void} // Corregido el tipo
+                                    onChange={handleFormChange as (e: React.ChangeEvent<HTMLTextAreaElement>) => void} 
                                     rows={3}
                                     placeholder="Notas adicionales sobre el cliente..."
                                     disabled={loading}

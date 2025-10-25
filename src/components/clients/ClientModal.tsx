@@ -76,7 +76,7 @@ const mapClientToSocialMediaList = (client: Client): SocialMedia[] => {
 interface ClientModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (data: ClientSchemaType, tagIds: string[]) => Promise<{ error: string | null }>;
+    onSave: (data: ClientSchemaType, tagIds: string[]) => Promise<{ error: string | null }>;
     client?: Client;
     clients: Client[];
 }
@@ -89,15 +89,15 @@ const initialFormData: ClientFormDataBase = {
 // COMPONENTE PRINCIPAL
 // ===================================
 export default function ClientModal({ isOpen, onClose, onSave, client, clients }: ClientModalProps) {
-    const { user } = useAuth();
-    const { tags: availableTags, createTag, deleteTag } = useTagsQuery();
-    const { clientTags, syncTags } = useClientTagsQuery(client?.id || null);
+    const { user } = useAuth();
+    const { tags: availableTags, createTag, deleteTag } = useTagsQuery();
+    const { clientTags, syncTags } = useClientTagsQuery(client?.id || null);
 
     const [formData, setFormData] = useState<ClientFormDataBase>(initialFormData);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(false);
-    const [selectedTags, setSelectedTags] = useState<ClientTag[]>([]);
-    const [phoneCheckLoading, setPhoneCheckLoading] = useState(false);
+    const [selectedTags, setSelectedTags] = useState<ClientTag[]>([]);
+    const [phoneCheckLoading, setPhoneCheckLoading] = useState(false);
 
     const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>([]);
     const [newSocialMediaType, setNewSocialMediaType] = useState<SocialMedia['type']>('whatsapp');
@@ -121,19 +121,19 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
 
             setNewSocialMediaLink('');
             setNewSocialMediaType('whatsapp');
-            setSelectedTags(clientTags);
+            setSelectedTags(clientTags);
 
         } else {
             setFormData(initialFormData);
             setSocialMediaList([]);
             setNewSocialMediaLink('');
-            setSelectedTags([]);
+            setSelectedTags([]);
             setNewSocialMediaType('whatsapp');
         }
 
         setErrors({});
         setSocialMediaInputError('');
-    }, [client, isOpen, clientTags]);
+    }, [client, isOpen]); // clientTags removido de las dependencias
 
     const socialMediaOptions = useMemo(() => {
         const existingTypes = new Set(socialMediaList.map(sm => sm.type));
@@ -185,51 +185,51 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         }
     }, [formData, socialMediaList]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!validateForm()) return;
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!validateForm()) return;
 
-        setPhoneCheckLoading(true);
-        const duplicateClient = await clientService.checkDuplicatePhone(formData.phone, client?.id);
-        setPhoneCheckLoading(false);
+        setPhoneCheckLoading(true);
+        const duplicateClient = await clientService.checkDuplicatePhone(formData.phone, client?.id);
+        setPhoneCheckLoading(false);
 
-        if (duplicateClient) {
-            setErrors({ phone: `Este teléfono ya está registrado para ${duplicateClient.name}` });
-            return;
-        }
+        if (duplicateClient) {
+            setErrors({ phone: `Este teléfono ya está registrado para ${duplicateClient.name}` });
+            return;
+        }
 
-        const socialMediaLinks = mapListToFormData(socialMediaList);
+        const socialMediaLinks = mapListToFormData(socialMediaList);
 
-        const rawData = {
-            ...formData,
-            ...socialMediaLinks,
-        };
+        const rawData = {
+            ...formData,
+            ...socialMediaLinks,
+        };
 
-        const sanitizedData: ClientSchemaType = {
-            name: rawData.name.trim(),
-            phone: rawData.phone,
-            birthday: rawData.birthday?.trim() || null,
-            notes: rawData.notes?.trim() || null,
-            referrer_id: rawData.referrer_id?.trim() || null,
-            whatsapp_link: socialMediaLinks.whatsapp_link?.trim() || null,
-            facebook_link: socialMediaLinks.facebook_link?.trim() || null,
-            instagram_link: socialMediaLinks.instagram_link?.trim() || null,
-            tiktok_link: socialMediaLinks.tiktok_link?.trim() || null,
-            created_by_user_id: client ? undefined : (user?.id || null),
-        };
+        const sanitizedData: ClientSchemaType = {
+            name: rawData.name.trim(),
+            phone: rawData.phone,
+            birthday: rawData.birthday?.trim() || null,
+            notes: rawData.notes?.trim() || null,
+            referrer_id: rawData.referrer_id?.trim() || null,
+            whatsapp_link: socialMediaLinks.whatsapp_link?.trim() || null,
+            facebook_link: socialMediaLinks.facebook_link?.trim() || null,
+            instagram_link: socialMediaLinks.instagram_link?.trim() || null,
+            tiktok_link: socialMediaLinks.tiktok_link?.trim() || null,
+            created_by_user_id: client ? undefined : (user?.id || null),
+        };
 
-        const tagIds = selectedTags.map(tag => tag.id);
+        const tagIds = selectedTags.map(tag => tag.id);
 
-        setLoading(true);
-        const result = await onSave(sanitizedData, tagIds);
-        setLoading(false);
+        setLoading(true);
+        const result = await onSave(sanitizedData, tagIds);
+        setLoading(false);
 
-        if (result.error) {
-            setErrors({ submit: result.error });
-        } else {
-            onClose();
-        }
-    };
+        if (result.error) {
+            setErrors({ submit: result.error });
+        } else {
+            onClose();
+        }
+    };
 
     const handlePhoneChange = (value: string) => {
         const cleaned = parsePhoneInput(value);
@@ -241,7 +241,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                 setNewSocialMediaLink(cleaned);
             }
         }
-        
+        
         if (errors.phone) {
             setErrors({ ...errors, phone: '' });
         }
@@ -267,7 +267,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         }
         
         const cleanedLink = cleanSocialMediaInput(newSocialMediaType, newSocialMediaLink.trim());
-        const updatedList = [...socialMediaList, { type: newSocialMediaType, link: cleanedLink }];
+        const updatedList = [...socialMediaList, { type: newSocialMediaType, link: cleanedLink }];
         setSocialMediaList(updatedList);
 
         const existingTypes = new Set(updatedList.map(sm => sm.type));
@@ -300,7 +300,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         ];
         return options;
     }, [clients, client?.id]);
-    
+    
 
 
     // ===================================
@@ -398,7 +398,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                             className="flex items-center justify-between p-2 bg-secondary/30 text-secondary-foreground rounded-lg"
                                         >
                                             <div className="flex items-center gap-2 pl-2">
-                                                {React.createElement(getSocialMediaIcon(sm.type)!, { className: "w-4 h-4" })}
+                                                {React.createElement(getSocialMediaIcon(sm.type)!, { className: "w-4 h-4" })}
                                                 <span className="text-sm">{sm.link}</span>
                                             </div>
                                             <Button
@@ -465,29 +465,29 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                     disabled={loading}
                                 />
 
-                            {/* CAMPO: Etiquetas */}
-                            <TagInput
-                                label="Etiquetas"
-                                placeholder="Escribe y presiona Enter para agregar..."
-                                selectedTags={selectedTags}
-                                availableTags={availableTags}
-                                onAddTag={async (tagName) => {
-                                    const { tag, error } = await createTag({ name: tagName });
-                                    if (tag && !error) {
-                                        setSelectedTags(prev => [...prev, tag]);
-                                    }
-                                }}
-                                onRemoveTag={(tagId) => {
-                                    setSelectedTags(prev => prev.filter(t => t.id !== tagId));
-                                }}
-                                onDeleteTagGlobally={async (tagId) => {
-                                    await deleteTag(tagId);
-                                    setSelectedTags(prev => prev.filter(t => t.id !== tagId));
-                                }}
-                                maxTags={5}
-                                disabled={loading}
-                                canDeleteGlobally={true}
-                            />
+                            {/* CAMPO: Etiquetas */}
+                            <TagInput
+                                label="Etiquetas"
+                                placeholder="Escribe y presiona Enter para agregar..."
+                                selectedTags={selectedTags}
+                                availableTags={availableTags}
+                                onAddTag={async (tagName) => {
+                                    const { tag, error } = await createTag({ name: tagName });
+                                    if (tag && !error) {
+                                        setSelectedTags(prev => [...prev, tag]);
+                                    }
+                                }}
+                                onRemoveTag={(tagId) => {
+                                    setSelectedTags(prev => prev.filter(t => t.id !== tagId));
+                                }}
+                                onDeleteTagGlobally={async (tagId) => {
+                                    await deleteTag(tagId);
+                                    setSelectedTags(prev => prev.filter(t => t.id !== tagId));
+                                }}
+                                maxTags={5}
+                                disabled={loading}
+                                canDeleteGlobally={true}
+                            />
                             </div>
 
                             {errors.submit && (
@@ -513,17 +513,17 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                             type="submit"
                             variant="default"
                             size="default"
-                            disabled={loading || phoneCheckLoading}
+                            disabled={loading || phoneCheckLoading}
                             className="w-full sm:w-auto"
                         >
-                            {loading || phoneCheckLoading ? (
-                                <div className="flex items-center gap-2">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-background border-t-transparent" />
-                                    {phoneCheckLoading ? 'Validando...' : 'Guardando...'}
-                                </div>
-                            ) : (
-                                <>{client ? 'Actualizar' : 'Crear'} Cliente</>
-                            )}
+                            {loading || phoneCheckLoading ? (
+                                <div className="flex items-center gap-2">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-background border-t-transparent" />
+                                    {phoneCheckLoading ? 'Validando...' : 'Guardando...'}
+                                </div>
+                            ) : (
+                                <>{client ? 'Actualizar' : 'Crear'} Cliente</>
+                            )}
                         </Button>
                     </DialogFooter>
                 </form>

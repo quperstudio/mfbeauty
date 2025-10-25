@@ -1,8 +1,3 @@
-import {
-  Info,
-  OctagonX,
-  TriangleAlert,
-} from "lucide-react"
 import { useTheme } from "next-themes"
 import { Toaster as Sonner } from "sonner"
 
@@ -15,13 +10,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
-      icons={{
-        success: <Info className="h-4 w-4" />,
-        info: <Info className="h-4 w-4" />,
-        warning: <TriangleAlert className="h-4 w-4" />,
-        error: <OctagonX className="h-4 w-4" />,
-        loading: <Info className="h-4 w-4 animate-spin" />,
-      }}
       toastOptions={{
         classNames: {
           toast:

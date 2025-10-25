@@ -630,4 +630,4 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
             </DialogContent>
         </Dialog>
     );
-} 
+}

@@ -56,7 +56,6 @@ function App() {
           </BrowserRouter>
           <Toaster /> 
         </AuthProvider>
-        <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </ThemeProvider>
   );

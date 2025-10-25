@@ -28,7 +28,7 @@ export default function ClientFilters({ activeFilter, onFilterChange, counts }: 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="gap-2 w-full sm:w-[200px]">
+        <Button variant="outline" className="gap-2 w-auto sm:w-[200px]">
           <Filter className="h-4 w-4" />
           <span className="truncate">{buttonText}</span>
           <ChevronDown className="h-4 w-4 ml-auto -mr-1" />

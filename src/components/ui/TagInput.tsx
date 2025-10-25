@@ -201,6 +201,8 @@ export default function TagInput({
           )}
         </div>
 
+        {/* SE ELIMINÓ EL DIV ANTERIOR QUE CONTENÍA LOS BADGES AQUÍ */}
+
         {error && (
           <p className="text-sm text-destructive">{error}</p>
         )}

@@ -19,7 +19,7 @@ import TagInput from '@/components/ui/TagInput';
 import { useTagsQuery, useClientTagsQuery } from '../../hooks/queries/useTags.query';
 import { useAuth } from '../../contexts/AuthContext';
 import * as clientService from '../../services/client.service';
-import { useToast } from "@/components/hooks/use-toast"; // 👈 CAMBIO 1: Importar el hook de Toast de shadcn/ui
+import { useToast } from "@/hooks/use-toast";
 
 // ===================================
 // TIPOS DE DATOS

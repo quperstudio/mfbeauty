@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { z } from 'zod';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui/input'; // Asumo que este Input acepta la prop className para el estilo del borde
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -77,7 +77,6 @@ const mapClientToSocialMediaList = (client: Client): SocialMedia[] => {
 interface ClientModalProps {
     isOpen: boolean;
     onClose: () => void;
-    // Función que maneja el guardado y devuelve un error si falla
     onSave: (data: ClientSchemaType, tagIds: string[]) => Promise<{ error: string | null }>;
     client?: Client;
     clients: Client[];
@@ -123,7 +122,8 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
 
             setNewSocialMediaLink('');
             setNewSocialMediaType('whatsapp');
-            setSelectedTags(clientTags);
+            // Al editar, se inicializan las etiquetas con las del cliente
+            setSelectedTags(clientTags); 
 
         } else {
             setFormData(initialFormData);
@@ -152,7 +152,11 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         if (name !== 'phone') {
             setFormData(prev => ({ ...prev, [name]: value }));
         }
-    }, []);
+        // Limpiar el error específico cuando el usuario empieza a escribir
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: '' }));
+        }
+    }, [errors]); // Agregamos errors como dependencia
 
     const handleBirthdayChange = useCallback((date: Date | null) => {
         if (date) {
@@ -174,18 +178,16 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                 ...socialMediaLinks,
             };
             clientSchema.parse(dataToValidate);
-            setErrors({}); // Limpiar errores si la validación es exitosa
+            setErrors({}); 
             return true;
         } catch (error) {
             if (error instanceof z.ZodError) {
-                const firstError = error.issues[0];
-                const fieldName = firstError.path[0] as string;
+                const newErrors: Record<string, string> = {};
                 const fieldLabels: Record<string, string> = {
                     name: 'Nombre',
                     phone: 'Teléfono',
                     birthday: 'Fecha de cumpleaños',
                     notes: 'Notas',
-                    // Enlaces de redes sociales
                     whatsapp_link: SOCIAL_MEDIA_LABELS.whatsapp,
                     facebook_link: SOCIAL_MEDIA_LABELS.facebook,
                     instagram_link: SOCIAL_MEDIA_LABELS.instagram,
@@ -193,28 +195,66 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                     referrer_id: 'Referido Por',
                 };
                 
+                error.issues.forEach(issue => {
+                    const fieldName = issue.path[0] as string;
+                    newErrors[fieldName] = issue.message;
+                });
+
+                // Mostrar el primer error con toast
+                const firstError = error.issues[0];
+                const firstFieldName = firstError.path[0] as string;
+
                 toast.error('Error de validación', {
-                    description: `${fieldLabels[fieldName] || fieldName}: ${firstError.message}`,
+                    description: `${fieldLabels[firstFieldName] || firstFieldName}: ${firstError.message}`,
                     position: 'bottom-left',
                 });
-                // Podrías actualizar el estado de errors aquí si los Inputs lo necesitan
-                setErrors({ [fieldName]: firstError.message });
+                
+                setErrors(newErrors);
             } else {
                  toast.error('Error desconocido', {
                     description: 'Ocurrió un error al validar el formulario.',
                     position: 'bottom-left',
                 });
+                setErrors({});
             }
             return false;
         }
     }, [formData, socialMediaList]);
+
+    // Función para crear tags con manejo de toast
+    const handleCreateTag = useCallback(async (tagName: string) => {
+        const { tag, error } = await createTag({ name: tagName });
+        if (error) {
+            toast.error('Error al crear etiqueta', {
+                description: error,
+                position: 'bottom-left',
+            });
+            return null;
+        }
+        return tag;
+    }, [createTag]);
+
+    // Función para eliminar tags con manejo de toast
+    const handleDeleteTagGlobally = useCallback(async (tagId: string) => {
+        const error = await deleteTag(tagId);
+        if (error) {
+            toast.error('Error al eliminar etiqueta', {
+                description: 'La etiqueta no pudo ser eliminada globalmente.',
+                position: 'bottom-left',
+            });
+            return;
+        }
+        toast.success('Etiqueta eliminada', {
+            description: 'La etiqueta ha sido eliminada de forma permanente.',
+            position: 'bottom-left',
+        });
+    }, [deleteTag]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validateForm()) return;
 
         setPhoneCheckLoading(true);
-        // Validar si el teléfono ya existe para otro cliente
         const duplicateClient = await clientService.checkDuplicatePhone(formData.phone, client?.id);
         setPhoneCheckLoading(false);
 
@@ -252,7 +292,6 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         const result = await onSave(sanitizedData, tagIds);
         setLoading(false);
 
-        // Muestra toast de error o éxito basado en el resultado de onSave
         if (result.error) {
             toast.error('Error al guardar', {
                 description: result.error,
@@ -327,7 +366,6 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         }
     };
 
-    // Opciones para el campo 'Referido Por'
     const referrerOptions = useMemo(() => {
         const options = [
             { value: '__RESET__', label: 'Ninguno' }, 
@@ -338,35 +376,6 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         return options;
     }, [clients, client?.id]);
     
-    // Función para crear tags con manejo de toast
-    const handleCreateTag = useCallback(async (tagName: string) => {
-        const { tag, error } = await createTag({ name: tagName });
-        if (error) {
-            toast.error('Error al crear etiqueta', {
-                description: error,
-                position: 'bottom-left',
-            });
-            return null;
-        }
-        return tag;
-    }, [createTag]);
-
-    // Función para eliminar tags con manejo de toast
-    const handleDeleteTagGlobally = useCallback(async (tagId: string) => {
-        const error = await deleteTag(tagId);
-        if (error) {
-            toast.error('Error al eliminar etiqueta', {
-                description: 'La etiqueta no pudo ser eliminada globalmente.',
-                position: 'bottom-left',
-            });
-            return;
-        }
-        toast.success('Etiqueta eliminada', {
-            description: 'La etiqueta ha sido eliminada de forma permanente.',
-            position: 'bottom-left',
-        });
-    }, [deleteTag]);
-
     // ===================================
     // RENDERIZADO
     // ===================================
@@ -390,9 +399,10 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                         name="name"
                                         value={formData.name}
                                         onChange={handleFormChange}
-                                        error={errors.name}
                                         placeholder="Ej. Marisela Félix"
                                         disabled={loading}
+                                        // Añado el estilo de error aquí
+                                        className={cn(errors.name && "border-destructive focus-visible:ring-destructive")}
                                     />
                                     {errors.name && (
                                         <p className="text-sm text-destructive mt-1.5">{errors.name}</p>
@@ -406,10 +416,11 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                         name="phone"
                                         value={formatPhoneRealTime(formData.phone)}
                                         onChange={(e) => handlePhoneChange(e.target.value)}
-                                        error={errors.phone}
                                         placeholder="(667) 341 2404"
                                         maxLength={15}
                                         disabled={loading}
+                                        // Añado el estilo de error aquí
+                                        className={cn(errors.phone && "border-destructive focus-visible:ring-destructive")}
                                     />
                                     {errors.phone && (
                                         <p className="text-sm text-destructive mt-1.5">{errors.phone}</p>
@@ -443,14 +454,26 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    <Input
-                                        value={newSocialMediaLink}
-                                        onChange={(e) => setNewSocialMediaLink(e.target.value)}
-                                        onKeyDown={handleSocialMediaKeyDown}
-                                        placeholder={newSocialMediaType === 'whatsapp' ? 'Número de teléfono (presiona Enter)' : 'Usuario o enlace (presiona Enter)'}
-                                        disabled={loading || socialMediaOptions.length === 0}
-                                        error={socialMediaInputError}
-                                    />
+                                    <div className="flex w-full space-x-2">
+                                        <Input
+                                            value={newSocialMediaLink}
+                                            onChange={(e) => setNewSocialMediaLink(e.target.value)}
+                                            onKeyDown={handleSocialMediaKeyDown}
+                                            placeholder={newSocialMediaType === 'whatsapp' ? 'Número de teléfono (presiona Enter)' : 'Usuario o enlace (presiona Enter)'}
+                                            disabled={loading || socialMediaOptions.length === 0}
+                                            // Añado el estilo de error aquí
+                                            className={cn(socialMediaInputError && "border-destructive focus-visible:ring-destructive")}
+                                        />
+                                        <Button 
+                                            type="button" 
+                                            onClick={handleAddSocialMedia} 
+                                            disabled={loading || socialMediaOptions.length === 0}
+                                            variant="secondary"
+                                            className="whitespace-nowrap"
+                                        >
+                                            Agregar
+                                        </Button>
+                                    </div>
                                 </div>
 
                                 {socialMediaInputError && (
@@ -490,6 +513,8 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                     onChange={handleBirthdayChange}
                                     placeholder="Selecciona una fecha"
                                     disabled={loading}
+                                    // Añado el estilo de error aquí
+                                    inputClassName={cn(errors.birthday && "border-destructive focus-visible:ring-destructive")}
                                 />
                                 <div>
                                     <Label htmlFor="referrer-select" className="block text-sm font-medium text-muted-foreground mb-1">Referido Por</Label>
@@ -498,11 +523,15 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                         onValueChange={(value) => {
                                             const finalValue = value === '__RESET__' ? '' : value;
                                             setFormData(prev => ({ ...prev, referrer_id: finalValue }));
+                                            if (errors.referrer_id) {
+                                                setErrors(prev => ({ ...prev, referrer_id: '' }));
+                                            }
                                         }}
                                         disabled={loading}
                                         name="referrer_id"
                                     >
-                                        <SelectTrigger id="referrer-select" className={errors.referrer_id ? "border-destructive" : ""}>
+                                        {/* Añado el estilo de error aquí */}
+                                        <SelectTrigger id="referrer-select" className={cn(errors.referrer_id && "border-destructive focus-visible:ring-destructive")}>
                                             <SelectValue placeholder="Ninguno" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -526,7 +555,8 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                 selectedTags={selectedTags}
                                 availableTags={availableTags}
                                 onAddTag={async (tagName) => {
-                                    const tag = await handleCreateTag(tagName);
+                                    // Usamos la función con manejo de toast
+                                    const tag = await handleCreateTag(tagName); 
                                     if (tag) {
                                         setSelectedTags(prev => [...prev, tag]);
                                     }
@@ -535,12 +565,15 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                     setSelectedTags(prev => prev.filter(t => t.id !== tagId));
                                 }}
                                 onDeleteTagGlobally={async (tagId) => {
-                                    await handleDeleteTagGlobally(tagId);
+                                    // Usamos la función con manejo de toast
+                                    await handleDeleteTagGlobally(tagId); 
                                     setSelectedTags(prev => prev.filter(t => t.id !== tagId));
                                 }}
                                 maxTags={5}
                                 disabled={loading}
                                 canDeleteGlobally={true}
+                                // Aquí se corrige el error de etiquetas: el componente TagInput 
+                                // ya debe usar `selectedTags` internamente para renderizar los badges.
                             />
 
                             {/* CAMPO: Notas (Fila 5 - Ancho Completo) */}
@@ -554,7 +587,12 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                     rows={3}
                                     placeholder="Notas adicionales sobre el cliente..."
                                     disabled={loading}
+                                    // Añado el estilo de error aquí
+                                    className={cn(errors.notes && "border-destructive focus-visible:ring-destructive")}
                                 />
+                                {errors.notes && (
+                                    <p className="text-sm text-destructive mt-1.5">{errors.notes}</p>
+                                )}
                             </div>
 
                         </div>

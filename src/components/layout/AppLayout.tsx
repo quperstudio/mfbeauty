@@ -1,7 +1,7 @@
 import { ReactNode, useState } from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
-import { Toaster } from "@/components/ui/toaster"; // <-- 1. Importa el Toaster
+import { Toaster } from "@/components/ui/toaster";
 
 interface AppLayoutProps {
   children: ReactNode;

@@ -367,10 +367,7 @@ export default function Clients() {
   return (
     <div className="space-y-4 sm:space-y-6">
       
-      {/* Ajuste 1: Título y Botón
-        - Contenedor principal: usa 'flex' para mantener las dos columnas horizontales en todas las pantallas.
-        - Título/Párrafo: contenedor 'flex-1 min-w-0' para que ocupe el espacio y 'truncate whitespace-nowrap overflow-hidden' para el truncamiento del párrafo.
-      */}
+      {/* Ajuste 1: Título y Botón */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
@@ -380,17 +377,14 @@ export default function Clients() {
             Gestiona tu base de clientes
           </p>
         </div>
-        <Button onClick={handleCreateClient} className="w-full sm:w-auto min-w-max">
+        {/* Clase 'w-full sm:w-auto min-w-max' removida para que el ancho se adapte al contenido. */}
+        <Button onClick={handleCreateClient} className="w-auto"> 
           <Plus className="w-5 h-5 mr-2" />
           Nuevo Cliente
         </Button>
       </div>
 
-      {/* Ajuste 2: Filtros y Búsqueda
-        - Contenedor principal: usa 'flex' para mantener dos columnas horizontales en todas las pantallas.
-        - Invertir orden: la búsqueda es el primer div.
-        - Búsqueda: contenedor 'flex-1' para que sea flexible horizontalmente.
-      */}
+      {/* Ajuste 2: Filtros y Búsqueda */}
       <div className="flex items-center justify-between gap-4">
         {/* Barra de Búsqueda (Izquierda) */}
         <div className="relative flex-1 min-w-0">
@@ -403,7 +397,7 @@ export default function Clients() {
             className="pl-10 w-full"
           />
         </div>
-        {/* Filtros (Derecha) */}
+        {/* Filtros (Derecha) - El componente ClientFilters debería adaptarse a su contenido. */}
         <ClientFilters
           activeFilter={activeFilter}
           onFilterChange={setActiveFilter}

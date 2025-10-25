@@ -106,24 +106,45 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     const [newSocialMediaLink, setNewSocialMediaLink] = useState<string>('');
     const [socialMediaInputError, setSocialMediaInputError] = useState<string>('');
 
-    useEffect(() => {
-        if (!isOpen) return;
+useEffect(() => {
+  if (!isOpen) return;
 
-        if (client) {
-            setFormData({
-                name: client.name,
-                phone: client.phone,
-                birthday: client.birthday || null,
-                notes: client.notes || '',
-                referrer_id: client.referrer_id || '',
-            });
+  if (client) {
+    setFormData({
+      name: client.name,
+      phone: client.phone,
+      birthday: client.birthday || null,
+      notes: client.notes || '',
+      referrer_id: client.referrer_id || '',
+    });
 
-            const initialSocialMedia = mapClientToSocialMediaList(client);
-            setSocialMediaList(initialSocialMedia);
+    const initialSocialMedia = mapClientToSocialMediaList(client);
+    setSocialMediaList(initialSocialMedia);
 
-            setNewSocialMediaLink('');
-            setNewSocialMediaType('whatsapp');
-            setSelectedTags(clientTags);
+    setNewSocialMediaLink('');
+    setNewSocialMediaType('whatsapp');
+    // Ya no se inicializan las etiquetas aquí
+  } else {
+    // Reset para "Nuevo Cliente"
+    setFormData(initialFormData);
+    setSocialMediaList([]);
+    setNewSocialMediaLink('');
+    setNewSocialMediaType('whatsapp');
+  }
+
+  // Reseteo de errores
+  setErrors({});
+  setSocialMediaInputError('');
+  
+}, [client, isOpen]); // <-- ¡clientTags ha sido removido!
+
+// EFECTO 2: Para sincronizar las etiquetas (SOLO cuando cambian)
+useEffect(() => {
+    if (isOpen) {
+        // Sincroniza las etiquetas si el cliente existe, o las vacía si es un cliente nuevo
+        setSelectedTags(client ? clientTags : []);
+    }
+}, [client, clientTags, isOpen]);
 
         } else {
             setFormData(initialFormData);

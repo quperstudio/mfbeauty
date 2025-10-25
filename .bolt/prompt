@@ -1,3 +1,5 @@
 By default, this template supports JSX syntax with Tailwind CSS classes, React hooks, and Lucide React for icons. Do not install other packages for UI themes, icons, etc unless absolutely necessary or I request them.
 
 Use icons from lucide-react for logos.
+
+Si hay alguna instrucción, función o agregado que no te haya quedado claro, realiza preguntas para entender completamente la idea y tenerla clara.

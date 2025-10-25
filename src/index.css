@@ -63,7 +63,7 @@
     /* Tonalidades de Alerta/Estado (Modo Oscuro) */
     --success: 142 71% 25%; /* Color success oscuro (Verde) */
     --success-foreground: 210 40% 98%; /* Texto sobre success oscuro (Oscuro) */
-    --error: 0 70% 35%; /* Color error oscuro (Rojo) */
+    --error: 0 90% 20%; /* Color error oscuro (Rojo) */
     --error-foreground: 210 40% 98%; /* Texto sobre error oscuro (Claro) */
     --warning: 45 90% 40%; /* Color warning oscuro (Ámbar) */
     --warning-foreground: 220 8.9% 10%; /* Texto sobre warning oscuro (Oscuro) */

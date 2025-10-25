@@ -569,7 +569,7 @@ export default function Clients() {
                                   <Pen className="w-4 h-4" />
                                 </button>
                               </TooltipTrigger>
-                              <TooltipContent>Penar cliente</TooltipContent>
+                              <TooltipContent>Editar cliente</TooltipContent>
                             </Tooltip>
                             
                             <DropdownMenu>

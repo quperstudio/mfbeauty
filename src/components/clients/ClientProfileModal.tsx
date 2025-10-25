@@ -152,7 +152,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
     				<span>{formatPhone(client.phone)}</span>
     			</div>
     			{client.birthday && (
-    				<div className="flex items-center text-muted-foreground">
+    				<div className="flex items-center text-muted-foreground text-sm">
     					<Cake className="w-4 h-4 mr-2" />
     					<span>Cumpleaños: {format(parseDate(client.birthday) || new Date(), 'dd/MM/yyyy', { locale: es })}</span>
     				</div>

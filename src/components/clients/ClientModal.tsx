@@ -92,7 +92,7 @@ const initialFormData: ClientFormDataBase = {
 export default function ClientModal({ isOpen, onClose, onSave, client, clients }: ClientModalProps) {
     const { user } = useAuth();
     const { tags: availableTags, createTag, deleteTag } = useTagsQuery();
-    const { clientTags, syncTags } = useClientTagsQuery(client?.id || null);
+    const { clientTags } = useClientTagsQuery(client?.id || null);
     const { toast } = useToast();
 
     const [formData, setFormData] = useState<ClientFormDataBase>(initialFormData);
@@ -106,57 +106,54 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     const [newSocialMediaLink, setNewSocialMediaLink] = useState<string>('');
     const [socialMediaInputError, setSocialMediaInputError] = useState<string>('');
 
-useEffect(() => {
-  if (!isOpen) return;
 
-  if (client) {
-    setFormData({
-      name: client.name,
-      phone: client.phone,
-      birthday: client.birthday || null,
-      notes: client.notes || '',
-      referrer_id: client.referrer_id || '',
-    });
+    // ===================================
+    // AJUSTE REALIZADO AQUÍ
+    // Se dividió el useEffect original en dos para evitar el reinicio del formulario.
+    // ===================================
 
-    const initialSocialMedia = mapClientToSocialMediaList(client);
-    setSocialMediaList(initialSocialMedia);
+    // EFECTO 1: Para inicializar el formulario (SIN clientTags)
+    useEffect(() => {
+        if (!isOpen) return;
 
-    setNewSocialMediaLink('');
-    setNewSocialMediaType('whatsapp');
-    // Ya no se inicializan las etiquetas aquí
-  } else {
-    // Reset para "Nuevo Cliente"
-    setFormData(initialFormData);
-    setSocialMediaList([]);
-    setNewSocialMediaLink('');
-    setNewSocialMediaType('whatsapp');
-  }
+        if (client) {
+            // Carga datos del cliente existente
+            setFormData({
+                name: client.name,
+                phone: client.phone,
+                birthday: client.birthday || null,
+                notes: client.notes || '',
+                referrer_id: client.referrer_id || '',
+            });
 
-  // Reseteo de errores
-  setErrors({});
-  setSocialMediaInputError('');
-  
-}, [client, isOpen]); // <-- ¡clientTags ha sido removido!
+            const initialSocialMedia = mapClientToSocialMediaList(client);
+            setSocialMediaList(initialSocialMedia);
 
-// EFECTO 2: Para sincronizar las etiquetas (SOLO cuando cambian)
-useEffect(() => {
-    if (isOpen) {
-        // Sincroniza las etiquetas si el cliente existe, o las vacía si es un cliente nuevo
-        setSelectedTags(client ? clientTags : []);
-    }
-}, [client, clientTags, isOpen]);
-
+            setNewSocialMediaLink('');
+            setNewSocialMediaType('whatsapp');
+            // Ya no se inicializan las etiquetas aquí
         } else {
+            // Resetea para "Nuevo Cliente"
             setFormData(initialFormData);
             setSocialMediaList([]);
             setNewSocialMediaLink('');
-            setSelectedTags([]);
             setNewSocialMediaType('whatsapp');
         }
 
+        // Reseteo de errores
         setErrors({});
         setSocialMediaInputError('');
-    }, [client, isOpen, clientTags]);
+        
+    }, [client, isOpen]); // <-- ¡clientTags ha sido removido!
+
+    // EFECTO 2: Para sincronizar las etiquetas (SOLO cuando cambian)
+    useEffect(() => {
+        if (isOpen) {
+            // Sincroniza las etiquetas si el cliente existe, o las vacía si es un cliente nuevo
+            setSelectedTags(client ? clientTags : []);
+        }
+    }, [client, clientTags, isOpen]);
+
 
     const socialMediaOptions = useMemo(() => {
         const existingTypes = new Set(socialMediaList.map(sm => sm.type));

@@ -184,7 +184,7 @@ export default function TagInput({
                             e.stopPropagation();
                             onDeleteTagGlobally(tag.id);
                           }}
-                          className="h-6 w-6 opacity-0 transition-opacity text-destructive hover:text-destructive"
+                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
                         >
                           <Trash2 className="w-3 h-3" />
                         </Button>

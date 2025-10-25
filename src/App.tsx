@@ -1,16 +1,17 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import ProtectedRoute from './components/ProtectedRoute';
+import { Toaster } from './components/ui/toaster';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { queryClient } from './lib/queryClient';
-import ProtectedRoute from './components/ProtectedRoute';
-import { Toaster } from './components/ui/toaster';
-import AppLayout from './components/layout/AppLayout'; 
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
+import AppLayout from './components/layout/AppLayout';
 import Clients from './pages/Clients';
 import ComingSoon from './pages/ComingSoon';
+import Dashboard from './pages/Dashboard';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 function App() {
   return (
@@ -52,11 +53,9 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              {/* Añade más rutas aquí */}
             </Routes>
           </BrowserRouter>
           <Toaster /> 
-          {/* <--- CAMBIO AQUÍ: <SonnerToaster ... /> fue eliminado */}
         </AuthProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>

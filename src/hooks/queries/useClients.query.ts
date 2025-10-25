@@ -47,8 +47,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ClientSchemaType } from '../../schemas/client.schema';
 import * as clientService from '../../services/client.service';
 import { QUERY_KEYS } from '../../lib/queryKeys';
+import { toast } from '@/hooks/use-toast';
 
 export function useClientsQuery() {
+  // SECCIÓN: HOOKS Y CLIENTE DE CONSULTA
   const queryClient = useQueryClient();
 
   const { data: clients = [], isLoading, error } = useQuery({
@@ -56,10 +58,24 @@ export function useClientsQuery() {
     queryFn: clientService.fetchClients,
   });
 
+  // SECCIÓN: MUTACIONES
   const createMutation = useMutation({
     mutationFn: clientService.createClient,
     onSuccess: () => {
+      // Mostrar toast de éxito al crear
+      toast({
+        title: 'Cliente creado',
+        description: 'El nuevo cliente se ha guardado exitosamente.',
+      });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
+    },
+    onError: (err) => {
+      // Mostrar toast de error al crear
+      toast({
+        title: 'Error al crear cliente',
+        description: err instanceof Error ? err.message : 'Ocurrió un error inesperado.',
+        variant: 'destructive',
+      });
     },
   });
 
@@ -67,22 +83,53 @@ export function useClientsQuery() {
     mutationFn: ({ id, data }: { id: string; data: ClientSchemaType }) =>
       clientService.updateClient(id, data),
     onSuccess: () => {
+      // Mostrar toast de éxito al actualizar
+      toast({
+        title: 'Cliente actualizado',
+        description: 'La información del cliente ha sido modificada.',
+      });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
+      // Opcional: Invalidar el detalle si estuviera visible
+      // queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.detail() });
+    },
+    onError: (err) => {
+      // Mostrar toast de error al actualizar
+      toast({
+        title: 'Error al actualizar cliente',
+        description: err instanceof Error ? err.message : 'Ocurrió un error inesperado.',
+        variant: 'destructive',
+      });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: clientService.deleteClient,
     onSuccess: () => {
+      // Mostrar toast de éxito al eliminar
+      toast({
+        title: 'Cliente eliminado',
+        description: 'El cliente ha sido borrado del sistema.',
+        variant: 'destructive',
+      });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
+    },
+    onError: (err) => {
+      // Mostrar toast de error al eliminar
+      toast({
+        title: 'Error al eliminar cliente',
+        description: err instanceof Error ? err.message : 'Ocurrió un error inesperado.',
+        variant: 'destructive',
+      });
     },
   });
 
+  // SECCIÓN: FUNCIONES PÚBLICAS
   const createClient = async (data: ClientSchemaType) => {
     try {
       await createMutation.mutateAsync(data);
       return { error: null };
     } catch (err) {
+      // El error ya se maneja en onError de useMutation, solo devolvemos el resultado.
       return { error: err instanceof Error ? err.message : 'Error al crear cliente' };
     }
   };
@@ -92,6 +139,7 @@ export function useClientsQuery() {
       await updateMutation.mutateAsync({ id, data });
       return { error: null };
     } catch (err) {
+      // El error ya se maneja en onError de useMutation, solo devolvemos el resultado.
       return { error: err instanceof Error ? err.message : 'Error al actualizar cliente' };
     }
   };
@@ -101,10 +149,12 @@ export function useClientsQuery() {
       await deleteMutation.mutateAsync(id);
       return { error: null };
     } catch (err) {
+      // El error ya se maneja en onError de useMutation, solo devolvemos el resultado.
       return { error: err instanceof Error ? err.message : 'Error al eliminar cliente' };
     }
   };
 
+  // SECCIÓN: RETORNO DEL HOOK
   return {
     clients,
     loading: isLoading,

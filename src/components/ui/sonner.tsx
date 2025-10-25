@@ -1,11 +1,12 @@
 // sonner.tsx
-import {
-  CircleCheck,
-  Info,
-  LoaderCircle,
-  OctagonX,
-  TriangleAlert,
-} from "lucide-react"
+
+// 🚀 CORRECCIÓN: Importar cada componente directamente desde su archivo para evitar el error de exportación en el bundler.
+import { CircleCheck } from "lucide-react/dist/esm/icons/circle-check"
+import { Info } from "lucide-react/dist/esm/icons/info"
+import { LoaderCircle } from "lucide-react/dist/esm/icons/loader-circle"
+import { OctagonX } from "lucide-react/dist/esm/icons/octagon-x"
+import { TriangleAlert } from "lucide-react/dist/esm/icons/triangle-alert"
+
 import { useTheme } from "next-themes"
 import { Toaster as Sonner } from "sonner"
 
@@ -31,7 +32,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           // Estilos base para todos los toasts
-          // Se eliminó group-[.toaster]: de las clases del toast base
           toast:
             "group toast bg-background text-foreground border-border shadow-medium",
           description: "group-[.toast]:text-muted-foreground",
@@ -41,14 +41,13 @@ const Toaster = ({ ...props }: ToasterProps) => {
             "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
 
           // Estilos específicos para cada tipo usando tus colores
-          // CORRECCIÓN: Se eliminó el prefijo group-[.toaster]: para que aplique al toast individual
           success: "bg-success text-success-foreground border-success",
           error: "bg-error text-error-foreground border-error",
           warning: "bg-warning text-warning-foreground border-warning",
           info: "bg-info text-info-foreground border-info",
         },
 
-        // AÑADIDO: Forzar el ícono para que sobrescriba el ícono predeterminado de Sonner
+        // Forzar el ícono para que sobrescriba el ícono predeterminado de Sonner
         error: {
           icon: <OctagonX className="h-4 w-4 text-error-foreground" />,
         },

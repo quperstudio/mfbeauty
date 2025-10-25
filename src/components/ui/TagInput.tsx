@@ -67,12 +67,11 @@ export default function TagInput({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
-    // Abrir el dropdown si hay texto, o si el input está enfocado
     setShowDropdown(value.length > 0);
   };
 
   const handleInputFocus = () => {
-    // Ajuste: Muestra el dropdown al enfocar si no se ha alcanzado el límite
+    // AJUSTE ANTERIOR: Muestra el dropdown al enfocar si no se ha alcanzado el límite
     if (!reachedMaxTags) {
       setShowDropdown(true);
     }
@@ -112,6 +111,30 @@ export default function TagInput({
         <Label className="text-sm font-medium text-muted-foreground">
           {label} {selectedTags.length > 0 && `(${selectedTags.length}/${maxTags})`}
         </Label>
+      )}
+
+      {/* AJUSTE: LAS ETIQUETAS SELECCIONADAS SE MUESTRAN AQUÍ, ARRIBA DEL INPUT */}
+      {selectedTags.length > 0 && (
+        {/* AJUSTE: Se eliminó el contenedor con borde y fondo. Solo queda el flex container. */}
+        <div className="flex flex-wrap gap-2 pt-1 pb-2">
+          {selectedTags.map((tag) => (
+            <Badge
+              key={tag.id}
+              variant="outline"
+              className="pl-2 pr-1 py-1 gap-1 text-sm"
+            >
+              {tag.name}
+              <button
+                type="button"
+                onClick={() => onRemoveTag(tag.id)}
+                disabled={disabled}
+                className="ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5 transition-colors disabled:opacity-50"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </Badge>
+          ))}
+        </div>
       )}
 
       <div className="space-y-2">
@@ -177,28 +200,6 @@ export default function TagInput({
             </div>
           )}
         </div>
-
-        {selectedTags.length > 0 && (
-          <div className="flex flex-wrap gap-2 p-2 border border-border rounded-lg bg-muted/30">
-            {selectedTags.map((tag) => (
-              <Badge
-                key={tag.id}
-                variant="outline"
-                className="pl-2 pr-1 py-1 gap-1 text-sm"
-              >
-                {tag.name}
-                <button
-                  type="button"
-                  onClick={() => onRemoveTag(tag.id)}
-                  disabled={disabled}
-                  className="ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5 transition-colors disabled:opacity-50"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </Badge>
-            ))}
-          </div>
-        )}
 
         {error && (
           <p className="text-sm text-destructive">{error}</p>

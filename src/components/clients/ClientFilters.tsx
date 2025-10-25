@@ -35,7 +35,7 @@ export default function ClientFilters({ activeFilter, onFilterChange, counts }: 
         </Button>
       </DropdownMenuTrigger>
       
-      <DropdownMenuContent align="start" className="w-[200px]">
+      <DropdownMenuContent align="end" className="w-[200px]">
         {filters.map((filter) => (
           <DropdownMenuItem
             key={filter.value}

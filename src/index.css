@@ -15,7 +15,7 @@
     --primary-foreground: 210 40% 98%; /* Texto sobre el color principal (Blanco azulado) */
     --secondary: 220 14.3% 95.9%; /* Fondo de elementos secundarios (Gris claro azulado) */
     --secondary-foreground: 220 8.9% 10%; /* Texto sobre el color secundario */
-    --muted: 220 14.3% 95.9%; /* Fondos sutiles (Gris claro azulado) */
+    --muted: 220 14.3% 70%; /* Fondos sutiles (Gris claro azulado) */
     --muted-foreground: 220 8.9% 45%; /* Texto de bajo contraste */
     --accent: 220 14.3% 95.9%; /* Resaltado (ej: hover) */
     --accent-foreground: 220 8.9% 10%; /* Texto sobre el color de acento */

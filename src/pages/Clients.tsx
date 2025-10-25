@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useQueryClient } from '@tanstack/react-query';
 import { useClientsQuery } from '../hooks/queries/useClients.query';
+import { useClientTagsQuery, useTagsQuery } from '../hooks/queries/useTags.query';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { QUERY_KEYS } from '../lib/queryKeys';
@@ -23,6 +24,7 @@ import ClientProfileModal from '../components/clients/ClientProfileModal';
 import AssignReferrerModal from '../components/clients/AssignReferrerModal';
 import { Client, ClientFilterType, ClientSortField, ClientSortDirection } from '../types/database';
 import * as clientService from '../services/client.service';
+import * as tagService from '../services/tag.service';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
@@ -53,12 +55,14 @@ export default function Clients() {
   // ESTADOS Y HOOKS
   // ===================================
   const { clients, loading, error, createClient, updateClient, deleteClient } = useClientsQuery();
+  const { tags: availableTags } = useTagsQuery();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | undefined>();
   const [activeFilter, setActiveFilter] = useState<ClientFilterType>('all');
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [sortField, setSortField] = useState<ClientSortField>('created_at');
   const [sortDirection, setSortDirection] = useState<ClientSortDirection>('desc');
   const [selectedClientIds, setSelectedClientIds] = useState<Set<string>>(new Set());
@@ -66,7 +70,8 @@ export default function Clients() {
   const [profileClientId, setProfileClientId] = useState<string | null>(null);
   const [isAssignReferrerModalOpen, setIsAssignReferrerModalOpen] = useState(false);
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
-  
+
+  const [clientsWithSelectedTags, setClientsWithSelectedTags] = useState<string[]>([]);
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
   // Estado para determinar si la pantalla es chica (usando breakpoint 'sm' 640px)
   const [isSmallScreen, setIsSmallScreen] = useState(false);
@@ -92,6 +97,16 @@ export default function Clients() {
       window.removeEventListener('resize', checkScreenSize);
     };
   }, [queryClient]);
+
+  useEffect(() => {
+    if (selectedTagIds.length > 0) {
+      tagService.fetchClientIdsByTags(selectedTagIds)
+        .then(clientIds => setClientsWithSelectedTags(clientIds))
+        .catch(err => console.error('Error fetching clients by tags:', err));
+    } else {
+      setClientsWithSelectedTags([]);
+    }
+  }, [selectedTagIds]);
 
   // Función para obtener y limitar los enlaces de redes sociales
   const getSocialMediaLinks = (client: Client, limit: number | null = null) => {
@@ -154,7 +169,11 @@ export default function Clients() {
     } else if (activeFilter === 'referred') {
       filtered = filtered.filter((c) => c.referrer_id !== null);
     }
+    if (selectedTagIds.length > 0 && clientsWithSelectedTags.length > 0) {
+      filtered = filtered.filter((c) => clientsWithSelectedTags.includes(c.id));
+    }
 
+    
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -199,7 +218,7 @@ export default function Clients() {
     });
 
     return sorted;
-  }, [clients, searchQuery, activeFilter, sortField, sortDirection]);
+  }, [clients, searchQuery, activeFilter, selectedTagIds, clientsWithSelectedTags, sortField, sortDirection]);
 
   const filterCounts = useMemo(() => {
     return {
@@ -221,12 +240,23 @@ export default function Clients() {
     setIsModalOpen(true);
   };
 
-  const handleSaveClient = async (data: any) => {
+  const handleSaveClient = async (data: any, tagIds: string[]) => {
+    let result;
     if (selectedClient) {
-      return await updateClient(selectedClient.id, data);
+      result = await updateClient(selectedClient.id, data);
+      if (!result.error && selectedClient.id) {
+        await tagService.syncClientTags(selectedClient.id, tagIds);
+      }
     } else {
-      return await createClient(data);
+      result = await createClient(data);
+      if (!result.error) {
+        const newClient = clients.find(c => c.phone === data.phone);
+        if (newClient && tagIds.length > 0) {
+          await tagService.syncClientTags(newClient.id, tagIds);
+        }
+      }
     }
+    return result;
   };
 
   const confirmDeleteClient = (client: Client) => {
@@ -402,6 +432,9 @@ export default function Clients() {
           activeFilter={activeFilter}
           onFilterChange={setActiveFilter}
           counts={filterCounts}
+          availableTags={availableTags}
+          selectedTagIds={selectedTagIds}
+          onTagsChange={setSelectedTagIds}
         />
       </div>
 

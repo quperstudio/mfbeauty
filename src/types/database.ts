@@ -35,6 +35,20 @@ export interface Client {
   total_spent: number;
   total_visits: number;
   last_visit_date?: string;
+  created_by_user_id?: string;
+  created_at: string;
+}
+
+export interface ClientTag {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+export interface ClientTagAssignment {
+  id: string;
+  client_id: string;
+  tag_id: string;
   created_at: string;
 }
 
@@ -211,4 +225,10 @@ export interface ClientWithDetails extends Client {
   referrer?: Client;
   appointments?: Appointment[];
   referrals?: Client[];
+  tags?: ClientTag[];
+  created_by?: User;
+}
+
+export interface ClientWithTags extends Client {
+  tags: ClientTag[];
 }

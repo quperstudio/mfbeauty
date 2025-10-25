@@ -123,3 +123,45 @@ export async function updateMultipleClientsReferrer(ids: string[], referrerId: s
 
   if (error) throw error;
 }
+
+/**
+ * Check if a phone number is already registered
+ * Returns the existing client if found, null otherwise
+ */
+export async function checkDuplicatePhone(phone: string, excludeClientId?: string): Promise<Client | null> {
+  let query = supabase
+    .from(TABLE_NAME)
+    .select('*')
+    .eq('phone', phone);
+
+  if (excludeClientId) {
+    query = query.neq('id', excludeClientId);
+  }
+
+  const { data, error } = await query.maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Fetch clients with their tags
+ */
+export async function fetchClientsWithTags(): Promise<Client[]> {
+  const { data, error } = await supabase
+    .from(TABLE_NAME)
+    .select(`
+      *,
+      client_tags_assignments (
+        client_tags (
+          id,
+          name,
+          created_at
+        )
+      )
+    `)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}

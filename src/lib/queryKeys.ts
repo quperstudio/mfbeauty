@@ -68,4 +68,9 @@ export const QUERY_KEYS = {
     detail: (id: string) => ['users', id] as const,
     current: ['users', 'current'] as const,
   },
+  tags: {
+    all: ['tags'] as const,
+    byClient: (clientId: string) => ['tags', 'client', clientId] as const,
+    usageCounts: ['tags', 'usage-counts'] as const,
+  },
 } as const;

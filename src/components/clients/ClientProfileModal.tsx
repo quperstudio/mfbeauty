@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { format, isFuture, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Cake, Phone, DollarSign, Edit, MessageCircle, Facebook, Instagram, Music2, CalendarOff, CalendarCheck, Calendar, CalendarSearch, AlertCircle } from 'lucide-react';
+import { Cake, Phone, DollarSign, Edit, MessageCircle, Facebook, Instagram, Music2, CalendarOff, CalendarCheck, Calendar, CalendarSearch, AlertCircle, User as UserIcon, Tag as TagIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -157,6 +157,25 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
     					<span>Cumpleaños: {format(parseDate(client.birthday) || new Date(), 'dd/MM/yyyy', { locale: es })}</span>
     				</div>
     			)}
+  			<div className="flex items-center text-muted-foreground text-sm">
+  				<Calendar className="w-4 h-4 mr-2" />
+  				<span>Creado: {format(parseDate(client.created_at) || new Date(), 'dd/MM/yyyy', { locale: es })}</span>
+  			</div>
+  			{client.created_by && (
+  				<div className="flex items-center text-muted-foreground text-sm">
+  					<UserIcon className="w-4 h-4 mr-2" />
+  					<span>Creado por: </span>
+  					<Badge variant={client.created_by.role === 'administrator' ? 'default' : 'secondary'} className="ml-2">
+  						{client.created_by.role === 'administrator' ? 'Administrador' : 'Empleado'}
+  					</Badge>
+  				</div>
+  			)}
+  			{!client.created_by_user_id && (
+  				<div className="flex items-center text-muted-foreground text-xs italic">
+  					<UserIcon className="w-3 h-3 mr-2" />
+  					<span>Usuario creador no disponible</span>
+  				</div>
+  			)}
     		</div>
 
     		{/* Clientes Referidos */}
@@ -252,6 +271,23 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
     		</div>
     	) : null}
 
+
+    	{/* Sección: Etiquetas */}
+    	{client.tags && client.tags.length > 0 && (
+    		<div>
+    			<h2 className="text-lg text-foreground mb-2 flex items-center gap-2">
+    				<TagIcon className="w-4 h-4" />
+    				Etiquetas
+    			</h2>
+    			<div className="flex flex-wrap gap-2">
+    				{client.tags.map((tag) => (
+    					<Badge key={tag.id} variant="outline">
+    						{tag.name}
+    					</Badge>
+    				))}
+    			</div>
+    		</div>
+    	)}
     	{/* Sección: Notas */}
     	{client.notes && (
     		<div>

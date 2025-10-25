@@ -21,6 +21,17 @@ export const clientSchema = z.object({
   facebook_link: emptyStringToNull,
   instagram_link: emptyStringToNull,
   tiktok_link: emptyStringToNull,
+  created_by_user_id: emptyStringToNull,
 });
 
 export type ClientSchemaType = z.infer<typeof clientSchema>;
+
+export const tagSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'El nombre de la etiqueta es requerido')
+    .max(30, 'El nombre de la etiqueta no puede exceder 30 caracteres')
+    .trim(),
+});
+
+export type TagSchemaType = z.infer<typeof tagSchema>;

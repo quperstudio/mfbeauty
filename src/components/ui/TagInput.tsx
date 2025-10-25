@@ -112,10 +112,7 @@ export default function TagInput({
           {label} {selectedTags.length > 0 && `(${selectedTags.length}/${maxTags})`}
         </Label>
       )}
-
-      {/* AJUSTE: LAS ETIQUETAS SELECCIONADAS SE MUESTRAN AQUÍ, ARRIBA DEL INPUT */}
       {selectedTags.length > 0 && (
-        {/* AJUSTE: Se eliminó el contenedor con borde y fondo. Solo queda el flex container. */}
         <div className="flex flex-wrap gap-2 pt-1 pb-2">
           {selectedTags.map((tag) => (
             <Badge
@@ -200,8 +197,6 @@ export default function TagInput({
             </div>
           )}
         </div>
-
-        {/* SE ELIMINÓ EL DIV ANTERIOR QUE CONTENÍA LOS BADGES AQUÍ */}
 
         {error && (
           <p className="text-sm text-destructive">{error}</p>

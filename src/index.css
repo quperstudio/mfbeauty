@@ -24,7 +24,6 @@
     --border: 220 13% 91%; /* Color de bordes y separadores */
     --input: 220 13% 91%; /* Color para campos de entrada */
     --ring: 270 80% 55%; /* Color del anillo de enfoque (Morado) */
-    --tooltip: 220 8.9% 10%; /* Color del tooltip (Oscuro) */
 
     /* Tonalidades de Alerta/Estado (Modo Claro) */
     --success: 142 71% 40%; /* Color para estados positivos (Verde) */
@@ -51,16 +50,15 @@
     --primary-foreground: 220 8.9% 10%; /* Texto sobre el primary oscuro */
     --secondary: 220 13% 18%; /* Fondo secundario oscuro */
     --secondary-foreground: 210 40% 98%; /* Texto sobre el secondary oscuro */
-    --muted: 220 13% 35%; /* Fondos sutiles oscuros */
+    --muted: 220 13% 25%; /* Fondos sutiles oscuros */
     --muted-foreground: 220 13% 65%; /* Texto de bajo contraste oscuro */
     --accent: 220 13% 18%; /* Resaltado oscuro */
     --accent-foreground: 210 40% 98%; /* Texto sobre el acento oscuro */
     --destructive: 0 62.8% 30.6%; /* Color peligroso oscuro */
     --destructive-foreground: 210 40% 98%; /* Texto sobre el peligroso oscuro */
-    --border: 220 13% 20%; /* Borde oscuro */
-    --input: 220 13% 20%; /* Input oscuro */
+    --border: 220 13% 18%; /* Borde oscuro */
+    --input: 220 13% 18%; /* Input oscuro */
     --ring: 270 70% 65%; /* Anillo de enfoque oscuro */
-    --tooltip: 0 0% 100%; /* Color del tooltip (Claro) */
 
     /* Tonalidades de Alerta/Estado (Modo Oscuro) */
     --success: 142 71% 50%; /* Color success oscuro (Verde) */
@@ -96,7 +94,7 @@
 
 @layer components {
   .container-custom {
-    @apply mx-auto max-w-7xl sm:px-6 lg:px-8;
+    @apply mx-auto max-w-7xl;
   }
 
   .card {

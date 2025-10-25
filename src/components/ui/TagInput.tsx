@@ -71,7 +71,6 @@ export default function TagInput({
   };
 
   const handleInputFocus = () => {
-    // AJUSTE ANTERIOR: Muestra el dropdown al enfocar si no se ha alcanzado el límite
     if (!reachedMaxTags) {
       setShowDropdown(true);
     }
@@ -108,7 +107,7 @@ export default function TagInput({
   return (
     <div className="space-y-2">
       {label && (
-        <Label className="text-sm font-medium text-muted-foreground">
+        <Label className="text-sm font-regular text-muted-foreground">
           {label} {selectedTags.length > 0 && `(${selectedTags.length}/${maxTags})`}
         </Label>
       )}

@@ -33,7 +33,7 @@ function App() {
                 }
               />
               <Route
-                path="/clients"
+                path="/clientes"
                 element={
                   <ProtectedRoute>
                     <AppLayout>
@@ -43,7 +43,7 @@ function App() {
                 }
               />
               <Route
-                path="/calendar"
+                path="/calendario"
                 element={
                   <ProtectedRoute>
                     <AppLayout>

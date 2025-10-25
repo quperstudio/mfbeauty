@@ -61,14 +61,14 @@
     --ring: 270 70% 65%; /* Anillo de enfoque oscuro */
 
     /* Tonalidades de Alerta/Estado (Modo Oscuro) */
-    --success: 142 71% 25%; /* Fondo verde más oscuro */
-    --success-foreground: 210 40% 98%; /* Texto claro */
-    --error: 0 70% 35%; /* Fondo rojo más oscuro */
-    --error-foreground: 210 40% 98%; /* Texto claro */
-    --warning: 45 90% 40%; /* Fondo ámbar más oscuro */
-    --warning-foreground: 220 8.9% 10%; /* Texto oscuro (para mejor contraste en amarillo) */
-    --info: 270 50% 35%; /* Fondo morado (info) más oscuro */
-    --info-foreground: 210 40% 98%; /* Texto claro */
+    --success: 142 71% 25%; /* Color success oscuro (Verde) */
+    --success-foreground: 210 40% 98%; /* Texto sobre success oscuro (Oscuro) */
+    --error: 0 70% 35%; /* Color error oscuro (Rojo) */
+    --error-foreground: 210 40% 98%; /* Texto sobre error oscuro (Claro) */
+    --warning: 45 90% 40%; /* Color warning oscuro (Ámbar) */
+    --warning-foreground: 220 8.9% 10%; /* Texto sobre warning oscuro (Oscuro) */
+    --info: 270 50% 35%; /* Color info oscuro (Morado/Primary) */
+    --info-foreground: 210 40% 98%; /* Texto sobre info oscuro (Oscuro) */
   }
 }
 

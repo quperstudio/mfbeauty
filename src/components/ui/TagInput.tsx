@@ -124,7 +124,7 @@ export default function TagInput({
                 type="button"
                 onClick={() => onRemoveTag(tag.id)}
                 disabled={disabled}
-                className="ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5 transition-colors disabled:opacity-50"
+                className="ml-1 rounded-full hover:bg-muted p-0.5 transition-colors disabled:opacity-50"
               >
                 <X className="w-3 h-3" />
               </button>

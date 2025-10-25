@@ -20,8 +20,8 @@ import {
   FormLabel,
   FormMessage,
 } from '../ui/form';
-import { Input } from '../ui/input';
-import { TagInput } from '../ui/TagInput';
+import { Input } from '@/ui/input';
+import { TagInput } from '@/ui/TagInput';
 
 type ClientFormSchema = z.infer<typeof clientFormSchema>;
 

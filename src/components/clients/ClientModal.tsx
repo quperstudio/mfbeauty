@@ -1,4 +1,5 @@
 // ClientModal.tsx
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { z } from 'zod';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -20,8 +21,7 @@ import TagInput from '@/components/ui/TagInput';
 import { useTagsQuery, useClientTagsQuery } from '../../hooks/queries/useTags.query';
 import { useAuth } from '../../contexts/AuthContext';
 import * as clientService from '../../services/client.service';
-// RUTA DE TOAST CORREGIDA
-import { useToast } from "../../hooks/use-toast"; // Cambiado de "@/hooks/use-toast" a la ruta relativa
+import { useToast } from "../../hooks/use-toast"; // Ruta corregida
 
 // ===================================
 // TIPOS DE DATOS
@@ -149,11 +149,10 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     // MANEJADORES DE CAMBIOS Y ACCIONES
     // ===================================
 
+    // Función general para inputs de texto (Nombre, Notas)
     const handleFormChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        if (name !== 'phone') {
-            setFormData(prev => ({ ...prev, [name]: value }));
-        }
+        setFormData(prev => ({ ...prev, [name]: value }));
     }, []);
 
     const handleBirthdayChange = useCallback((date: Date | null) => {
@@ -254,10 +253,15 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         }
     };
 
-    const handlePhoneChange = (value: string) => {
-        const cleaned = parsePhoneInput(value);
-        setFormData({ ...formData, phone: cleaned });
+    // Ajustado para manejar el estado del formulario directamente
+    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const rawValue = e.target.value;
+        const cleaned = parsePhoneInput(rawValue); // Limpia el valor antes de guardarlo en el estado
+        
+        // Actualiza el estado del teléfono
+        setFormData(prev => ({ ...prev, phone: cleaned }));
 
+        // Lógica para vincular el WhatsApp al número de teléfono si es un cliente nuevo
         if (!client) {
             const whatsappExists = socialMediaList.some(sm => sm.type === 'whatsapp');
             if (newSocialMediaType === 'whatsapp' && !whatsappExists) {
@@ -266,7 +270,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         }
         
         if (errors.phone) {
-            setErrors({ ...errors, phone: '' });
+            setErrors(prev => ({ ...prev, phone: '' }));
         }
     };
 
@@ -371,7 +375,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                         id="client-phone"
                                         name="phone"
                                         value={formatPhoneRealTime(formData.phone)}
-                                        onChange={(e) => handlePhoneChange(e.target.value)}
+                                        onChange={handlePhoneChange} // Usamos la función que recibe el evento
                                         error={errors.phone}
                                         placeholder="(667) 341 2404"
                                         maxLength={15}
@@ -411,7 +415,8 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                     </Select>
                                     <Input
                                         value={newSocialMediaLink}
-                                        onChange={(e) => setNewSocialMediaLink(e.target.value)}
+                                        // Usamos un onChange simple aquí para el input de enlace de red social
+                                        onChange={(e) => setNewSocialMediaLink(e.target.value)} 
                                         onKeyDown={handleSocialMediaKeyDown}
                                         placeholder={newSocialMediaType === 'whatsapp' ? 'Número de teléfono (presiona Enter)' : 'Usuario o enlace (presiona Enter)'}
                                         disabled={loading || socialMediaOptions.length === 0}

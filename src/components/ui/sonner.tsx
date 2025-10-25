@@ -1,6 +1,6 @@
 
 import {
-  CircleCheckBig,
+  BadgeCheck,
   Info,
   LoaderCircle,
   OctagonX,
@@ -21,7 +21,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className="toaster group"
       // Iconos: Se mantienen como fallback, aunque la definicion en toastOptions es mas efectiva
       icons={{
-        success: <CircleCheckBig className="h-4 w-4" />,
+        success: <BadgeCheck className="h-4 w-4" />,
         info: <Info className="h-4 w-4" />,
         warning: <TriangleAlert className="h-4 w-4" />,
         error: <OctagonX className="h-4 w-4" />,
@@ -53,7 +53,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           icon: <OctagonX className="h-4 w-4 text-error-foreground" />,
         },
         success: {
-          icon: <CircleCheckBig className="h-4 w-4 text-success-foreground" />,
+          icon: <BadgeCheck className="h-4 w-4 text-success-foreground" />,
         },
         warning: {
           icon: <TriangleAlert className="h-4 w-4 text-warning-foreground" />,

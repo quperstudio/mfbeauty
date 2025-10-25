@@ -10,12 +10,14 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import ComingSoon from './pages/ComingSoon';
+import { Toaster } from 'sonner';
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
+          <Toaster position="bottom-left" richColors />
           <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />

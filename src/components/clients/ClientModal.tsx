@@ -19,6 +19,7 @@ import TagInput from '@/components/ui/TagInput';
 import { useTagsQuery, useClientTagsQuery } from '../../hooks/queries/useTags.query';
 import { useAuth } from '../../contexts/AuthContext';
 import * as clientService from '../../services/client.service';
+import { toast } from 'sonner';
 
 // ===================================
 // TIPOS DE DATOS
@@ -133,7 +134,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
 
         setErrors({});
         setSocialMediaInputError('');
-    }, [client, isOpen]);
+    }, [client, isOpen, clientTags]);
 
     const socialMediaOptions = useMemo(() => {
         const existingTypes = new Set(socialMediaList.map(sm => sm.type));
@@ -161,29 +162,34 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         }
     }, []);
 
-    const validateForm = useCallback((): boolean => {
-        const newErrors: Record<string, string> = {};
-
-        try {
-            const socialMediaLinks = mapListToFormData(socialMediaList);
-            const dataToValidate = {
-                ...formData,
-                ...socialMediaLinks,
-            };
-            clientSchema.parse(dataToValidate);
-            setErrors({});
-            return true;
-        } catch (error) {
-            if (error instanceof z.ZodError) {
-                error.issues.forEach((err) => {
-                    const field = err.path[0] as string;
-                    newErrors[field] = err.message;
-                });
-            }
-            setErrors(newErrors);
-            return false;
-        }
-    }, [formData, socialMediaList]);
+    const validateForm = useCallback((): boolean => {
+        try {
+            const socialMediaLinks = mapListToFormData(socialMediaList);
+            const dataToValidate = {
+                ...formData,
+                ...socialMediaLinks,
+            };
+            clientSchema.parse(dataToValidate);
+            return true;
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                const firstError = error.issues[0];
+                const fieldName = firstError.path[0] as string;
+                const fieldLabels: Record<string, string> = {
+                    name: 'Nombre',
+                    phone: 'Teléfono',
+                    birthday: 'Fecha de cumpleaños',
+                    notes: 'Notas',
+                };
+                
+                toast.error('Error de validación', {
+                    description: `${fieldLabels[fieldName] || fieldName}: ${firstError.message}`,
+                    position: 'bottom-left',
+                });
+            }
+            return false;
+        }
+    }, [formData, socialMediaList]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -194,7 +200,10 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         setPhoneCheckLoading(false);
 
         if (duplicateClient) {
-            setErrors({ phone: `Este teléfono ya está registrado para ${duplicateClient.name}` });
+            toast.error('Teléfono duplicado', {
+                description: `Este teléfono ya está registrado para ${duplicateClient.name}`,
+                position: 'bottom-left',
+            });
             return;
         }
 
@@ -224,11 +233,18 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         const result = await onSave(sanitizedData, tagIds);
         setLoading(false);
 
-        if (result.error) {
-            setErrors({ submit: result.error });
-        } else {
-            onClose();
-        }
+        if (result.error) {
+            toast.error('Error al guardar', {
+                description: result.error,
+                position: 'bottom-left',
+            });
+        } else {
+            toast.success(client ? 'Cliente actualizado' : 'Cliente creado', {
+                description: client ? 'El cliente ha sido actualizado exitosamente' : 'El cliente ha sido creado exitosamente',
+                position: 'bottom-left',
+            });
+            onClose();
+        }
     };
 
     const handlePhoneChange = (value: string) => {
@@ -493,12 +509,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                 />
                             </div>
 
-                            {errors.submit && (
-                                <div className="bg-error/10 border border-error/20 text-error-foreground px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm">
-                                    {errors.submit}
-                                </div>
-                            )}
-                        </div>
+                        </div>
                     </ScrollArea>
 
                     <DialogFooter className="pb-2 pt-4 border-t border-border bg-background">

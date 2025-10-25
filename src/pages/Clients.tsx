@@ -61,7 +61,7 @@ export default function Clients() {
   const [activeFilter, setActiveFilter] = useState<ClientFilterType>('all');
   const [sortField, setSortField] = useState<ClientSortField>('created_at');
   const [sortDirection, setSortDirection] = useState<ClientSortDirection>('desc');
-  const [selectedClientIds, setSelectedClientIds] = useState<Set<string>>(new Set());
+  const [selectedClientIds, setSelectedClientIds] = new Set());
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [profileClientId, setProfileClientId] = useState<string | null>(null);
   const [isAssignReferrerModalOpen, setIsAssignReferrerModalOpen] = useState(false);
@@ -368,11 +368,12 @@ export default function Clients() {
     <div className="space-y-4 sm:space-y-6">
       
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        {/* Ajuste 1: Contenedor flex con párrafo truncado y en una sola línea en pantallas chicas */}
+        <div className="flex-1 min-w-0">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             Clientes
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground mt-1">
+          <p className="text-sm sm:text-base text-muted-foreground mt-1 truncate whitespace-nowrap overflow-hidden">
             Gestiona tu base de clientes
           </p>
         </div>
@@ -382,22 +383,23 @@ export default function Clients() {
         </Button>
       </div>
 
+      {/* Ajuste 2: Invertir orden y hacer que la barra de búsqueda sea flexible */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <ClientFilters
-          activeFilter={activeFilter}
-          onFilterChange={setActiveFilter}
-          counts={filterCounts}
-        />
-        <div className="relative w-full sm:max-w-md">
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
             type="text"
             placeholder="Buscar por nombre o teléfono..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 w-full"
           />
         </div>
+        <ClientFilters
+          activeFilter={activeFilter}
+          onFilterChange={setActiveFilter}
+          counts={filterCounts}
+        />
       </div>
 
       {/* ===================================

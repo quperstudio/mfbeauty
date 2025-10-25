@@ -11,7 +11,6 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import ComingSoon from './pages/ComingSoon';
-import { Toaster } from 'sonner';
 
 function App() {
   return (

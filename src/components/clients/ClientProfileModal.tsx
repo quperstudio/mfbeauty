@@ -255,7 +255,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
     	{/* Sección: Notas */}
     	{client.notes && (
     		<div>
-    			<h2 className="text-lg text-foreground mb-2">Notas</h2>
+    			<h2 className="text-sm text-foreground mb-2">Notas</h2>
     			<div className="text-muted-foreground rounded-lg p-3 border-2 border-border space-y-2">
     				<p className="whitespace-pre-wrap break-words">
     					{/* Lógica de truncado "Ver más" */}

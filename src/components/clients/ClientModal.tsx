@@ -21,7 +21,6 @@ import {
   FormMessage,
 } from '../ui/form';
 import { Input } from '../ui/input';
-import { Modal } from '../ui/modal';
 import { TagInput } from '../ui/TagInput';
 
 type ClientFormSchema = z.infer<typeof clientFormSchema>;

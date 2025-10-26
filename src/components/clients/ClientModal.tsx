@@ -507,18 +507,39 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                 availableTags={availableTags}
                                 onAddTag={async (tagName) => {
                                     const normalizedTagName = tagName.toLowerCase().trim();
-                                    const alreadySelected = selectedTags.find(
+                                    
+                                    // 1. Verificar si ya está en las etiquetas seleccionadas (estado local)
+                                    const alreadySelected = selectedTags.some(
                                         (t) => t.name.toLowerCase() === normalizedTagName
                                     );
 
                                     if (alreadySelected) {
-                                        return; // Ya está seleccionada, no hacer nada
+                                        return; // No hacer nada si ya está seleccionada.
                                     }
 
-                                    // Si no está seleccionada, llamar al hook (que la crea o la obtiene)
-                                    const { tag, error } = await createTag({ name: tagName });
-                                    if (tag && !error) {
-                                        setSelectedTags((prev) => [...prev, tag]);
+                                    // 2. Buscar si ya existe la etiqueta globalmente (en availableTags)
+                                    const existingTag = availableTags.find(
+                                        (t) => t.name.toLowerCase() === normalizedTagName
+                                    );
+
+                                    let tagToAdd: ClientTag | undefined;
+                                    
+                                    if (existingTag) {
+                                        // Si existe globalmente, usar esa.
+                                        tagToAdd = existingTag;
+                                    } else {
+                                        // Si no existe, llamar al servicio para crearla.
+                                        const { tag, error } = await createTag({ name: tagName });
+                                        if (error) {
+                                            toast({ variant: 'destructive', title: 'Error al crear la etiqueta', description: error });
+                                            return;
+                                        }
+                                        tagToAdd = tag;
+                                    }
+
+                                    if (tagToAdd) {
+                                        // Añadir la etiqueta al estado local
+                                        setSelectedTags((prev) => [...prev, tagToAdd!]);
                                     }
                                 }}
                                 onRemoveTag={(tagId) => {

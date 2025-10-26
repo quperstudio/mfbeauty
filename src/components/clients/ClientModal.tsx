@@ -1,3 +1,7 @@
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { z } from 'zod';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -15,7 +19,7 @@ import TagInput from '@/components/ui/TagInput';
 import { useTagsQuery, useClientTagsQuery } from '../../hooks/queries/useTags.query';
 import { useAuth } from '../../contexts/AuthContext';
 import * as clientService from '../../services/client.service';
-import { useToast } from "../../hooks/use-toast";
+import { useToast } from "../../hooks/use-toast"; //
 
 type ClientFormSchema = z.infer<typeof clientFormSchema>;
 

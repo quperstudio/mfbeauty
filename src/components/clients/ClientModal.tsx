@@ -252,4 +252,4 @@ export function ClientModal({ isOpen, onClose, client }: ClientModalProps) {
       </Form>
     </Modal>
   );
-}
+}  

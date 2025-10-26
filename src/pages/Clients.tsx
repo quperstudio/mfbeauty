@@ -586,7 +586,7 @@ export default function Clients() {
                               <TooltipTrigger asChild>
                                 <button
                                   onClick={() => handleViewProfile(client.id)}
-                                  className="p-2 text-muted-foreground hover:text-info hover:bg-muted/50 rounded-lg transition-colors"
+                                  className="p-2 text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-lg transition-colors"
                                 >
                                   <Eye className="w-4 h-4" />
                                 </button>

@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { useCreateClient, useUpdateClient } from '@/hooks/queries/useClients.query';
 import { useTags } from '@/hooks/queries/useTags.query';
 import { useToast } from '@/hooks/use-toast';
-import { clientFormSchema } from '@/schemas/client.schema';
+import { clientFormSchema } from '../../schemas/client.schema';
 import { tagService } from '@/services/tag.service';
 import { Client } from '@/types/database';
 import { Button } from '../ui/button';

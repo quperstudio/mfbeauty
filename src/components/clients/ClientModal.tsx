@@ -7,12 +7,11 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { useCreateClient, useUpdateClient } from '@/hooks/queries/useClients.query';
-// import { useTags } from '@/hooks/queries/useTags.query'; // Eliminado porque 'tags' no está en el schema
+import { useTags } from '@/hooks/queries/useTags.query';
 import { useToast } from '@/hooks/use-toast';
-// --- CAMBIO AQUÍ: Importación corregida ---
-import { clientSchema, ClientSchemaType } from '@/schemas/client.schema';
-// import { tagService } from '@/services/tag.service'; // Eliminado
-import { Client } from '@/types/database'; // Asumimos que Client ahora coincide con el schema
+import { clientFormSchema } from '@/schemas/client.schema';
+import { tagService } from '@/services/tag.service';
+import { Client } from '@/types/database';
 
 import { Button } from '../ui/button';
 import {
@@ -26,23 +25,21 @@ import {
 } from '../ui/form';
 import { Input } from '../ui/input';
 import { Modal } from '../ui/modal';
-// import { TagInput } from '../ui/TagInput'; // Eliminado
+import { TagInput } from '../ui/TagInput';
 
-// --- CAMBIO AQUÍ: Nombre del tipo corregido ---
-// type ClientFormSchema = z.infer<typeof clientFormSchema>; // <- Incorrecto
-// (Ya no es necesario, importamos ClientSchemaType directamente)
+type ClientFormSchema = z.infer<typeof clientFormSchema>;
 
 interface ClientModalProps {
   isOpen: boolean;
   onClose: () => void;
-  client?: Client | null; // Asegúrate que el tipo Client coincida con el nuevo schema
+  client?: Client | null;
 }
 
 export function ClientModal({ isOpen, onClose, client }: ClientModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // const { data: allTagsData, isLoading: isAllTagsLoading } = useTags(); // Eliminado
+  const { data: allTagsData, isLoading: isAllTagsLoading } = useTags();
   const { mutate: createClient, isPending: isCreating } = useCreateClient();
   const { mutate: updateClient, isPending: isUpdating } = useUpdateClient();
 
@@ -55,47 +52,36 @@ export function ClientModal({ isOpen, onClose, client }: ClientModalProps) {
   const buttonIcon = isEditMode ? <Save /> : <UserPlus />;
   const buttonLabel = isEditMode ? 'Guardar Cambios' : 'Guardar Cliente';
 
-  // --- CAMBIOS AQUÍ: Para coincidir con client.schema.ts ---
-  const form = useForm<ClientSchemaType>({
-    resolver: zodResolver(clientSchema),
+  const form = useForm<ClientFormSchema>({
+    resolver: zodResolver(clientFormSchema),
     defaultValues: {
-      name: '',
+      first_name: '',
+      last_name: '',
       phone: '',
-      birthday: null,
-      notes: null,
-      referrer_id: null,
-      whatsapp_link: null,
-      facebook_link: null,
-      instagram_link: null,
-      tiktok_link: null,
-      // created_by_user_id no se incluye en el form, se asigna en el backend/servicio
+      email: '',
+      instagram: '',
+      tags: [],
     },
   });
 
   useEffect(() => {
     if (isEditMode && client) {
       form.reset({
-        name: client.name || '',
+        first_name: client.first_name || '',
+        last_name: client.last_name || '',
         phone: client.phone || '',
-        birthday: client.birthday || null,
-        notes: client.notes || null,
-        referrer_id: client.referrer_id || null,
-        whatsapp_link: client.whatsapp_link || null,
-        facebook_link: client.facebook_link || null,
-        instagram_link: client.instagram_link || null,
-        tiktok_link: client.tiktok_link || null,
+        email: client.email || '',
+        instagram: client.instagram || '',
+        tags: client.tags || [],
       });
     } else {
       form.reset({
-        name: '',
+        first_name: '',
+        last_name: '',
         phone: '',
-        birthday: null,
-        notes: null,
-        referrer_id: null,
-        whatsapp_link: null,
-        facebook_link: null,
-        instagram_link: null,
-        tiktok_link: null,
+        email: '',
+        instagram: '',
+        tags: [],
       });
     }
   }, [isOpen, isEditMode, client, form]);
@@ -105,11 +91,27 @@ export function ClientModal({ isOpen, onClose, client }: ClientModalProps) {
     onClose();
   };
 
-  // --- Lógica de Tags eliminada ---
-  // const handleTagAdd = ...
+  const handleTagAdd = async (tagName: string) => {
+    // Intenta crear la etiqueta
+    const { data: newTag, error } = await tagService.createTag({ name: tagName });
+    if (error) {
+      toast({
+        title: 'Error al crear etiqueta',
+        description:
+          'La etiqueta ya existe o hubo un error. Se usará la etiqueta existente.',
+        variant: 'destructive',
+      });
+    } else if (newTag) {
+      toast({
+        title: 'Etiqueta creada',
+        description: `La etiqueta "${newTag.name}" se ha creado con éxito.`,
+      });
+      // Invalidar la query de tags para que se actualice la lista de sugerencias
+      queryClient.invalidateQueries({ queryKey: ['tags'] });
+    }
+  };
 
-  // --- CAMBIO AQUÍ: El tipo 'data' es ahora ClientSchemaType ---
-  const onSubmit = (data: ClientSchemaType) => {
+  const onSubmit = (data: ClientFormSchema) => {
     if (isEditMode && client) {
       // Modo Edición
       updateClient(
@@ -162,22 +164,34 @@ export function ClientModal({ isOpen, onClose, client }: ClientModalProps) {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-            
-            {/* --- CAMBIO AQUÍ: Campo 'name' en lugar de 'first_name' y 'last_name' --- */}
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nombre Completo *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Nombre(s) y Apellido(s)" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="first_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nombre(s) *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Nombre(s) del cliente" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="last_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Apellido(s)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Apellido(s) del cliente" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={form.control}
               name="phone"
@@ -195,13 +209,26 @@ export function ClientModal({ isOpen, onClose, client }: ClientModalProps) {
                 </FormItem>
               )}
             />
-            
-            {/* --- CAMBIO AQUÍ: Campo 'email' eliminado --- */}
-
-            {/* --- CAMBIO AQUÍ: Campo 'instagram' ahora es 'instagram_link' --- */}
             <FormField
               control={form.control}
-              name="instagram_link"
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Correo Electrónico</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="cliente@correo.com"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="instagram"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Instagram</FormLabel>
@@ -214,7 +241,6 @@ export function ClientModal({ isOpen, onClose, client }: ClientModalProps) {
                         placeholder="usuario.de.instagram"
                         className="pl-7"
                         {...field}
-                        value={field.value || ''} // Manejar valor nulo
                       />
                     </div>
                   </FormControl>
@@ -223,10 +249,29 @@ export function ClientModal({ isOpen, onClose, client }: ClientModalProps) {
               )}
             />
 
-            {/* --- CAMBIO AQUÍ: Campo 'tags' eliminado --- */}
-            
-            {/* Puedes agregar aquí los otros campos del schema si lo deseas (birthday, notes, etc.) */}
-
+            <FormField
+              control={form.control}
+              name="tags"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Etiquetas</FormLabel>
+                  <FormControl>
+                    {/* --- AJUSTE IMPLEMENTADO AQUÍ --- */}
+                    <TagInput
+                      ref={field.ref}
+                      placeholder="Escribe para agregar etiquetas..."
+                      tags={field.value}
+                      setTags={field.onChange}
+                      onTagAdd={handleTagAdd}
+                      allTags={allTagsData?.map((t) => t.name) || []}
+                      isLoading={isAllTagsLoading}
+                    />
+                    {/* --- FIN DEL AJUSTE --- */}
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
           <FormDescription>
             Los campos marcados con * son obligatorios.
@@ -252,4 +297,4 @@ export function ClientModal({ isOpen, onClose, client }: ClientModalProps) {
       </Form>
     </Modal>
   );
-}  
+}

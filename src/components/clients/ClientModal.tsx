@@ -107,11 +107,6 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     const [socialMediaInputError, setSocialMediaInputError] = useState<string>('');
 
 
-    // ===================================
-    // AJUSTE REALIZADO AQUÍ
-    // Se dividió el useEffect original en dos para evitar el reinicio del formulario.
-    // ===================================
-
     // EFECTO 1: Para inicializar el formulario (SIN clientTags)
     useEffect(() => {
         if (!isOpen) return;
@@ -131,7 +126,6 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
 
             setNewSocialMediaLink('');
             setNewSocialMediaType('whatsapp');
-            // Ya no se inicializan las etiquetas aquí
         } else {
             // Resetea para "Nuevo Cliente"
             setFormData(initialFormData);
@@ -144,7 +138,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         setErrors({});
         setSocialMediaInputError('');
         
-    }, [client, isOpen]); // <-- ¡clientTags ha sido removido!
+    }, [client, isOpen]);
 
     // EFECTO 2: Para sincronizar las etiquetas (SOLO cuando cambian)
     useEffect(() => {
@@ -431,7 +425,6 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                     </Select>
                                     <Input
                                         value={newSocialMediaLink}
-                                        // Este input usa un set de estado local, no el handleFormChange
                                         onChange={(e) => setNewSocialMediaLink(e.target.value)} 
                                         onKeyDown={handleSocialMediaKeyDown}
                                         placeholder={newSocialMediaType === 'whatsapp' ? 'Número de teléfono (presiona Enter)' : 'Usuario o enlace (presiona Enter)'}
@@ -513,9 +506,19 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                 selectedTags={selectedTags}
                                 availableTags={availableTags}
                                 onAddTag={async (tagName) => {
+                                    const normalizedTagName = tagName.toLowerCase().trim();
+                                    const alreadySelected = selectedTags.find(
+                                        (t) => t.name.toLowerCase() === normalizedTagName
+                                    );
+
+                                    if (alreadySelected) {
+                                        return; // Ya está seleccionada, no hacer nada
+                                    }
+
+                                    // Si no está seleccionada, llamar al hook (que la crea o la obtiene)
                                     const { tag, error } = await createTag({ name: tagName });
                                     if (tag && !error) {
-                                        setSelectedTags(prev => [...prev, tag]);
+                                        setSelectedTags((prev) => [...prev, tag]);
                                     }
                                 }}
                                 onRemoveTag={(tagId) => {

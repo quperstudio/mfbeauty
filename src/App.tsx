@@ -43,7 +43,7 @@ function App() {
                 }
               />
               <Route
-                path="/calendario"
+                path="/calendar"
                 element={
                   <ProtectedRoute>
                     <AppLayout>

@@ -22,7 +22,6 @@ interface TagInputProps {
   canDeleteGlobally?: boolean;
 }
 
-// --- CAMBIO AQUÍ: Se eliminó "default" ---
 export function TagInput({
   label = 'Etiquetas',
   placeholder = 'Escribe y presiona Enter para agregar...',
@@ -68,7 +67,7 @@ export function TagInput({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
-    setShowDropdown(value.length > 0);
+    setShowDropdown(value.length > 0 || filteredAvailableTags.length > 0);
   };
 
   const handleInputFocus = () => {
@@ -99,6 +98,8 @@ export function TagInput({
     }
   };
 
+  // Esta función llama a handleAddTag con el nombre, 
+  // que limpia el input y cierra el dropdown (y activa la lógica en el padre).
   const handleSelectExistingTag = async (tag: ClientTag) => {
     await handleAddTag(tag.name);
   };
@@ -168,21 +169,19 @@ export function TagInput({
                     <div
                       key={tag.id}
                       className="flex items-center justify-between p-2 hover:bg-muted rounded-md cursor-pointer group"
+                      // CAMBIO CLAVE: Manejador de clic en el contenedor para seleccionar
+                      onClick={() => handleSelectExistingTag(tag)} 
                     >
-                      <button
-                        type="button"
-                        onClick={() => handleSelectExistingTag(tag)}
-                        className="flex-1 text-left text-sm text-foreground"
-                      >
+                      <span className="flex-1 text-left text-sm text-foreground">
                         {tag.name}
-                      </button>
+                      </span>
                       {canDeleteGlobally && onDeleteTagGlobally && (
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
                           onClick={(e) => {
-                            e.stopPropagation();
+                            e.stopPropagation(); // Evita que se dispare el evento de selección del contenedor
                             onDeleteTagGlobally(tag.id);
                           }}
                           className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"

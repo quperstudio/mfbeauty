@@ -306,7 +306,7 @@ export default function Clients() {
   // ===================================
   const handleBulkDelete = async () => {
     const count = selectedClientIds.size;
-    if (!confirm(`¿Estás seguro de eliminar ${count} ${count === 1 ? 'cliente' : 'clientes'}?`)) return;
+    if (!confirm(`¿Estás seguro de  ${count} ${count === 1 ? 'cliente' : 'clientes'}?`)) return;
 
     setBulkActionLoading(true);
     try {
@@ -314,7 +314,7 @@ export default function Clients() {
       setSelectedClientIds(new Set());
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
     } catch (error) {
-      alert('Error al eliminar clientes');
+      alert('Error al  clientes');
     } finally {
       setBulkActionLoading(false);
     }
@@ -639,7 +639,7 @@ export default function Clients() {
                                 {user && canDeleteClients(user.role) && (
                                   <DropdownMenuItem 
                                     onClick={() => confirmDeleteClient(client)}
-                                    className="cursor-pointer text-destructive focus:text-destructive"
+                                    className="cursor-pointer text-destructive focus:text-destructive-foreground"
                                   >
                                     <Trash2 className="w-4 h-4 mr-2" />
                                     Eliminar

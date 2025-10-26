@@ -1,27 +1,21 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useQueryClient } from '@tanstack/react-query';
-import { Save, UserPlus, X } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { useCreateClient, useUpdateClient } from '@/hooks/queries/useClients.query';
-import { useTags } from '@/hooks/queries/useTags.query';
-import { useToast } from '@/hooks/use-toast';
-import { clientFormSchema } from '../../schemas/client.schema';
-import { tagService } from '@/services/tag.service';
-import { Client } from '@/types/database';
-import { Button } from '../ui/button';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '../ui/form';
-import { Input } from '../ui/input';
-import { TagInput } from '../ui/TagInput';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Client, ClientTag } from '../../types/database';
+import { clientSchema, ClientSchemaType } from '../../schemas/client.schema';
+import { parsePhoneInput, formatPhoneRealTime, cleanSocialMediaInput, getSocialMediaIcon } from '../../lib/formats';
+import { SOCIAL_MEDIA_LABELS, SocialMediaType } from '../../lib/constants';
+import { format } from 'date-fns';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Trash } from 'lucide-react';
+import { DatePicker } from '@/components/ui/date-picker';
+import { cn } from "@/lib/utils";
+import TagInput from '@/components/ui/TagInput';
+import { useTagsQuery, useClientTagsQuery } from '../../hooks/queries/useTags.query';
+import { useAuth } from '../../contexts/AuthContext';
+import * as clientService from '../../services/client.service';
+import { useToast } from "../../hooks/use-toast";
 
 type ClientFormSchema = z.infer<typeof clientFormSchema>;
 

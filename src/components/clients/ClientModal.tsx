@@ -25,23 +25,23 @@ import { useToast } from "../../hooks/use-toast";
 // TIPOS DE DATOS
 // ===================================
 type ClientFormDataBase = {
-    name: string;
-    phone: string;
-    birthday: string | null;
-    notes: string;
-    referrer_id: string;
+    name: string;
+    phone: string;
+    birthday: string | null;
+    notes: string;
+    referrer_id: string;
 }
 
 interface SocialMedia {
-    type: SocialMediaType;
-    link: string;
+    type: SocialMediaType;
+    link: string;
 }
 
 const socialTypeOptions = [
-    { value: 'whatsapp' as SocialMediaType, label: SOCIAL_MEDIA_LABELS.whatsapp },
-    { value: 'facebook' as SocialMediaType, label: SOCIAL_MEDIA_LABELS.facebook },
-    { value: 'instagram' as SocialMediaType, label: SOCIAL_MEDIA_LABELS.instagram },
-    { value: 'tiktok' as SocialMediaType, label: SOCIAL_MEDIA_LABELS.tiktok },
+    { value: 'whatsapp' as SocialMediaType, label: SOCIAL_MEDIA_LABELS.whatsapp },
+    { value: 'facebook' as SocialMediaType, label: SOCIAL_MEDIA_LABELS.facebook },
+    { value: 'instagram' as SocialMediaType, label: SOCIAL_MEDIA_LABELS.instagram },
+    { value: 'tiktok' as SocialMediaType, label: SOCIAL_MEDIA_LABELS.tiktok },
 ];
 
 // ===================================
@@ -49,558 +49,567 @@ const socialTypeOptions = [
 // ===================================
 
 const mapListToFormData = (list: SocialMedia[]): Pick<ClientSchemaType, 'whatsapp_link' | 'facebook_link' | 'instagram_link' | 'tiktok_link'> => {
-    const socialMediaFields = list.reduce((acc, sm) => {
-        acc[`${sm.type}_link`] = sm.link;
-        return acc;
-    }, {} as Record<string, string>);
+    const socialMediaFields = list.reduce((acc, sm) => {
+        acc[`${sm.type}_link`] = sm.link;
+        return acc;
+    }, {} as Record<string, string>);
 
-    return {
-        whatsapp_link: socialMediaFields.whatsapp_link || '',
-        facebook_link: socialMediaFields.facebook_link || '',
-        instagram_link: socialMediaFields.instagram_link || '',
-        tiktok_link: socialMediaFields.tiktok_link || '',
-    } as Pick<ClientSchemaType, 'whatsapp_link' | 'facebook_link' | 'tiktok_link' | 'instagram_link'>;
+    return {
+        whatsapp_link: socialMediaFields.whatsapp_link || '',
+        facebook_link: socialMediaFields.facebook_link || '',
+        instagram_link: socialMediaFields.instagram_link || '',
+        tiktok_link: socialMediaFields.tiktok_link || '',
+    } as Pick<ClientSchemaType, 'whatsapp_link' | 'facebook_link' | 'tiktok_link' | 'instagram_link'>;
 };
 
 const mapClientToSocialMediaList = (client: Client): SocialMedia[] => {
-    const list: SocialMedia[] = [];
-    if (client.whatsapp_link) list.push({ type: 'whatsapp', link: client.whatsapp_link });
-    if (client.facebook_link) list.push({ type: 'facebook', link: client.facebook_link });
-    if (client.instagram_link) list.push({ type: 'instagram', link: client.instagram_link });
-    if (client.tiktok_link) list.push({ type: 'tiktok', link: client.tiktok_link });
-    return list;
+    const list: SocialMedia[] = [];
+    if (client.whatsapp_link) list.push({ type: 'whatsapp', link: client.whatsapp_link });
+    if (client.facebook_link) list.push({ type: 'facebook', link: client.facebook_link });
+    if (client.instagram_link) list.push({ type: 'instagram', link: client.instagram_link });
+    if (client.tiktok_link) list.push({ type: 'tiktok', link: client.tiktok_link });
+    return list;
 };
 
 // ===================================
 // PROPIEDADES Y ESTADO INICIAL
 // ===================================
 interface ClientModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSave: (data: ClientSchemaType, tagIds: string[]) => Promise<{ error: string | null }>;
-    client?: Client;
-    clients: Client[];
+    isOpen: boolean;
+    onClose: () => void;
+    onSave: (data: ClientSchemaType, tagIds: string[]) => Promise<{ error: string | null }>;
+    client?: Client;
+    clients: Client[];
 }
 
 const initialFormData: ClientFormDataBase = {
-    name: '', phone: '', birthday: null, notes: '', referrer_id: '',
+    name: '', phone: '', birthday: null, notes: '', referrer_id: '',
 }
 
 // ===================================
 // COMPONENTE PRINCIPAL
 // ===================================
 export default function ClientModal({ isOpen, onClose, onSave, client, clients }: ClientModalProps) {
-    const { user } = useAuth();
-    const { tags: availableTags, createTag, deleteTag } = useTagsQuery();
-    const { clientTags } = useClientTagsQuery(client?.id || null);
-    const { toast } = useToast();
+    const { user } = useAuth();
+    const { tags: availableTags, createTag, deleteTag } = useTagsQuery();
+    // CAMBIO: Desestructurar también el estado de carga de las etiquetas del cliente
+    const { clientTags, isLoading: clientTagsLoading } = useClientTagsQuery(client?.id || null);
+    const { toast } = useToast();
 
-    const [formData, setFormData] = useState<ClientFormDataBase>(initialFormData);
-    const [errors, setErrors] = useState<Record<string, string>>({});
-    const [loading, setLoading] = useState(false);
-    const [selectedTags, setSelectedTags] = useState<ClientTag[]>([]);
-    const [phoneCheckLoading, setPhoneCheckLoading] = useState(false);
+    const [formData, setFormData] = useState<ClientFormDataBase>(initialFormData);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [loading, setLoading] = useState(false);
+    const [selectedTags, setSelectedTags] = useState<ClientTag[]>([]);
+    const [phoneCheckLoading, setPhoneCheckLoading] = useState(false);
 
-    const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>([]);
-    const [newSocialMediaType, setNewSocialMediaType] = useState<SocialMedia['type']>('whatsapp');
-    const [newSocialMediaLink, setNewSocialMediaLink] = useState<string>('');
-    const [socialMediaInputError, setSocialMediaInputError] = useState<string>('');
-
-
-    // EFECTO 1: Para inicializar el formulario (SIN clientTags)
-    useEffect(() => {
-        if (!isOpen) return;
-
-        if (client) {
-            // Carga datos del cliente existente
-            setFormData({
-                name: client.name,
-                phone: client.phone,
-                birthday: client.birthday || null,
-                notes: client.notes || '',
-                referrer_id: client.referrer_id || '',
-            });
-
-            const initialSocialMedia = mapClientToSocialMediaList(client);
-            setSocialMediaList(initialSocialMedia);
-
-            setNewSocialMediaLink('');
-            setNewSocialMediaType('whatsapp');
-        } else {
-            // Resetea para "Nuevo Cliente"
-            setFormData(initialFormData);
-            setSocialMediaList([]);
-            setNewSocialMediaLink('');
-            setNewSocialMediaType('whatsapp');
-        }
-
-        // Reseteo de errores
-        setErrors({});
-        setSocialMediaInputError('');
-        
-    }, [client, isOpen]);
-
-    // EFECTO 2: Para sincronizar las etiquetas (SOLO cuando cambian)
-    useEffect(() => {
-        if (isOpen) {
-            // Sincroniza las etiquetas si el cliente existe, o las vacía si es un cliente nuevo
-            setSelectedTags(client ? clientTags : []);
-        }
-    }, [client, clientTags, isOpen]);
+    const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>([]);
+    const [newSocialMediaType, setNewSocialMediaType] = useState<SocialMedia['type']>('whatsapp');
+    const [newSocialMediaLink, setNewSocialMediaLink] = useState<string>('');
+    const [socialMediaInputError, setSocialMediaInputError] = useState<string>('');
 
 
-    const socialMediaOptions = useMemo(() => {
-        const existingTypes = new Set(socialMediaList.map(sm => sm.type));
-        const availableOptions = socialTypeOptions.filter(opt => !existingTypes.has(opt.value as SocialMedia['type']));
-        return availableOptions;
-    }, [socialMediaList]);
+    // EFECTO 1: Para inicializar el formulario (SIN clientTags)
+    useEffect(() => {
+        if (!isOpen) return;
 
-    // ===================================
-    // MANEJADORES DE CAMBIOS Y ACCIONES
-    // ===================================
+        if (client) {
+            // Carga datos del cliente existente
+            setFormData({
+                name: client.name,
+                phone: client.phone,
+                birthday: client.birthday || null,
+                notes: client.notes || '',
+                referrer_id: client.referrer_id || '',
+            });
 
-    // Función general para inputs de texto (Nombre, Notas, Redes Sociales)
-    const handleFormChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    }, []);
+            const initialSocialMedia = mapClientToSocialMediaList(client);
+            setSocialMediaList(initialSocialMedia);
 
-    const handleBirthdayChange = useCallback((date: Date | null) => {
-        if (date) {
-            const dateString = format(date, 'yyyy-MM-dd');
-            setFormData(prev => ({ ...prev, birthday: dateString }));
-        } else {
-            setFormData(prev => ({ ...prev, birthday: null }));
-        }
-    }, []);
+            setNewSocialMediaLink('');
+            setNewSocialMediaType('whatsapp');
+        } else {
+            // Resetea para "Nuevo Cliente"
+            setFormData(initialFormData);
+            setSocialMediaList([]);
+            setNewSocialMediaLink('');
+            setNewSocialMediaType('whatsapp');
+        }
 
-    const validateForm = useCallback((): boolean => {
-        const newErrors: Record<string, string> = {};
+        // Reseteo de errores
+        setErrors({});
+        setSocialMediaInputError('');
+        
+    }, [client, isOpen]);
 
-        try {
-            const socialMediaLinks = mapListToFormData(socialMediaList);
-            const dataToValidate = {
-                ...formData,
-                ...socialMediaLinks,
-            };
-            clientSchema.parse(dataToValidate);
-            setErrors({});
-            return true;
-        } catch (error) {
-            if (error instanceof z.ZodError) {
-                error.issues.forEach((err) => {
-                    const field = err.path[0] as string;
-                    newErrors[field] = err.message;
-                });
-            }
-            setErrors(newErrors);
-            return false;
-        }
-    }, [formData, socialMediaList]);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!validateForm()) {
-            toast({
-                variant: 'destructive',
-                title: 'Fallo en la validación',
-                description: 'Por favor, revisa los campos marcados en rojo para corregir los errores.',
-            });
-            return;
-        }
-
-        setPhoneCheckLoading(true);
-        const duplicateClient = await clientService.checkDuplicatePhone(formData.phone, client?.id);
-        setPhoneCheckLoading(false);
-
-        if (duplicateClient) {
-            toast({
-                variant: 'destructive',
-                title: `Error: Teléfono duplicado.`,
-                description: `Este número ya está registrado para el cliente ${duplicateClient.name}.`,
-            });
-            return;
-        }
-
-        const socialMediaLinks = mapListToFormData(socialMediaList);
-
-        const rawData = {
-            ...formData,
-            ...socialMediaLinks,
-        };
-
-        const sanitizedData: ClientSchemaType = {
-            name: rawData.name.trim(),
-            phone: rawData.phone,
-            birthday: rawData.birthday?.trim() || null,
-            notes: rawData.notes?.trim() || null,
-            referrer_id: rawData.referrer_id?.trim() || null,
-            whatsapp_link: socialMediaLinks.whatsapp_link?.trim() || null,
-            facebook_link: socialMediaLinks.facebook_link?.trim() || null,
-            instagram_link: socialMediaLinks.instagram_link?.trim() || null,
-            tiktok_link: socialMediaLinks.tiktok_link?.trim() || null,
-            created_by_user_id: client ? undefined : (user?.id || null),
-        };
-
-        const tagIds = selectedTags.map(tag => tag.id);
-
-        setLoading(true);
-        const result = await onSave(sanitizedData, tagIds);
-        setLoading(false);
-
-        if (result.error) {
-            toast({
-                variant: 'destructive',
-                title: 'Error al guardar el cliente',
-                description: result.error,
-            });
-        } else {
-            onClose();
-            toast({
-                title: 'Operación Exitosa',
-                description: `Cliente ${client ? 'actualizado' : 'creado'} con éxito!`,
-            });
-        }
-    };
-
-    // Manejador específico para el teléfono
-    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const rawValue = e.target.value;
-        const cleaned = parsePhoneInput(rawValue); // Limpia el valor (solo dígitos)
-        
-        // Actualiza el estado del teléfono con el valor limpio
-        setFormData(prev => ({ ...prev, phone: cleaned }));
-
-        // Lógica para vincular el WhatsApp
-        if (!client) {
-            const whatsappExists = socialMediaList.some(sm => sm.type === 'whatsapp');
-            if (newSocialMediaType === 'whatsapp' && !whatsappExists) {
-                setNewSocialMediaLink(cleaned);
-            }
-        }
-        
-        if (errors.phone) {
-            setErrors(prev => ({ ...prev, phone: '' }));
-        }
-    };
-
-    const handleSocialMediaKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handleAddSocialMedia();
-        }
-    };
+    // EFECTO 2: Para sincronizar las etiquetas (SOLO cuando cambian)
+    useEffect(() => {
+        if (isOpen) {
+            if (client) {
+                // Si estamos editando y las etiquetas han cargado, sincronizamos el estado local con el servidor.
+                if (!clientTagsLoading) {
+                    setSelectedTags(clientTags);
+                }
+            } else {
+                // Si es un cliente nuevo, el estado local de etiquetas debe estar vacío.
+                setSelectedTags([]);
+            }
+        }
+    }, [client, clientTags, clientTagsLoading, isOpen]); // Añadimos clientTagsLoading como dependencia
 
 
-    const handleAddSocialMedia = () => {
-        if (!newSocialMediaLink.trim()) {
-            setSocialMediaInputError('El enlace/usuario no puede estar vacío.');
-            toast({
-                title: 'Advertencia',
-                description: 'Ingresa un usuario o enlace para la red social.',
-            });
-            return;
-        }
-        const exists = socialMediaList.some(sm => sm.type === newSocialMediaType);
-        if (exists) {
-            setSocialMediaInputError(`Ya existe una red social de tipo ${newSocialMediaType}.`);
-            toast({
-                title: 'Advertencia',
-                description: `Ya existe una red social de tipo ${SOCIAL_MEDIA_LABELS[newSocialMediaType]}.`,
-            });
-            return;
-        }
-        
-        const cleanedLink = cleanSocialMediaInput(newSocialMediaType, newSocialMediaLink.trim());
-        const updatedList = [...socialMediaList, { type: newSocialMediaType, link: cleanedLink }];
-        setSocialMediaList(updatedList);
+    const socialMediaOptions = useMemo(() => {
+        const existingTypes = new Set(socialMediaList.map(sm => sm.type));
+        const availableOptions = socialTypeOptions.filter(opt => !existingTypes.has(opt.value as SocialMedia['type']));
+        return availableOptions;
+    }, [socialMediaList]);
 
-        const existingTypes = new Set(updatedList.map(sm => sm.type));
-        const availableOptions = socialTypeOptions.filter(opt => !existingTypes.has(opt.value as SocialMedia['type']));
+    // ===================================
+    // MANEJADORES DE CAMBIOS Y ACCIONES
+    // ===================================
 
-        const nextDefaultType = availableOptions.length > 0 ? availableOptions[0].value as SocialMedia['type'] : 'whatsapp';
-        setNewSocialMediaType(nextDefaultType);
-        
-        setNewSocialMediaLink('');
-        setSocialMediaInputError('');
-    };
+    // Función general para inputs de texto (Nombre, Notas, Redes Sociales)
+    const handleFormChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    }, []);
 
-    const handleRemoveSocialMedia = (typeToRemove: SocialMedia['type']) => {
-        setSocialMediaList(prev => prev.filter(sm => sm.type !== typeToRemove));
-        
-        if (socialMediaOptions.length > 0) {
-            setNewSocialMediaType(socialMediaOptions[0].value as SocialMedia['type']);
-            setNewSocialMediaLink('');
-        } else {
-            setNewSocialMediaLink('');
-        }
-    };
+    const handleBirthdayChange = useCallback((date: Date | null) => {
+        if (date) {
+            const dateString = format(date, 'yyyy-MM-dd');
+            setFormData(prev => ({ ...prev, birthday: dateString }));
+        } else {
+            setFormData(prev => ({ ...prev, birthday: null }));
+        }
+    }, []);
 
-    const referrerOptions = useMemo(() => {
-        const options = [
-            { value: '__RESET__', label: 'Ninguno' }, 
-            ...clients
-                .filter((c) => c.id !== client?.id)
-                .map((c) => ({ value: c.id, label: c.name })),
-        ];
-        return options;
-    }, [clients, client?.id]);
-    
+    const validateForm = useCallback((): boolean => {
+        const newErrors: Record<string, string> = {};
 
-    // ===================================
-    // RENDERIZADO
-    // ===================================
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-md bg-card text-card-foreground border-border flex flex-col h-full max-h-[90vh]">
-                <DialogHeader>
-                    <DialogTitle>{client ? 'Editar Cliente' : 'Nuevo Cliente'}</DialogTitle>
-                </DialogHeader>
-                
-                <form onSubmit={handleSubmit} id="client-form" className="flex flex-col flex-grow h-0 min-h-0">
-                    <ScrollArea className="flex-grow h-0 min-h-0">
-                        <div className="space-y-3 p-2 sm:space-y-4">
-                            
-                            {/* CAMPOS: Nombre y Teléfono (Fila 1) */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                                <div>
-                                    <label htmlFor="client-name" className="block text-sm font-medium text-muted-foreground mb-1.5">Nombre Completo *</label>
-                                    <Input
-                                        id="client-name"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleFormChange as (e: React.ChangeEvent<HTMLInputElement>) => void}
-                                        error={errors.name}
-                                        placeholder="Ej. Marisela Félix"
-                                        disabled={loading}
-                                    />
-                                    {errors.name && (
-                                        <p className="text-sm text-destructive mt-1.5">{errors.name}</p>
-                                    )}
-                                </div>
-                                
-                                <div>
-                                    <label htmlFor="client-phone" className="block text-sm font-medium text-muted-foreground mb-1.5">Teléfono *</label>
-                                    <Input
-                                        id="client-phone"
-                                        name="phone"
-                                        value={formatPhoneRealTime(formData.phone)}
-                                        onChange={handlePhoneChange} 
-                                        error={errors.phone}
-                                        placeholder="(667) 341 2404"
-                                        maxLength={15}
-                                        disabled={loading}
-                                    />
-                                    {errors.phone && (
-                                        <p className="text-sm text-destructive mt-1.5">{errors.phone}</p>
-                                    )}
-                                </div>
-                            </div>
+        try {
+            const socialMediaLinks = mapListToFormData(socialMediaList);
+            const dataToValidate = {
+                ...formData,
+                ...socialMediaLinks,
+            };
+            clientSchema.parse(dataToValidate);
+            setErrors({});
+            return true;
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                error.issues.forEach((err) => {
+                    const field = err.path[0] as string;
+                    newErrors[field] = err.message;
+                });
+            }
+            setErrors(newErrors);
+            return false;
+        }
+    }, [formData, socialMediaList]);
 
-                            {/* Sección Redes Sociales (Fila 2 - Input/Select) */}
-                            <div className="space-y-1">
-                                <Label className="text-sm font-medium text-muted-foreground">Redes sociales</Label>
-                                <div className="grid grid-cols-2 gap-3 sm:gap-4 items-end">
-                                    <Select
-                                        value={newSocialMediaType}
-                                        onValueChange={(value) => {
-                                            const newType = value as SocialMedia['type'];
-                                            setNewSocialMediaType(newType);
-                                            setNewSocialMediaLink('');
-                                            setSocialMediaInputError('');
-                                        }}
-                                        disabled={loading || socialMediaOptions.length === 0}
-                                        name="newSocialMediaType"
-                                    >
-                                        <SelectTrigger className={cn(socialMediaInputError && "border-destructive")}>
-                                            <SelectValue placeholder={socialMediaOptions.length === 0 ? 'Todas añadidas' : 'Selecciona Tipo'} />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {socialMediaOptions.map((option) => (
-                                                <SelectItem key={option.value} value={option.value}>
-                                                    {option.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <Input
-                                        value={newSocialMediaLink}
-                                        onChange={(e) => setNewSocialMediaLink(e.target.value)} 
-                                        onKeyDown={handleSocialMediaKeyDown}
-                                        placeholder={newSocialMediaType === 'whatsapp' ? 'Número de teléfono (presiona Enter)' : 'Usuario o enlace (presiona Enter)'}
-                                        disabled={loading || socialMediaOptions.length === 0}
-                                        error={socialMediaInputError}
-                                    />
-                                </div>
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!validateForm()) {
+            toast({
+                variant: 'destructive',
+                title: 'Fallo en la validación',
+                description: 'Por favor, revisa los campos marcados en rojo para corregir los errores.',
+            });
+            return;
+        }
 
-                                {socialMediaInputError && (
-                                    <p className="text-sm text-destructive">{socialMediaInputError}</p>
-                                )}
+        setPhoneCheckLoading(true);
+        const duplicateClient = await clientService.checkDuplicatePhone(formData.phone, client?.id);
+        setPhoneCheckLoading(false);
 
-                                {/* Lista de Redes Sociales añadidas */}
-                                <div className="space-y-2">
-                                    {socialMediaList.map((sm) => (
-                                        <div
-                                            key={sm.type}
-                                            className="flex items-center justify-between p-2 bg-secondary/30 text-secondary-foreground rounded-lg"
-                                        >
-                                            <div className="flex items-center gap-2 pl-2">
-                                                {React.createElement(getSocialMediaIcon(sm.type)!, { className: "w-4 h-4" })}
-                                                <span className="text-sm">{sm.link}</span>
-                                            </div>
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => handleRemoveSocialMedia(sm.type)}
-                                                disabled={loading}
-                                            >
-                                                <Trash className="w-4 h-4" />
-                                            </Button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+        if (duplicateClient) {
+            toast({
+                variant: 'destructive',
+                title: `Error: Teléfono duplicado.`,
+                description: `Este número ya está registrado para el cliente ${duplicateClient.name}.`,
+            });
+            return;
+        }
 
-                            {/* CAMPOS: Cumpleaños y Referido Por (Fila 3) */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                                <DatePicker
-                                    label="Fecha de Cumpleaños"
-                                    value={formData.birthday}
-                                    onChange={handleBirthdayChange}
-                                    placeholder="Selecciona una fecha"
-                                    disabled={loading}
-                                />
-                                <div>
-                                    <Label htmlFor="referrer-select" className="block text-sm font-medium text-muted-foreground mb-1">Referido Por</Label>
-                                    <Select
-                                        value={formData.referrer_id || ''}
-                                        onValueChange={(value) => {
-                                            const finalValue = value === '__RESET__' ? '' : value;
-                                            setFormData(prev => ({ ...prev, referrer_id: finalValue }));
-                                        }}
-                                        disabled={loading}
-                                        name="referrer_id"
-                                    >
-                                        <SelectTrigger id="referrer-select" className={errors.referrer_id ? "border-destructive" : ""}>
-                                            <SelectValue placeholder="Ninguno" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {referrerOptions.map((option) => (
-                                                <SelectItem key={option.value} value={option.value}>
-                                                    {option.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.referrer_id && (
-                                        <p className="text-sm text-destructive mt-1.5">{errors.referrer_id}</p>
-                                    )}
-                                </div>
-                            </div>
+        const socialMediaLinks = mapListToFormData(socialMediaList);
 
-                            {/* CAMPO: Etiquetas (Fila 4 - Separado) */}
-                            <TagInput
-                                label="Etiquetas"
-                                placeholder="Escribe y presiona Enter para agregar..."
-                                selectedTags={selectedTags}
-                                availableTags={availableTags}
-                                onAddTag={async (tagName) => {
-                                    const normalizedTagName = tagName.toLowerCase().trim();
-                                    
-                                    // 1. Verificar si ya está en las etiquetas seleccionadas (estado local)
-                                    const alreadySelected = selectedTags.some(
-                                        (t) => t.name.toLowerCase() === normalizedTagName
-                                    );
+        const rawData = {
+            ...formData,
+            ...socialMediaLinks,
+        };
 
-                                    if (alreadySelected) {
-                                        return; // No hacer nada si ya está seleccionada.
-                                    }
+        const sanitizedData: ClientSchemaType = {
+            name: rawData.name.trim(),
+            phone: rawData.phone,
+            birthday: rawData.birthday?.trim() || null,
+            notes: rawData.notes?.trim() || null,
+            referrer_id: rawData.referrer_id?.trim() || null,
+            whatsapp_link: socialMediaLinks.whatsapp_link?.trim() || null,
+            facebook_link: socialMediaLinks.facebook_link?.trim() || null,
+            instagram_link: socialMediaLinks.instagram_link?.trim() || null,
+            tiktok_link: socialMediaLinks.tiktok_link?.trim() || null,
+            created_by_user_id: client ? undefined : (user?.id || null),
+        };
 
-                                    // 2. Buscar si ya existe la etiqueta globalmente (en availableTags)
-                                    const existingTag = availableTags.find(
-                                        (t) => t.name.toLowerCase() === normalizedTagName
-                                    );
+        const tagIds = selectedTags.map(tag => tag.id);
 
-                                    let tagToAdd: ClientTag | undefined;
-                                    
-                                    if (existingTag) {
-                                        // Si existe globalmente, usar esa.
-                                        tagToAdd = existingTag;
-                                    } else {
-                                        // Si no existe, llamar al servicio para crearla.
-                                        const { tag, error } = await createTag({ name: tagName });
-                                        if (error) {
-                                            toast({ variant: 'destructive', title: 'Error al crear la etiqueta', description: error });
-                                            return;
-                                        }
-                                        tagToAdd = tag;
-                                    }
+        setLoading(true);
+        const result = await onSave(sanitizedData, tagIds);
+        setLoading(false);
 
-                                    if (tagToAdd) {
-                                        // Añadir la etiqueta al estado local
-                                        setSelectedTags((prev) => [...prev, tagToAdd!]);
-                                    }
-                                }}
-                                onRemoveTag={(tagId) => {
-                                    setSelectedTags(prev => prev.filter(t => t.id !== tagId));
-                                }}
-                                onDeleteTagGlobally={async (tagId) => {
-                                    await deleteTag(tagId);
-                                    setSelectedTags(prev => prev.filter(t => t.id !== tagId));
-                                }}
-                                maxTags={5}
-                                disabled={loading}
-                                canDeleteGlobally={true}
-                            />
+        if (result.error) {
+            toast({
+                variant: 'destructive',
+                title: 'Error al guardar el cliente',
+                description: result.error,
+            });
+        } else {
+            onClose();
+            toast({
+                title: 'Operación Exitosa',
+                description: `Cliente ${client ? 'actualizado' : 'creado'} con éxito!`,
+            });
+        }
+    };
 
-                            {/* CAMPO: Notas (Fila 5 - Ancho Completo) */}
-                            <div>
-                                <label htmlFor="client-notes" className="block text-sm font-medium text-muted-foreground mb-1.5">Notas</label>
-                                <Textarea
-                                    id="client-notes"
-                                    name="notes"
-                                    value={formData.notes}
-                                    onChange={handleFormChange as (e: React.ChangeEvent<HTMLTextAreaElement>) => void} 
-                                    rows={3}
-                                    placeholder="Notas adicionales sobre el cliente..."
-                                    disabled={loading}
-                                />
-                            </div>
+    // Manejador específico para el teléfono
+    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const rawValue = e.target.value;
+        const cleaned = parsePhoneInput(rawValue); // Limpia el valor (solo dígitos)
+        
+        // Actualiza el estado del teléfono con el valor limpio
+        setFormData(prev => ({ ...prev, phone: cleaned }));
 
-                        </div>
-                    </ScrollArea>
+        // Lógica para vincular el WhatsApp
+        if (!client) {
+            const whatsappExists = socialMediaList.some(sm => sm.type === 'whatsapp');
+            if (newSocialMediaType === 'whatsapp' && !whatsappExists) {
+                setNewSocialMediaLink(cleaned);
+            }
+        }
+        
+        if (errors.phone) {
+            setErrors(prev => ({ ...prev, phone: '' }));
+        }
+    };
 
-                    <DialogFooter className="pb-2 pt-4 border-t border-border bg-background">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="default"
-                            onClick={onClose}
-                            disabled={loading}
-                            className="w-full sm:w-auto"
-                        >
-                            Cancelar
-                        </Button>
-                        <Button
-                            type="submit"
-                            variant="default"
-                            size="default"
-                            disabled={loading || phoneCheckLoading}
-                            className="w-full sm:w-auto"
-                        >
-                            {loading || phoneCheckLoading ? (
-                                <div className="flex items-center gap-2">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-background border-t-transparent" />
-                                    {phoneCheckLoading ? 'Validando...' : 'Guardando...'}
-                                </div>
-                            ) : (
-                                <>{client ? 'Actualizar' : 'Crear'} Cliente</>
-                            )}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
-    );
+    const handleSocialMediaKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleAddSocialMedia();
+        }
+    };
+
+
+    const handleAddSocialMedia = () => {
+        if (!newSocialMediaLink.trim()) {
+            setSocialMediaInputError('El enlace/usuario no puede estar vacío.');
+            toast({
+                title: 'Advertencia',
+                description: 'Ingresa un usuario o enlace para la red social.',
+            });
+            return;
+        }
+        const exists = socialMediaList.some(sm => sm.type === newSocialMediaType);
+        if (exists) {
+            setSocialMediaInputError(`Ya existe una red social de tipo ${newSocialMediaType}.`);
+            toast({
+                title: 'Advertencia',
+                description: `Ya existe una red social de tipo ${SOCIAL_MEDIA_LABELS[newSocialMediaType]}.`,
+            });
+            return;
+        }
+        
+        const cleanedLink = cleanSocialMediaInput(newSocialMediaType, newSocialMediaLink.trim());
+        const updatedList = [...socialMediaList, { type: newSocialMediaType, link: cleanedLink }];
+        setSocialMediaList(updatedList);
+
+        const existingTypes = new Set(updatedList.map(sm => sm.type));
+        const availableOptions = socialTypeOptions.filter(opt => !existingTypes.has(opt.value as SocialMedia['type']));
+
+        const nextDefaultType = availableOptions.length > 0 ? availableOptions[0].value as SocialMedia['type'] : 'whatsapp';
+        setNewSocialMediaType(nextDefaultType);
+        
+        setNewSocialMediaLink('');
+        setSocialMediaInputError('');
+    };
+
+    const handleRemoveSocialMedia = (typeToRemove: SocialMedia['type']) => {
+        setSocialMediaList(prev => prev.filter(sm => sm.type !== typeToRemove));
+        
+        if (socialMediaOptions.length > 0) {
+            setNewSocialMediaType(socialMediaOptions[0].value as SocialMedia['type']);
+            setNewSocialMediaLink('');
+        } else {
+            setNewSocialMediaLink('');
+        }
+    };
+
+    const referrerOptions = useMemo(() => {
+        const options = [
+            { value: '__RESET__', label: 'Ninguno' }, 
+            ...clients
+                .filter((c) => c.id !== client?.id)
+                .map((c) => ({ value: c.id, label: c.name })),
+        ];
+        return options;
+    }, [clients, client?.id]);
+    
+
+    // ===================================
+    // RENDERIZADO
+    // ===================================
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="sm:max-w-md bg-card text-card-foreground border-border flex flex-col h-full max-h-[90vh]">
+                <DialogHeader>
+                    <DialogTitle>{client ? 'Editar Cliente' : 'Nuevo Cliente'}</DialogTitle>
+                </DialogHeader>
+                
+                <form onSubmit={handleSubmit} id="client-form" className="flex flex-col flex-grow h-0 min-h-0">
+                    <ScrollArea className="flex-grow h-0 min-h-0">
+                        <div className="space-y-3 p-2 sm:space-y-4">
+                            
+                            {/* CAMPOS: Nombre y Teléfono (Fila 1) */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                                <div>
+                                    <label htmlFor="client-name" className="block text-sm font-medium text-muted-foreground mb-1.5">Nombre Completo *</label>
+                                    <Input
+                                        id="client-name"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleFormChange as (e: React.ChangeEvent<HTMLInputElement>) => void}
+                                        error={errors.name}
+                                        placeholder="Ej. Marisela Félix"
+                                        disabled={loading}
+                                    />
+                                    {errors.name && (
+                                        <p className="text-sm text-destructive mt-1.5">{errors.name}</p>
+                                    )}
+                                </div>
+                                
+                                <div>
+                                    <label htmlFor="client-phone" className="block text-sm font-medium text-muted-foreground mb-1.5">Teléfono *</label>
+                                    <Input
+                                        id="client-phone"
+                                        name="phone"
+                                        value={formatPhoneRealTime(formData.phone)}
+                                        onChange={handlePhoneChange} 
+                                        error={errors.phone}
+                                        placeholder="(667) 341 2404"
+                                        maxLength={15}
+                                        disabled={loading}
+                                    />
+                                    {errors.phone && (
+                                        <p className="text-sm text-destructive mt-1.5">{errors.phone}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Sección Redes Sociales (Fila 2 - Input/Select) */}
+                            <div className="space-y-1">
+                                <Label className="text-sm font-medium text-muted-foreground">Redes sociales</Label>
+                                <div className="grid grid-cols-2 gap-3 sm:gap-4 items-end">
+                                    <Select
+                                        value={newSocialMediaType}
+                                        onValueChange={(value) => {
+                                            const newType = value as SocialMedia['type'];
+                                            setNewSocialMediaType(newType);
+                                            setNewSocialMediaLink('');
+                                            setSocialMediaInputError('');
+                                        }}
+                                        disabled={loading || socialMediaOptions.length === 0}
+                                        name="newSocialMediaType"
+                                    >
+                                        <SelectTrigger className={cn(socialMediaInputError && "border-destructive")}>
+                                            <SelectValue placeholder={socialMediaOptions.length === 0 ? 'Todas añadidas' : 'Selecciona Tipo'} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {socialMediaOptions.map((option) => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <Input
+                                        value={newSocialMediaLink}
+                                        onChange={(e) => setNewSocialMediaLink(e.target.value)} 
+                                        onKeyDown={handleSocialMediaKeyDown}
+                                        placeholder={newSocialMediaType === 'whatsapp' ? 'Número de teléfono (presiona Enter)' : 'Usuario o enlace (presiona Enter)'}
+                                        disabled={loading || socialMediaOptions.length === 0}
+                                        error={socialMediaInputError}
+                                    />
+                                </div>
+
+                                {socialMediaInputError && (
+                                    <p className="text-sm text-destructive">{socialMediaInputError}</p>
+                                )}
+
+                                {/* Lista de Redes Sociales añadidas */}
+                                <div className="space-y-2">
+                                    {socialMediaList.map((sm) => (
+                                        <div
+                                            key={sm.type}
+                                            className="flex items-center justify-between p-2 bg-secondary/30 text-secondary-foreground rounded-lg"
+                                        >
+                                            <div className="flex items-center gap-2 pl-2">
+                                                {React.createElement(getSocialMediaIcon(sm.type)!, { className: "w-4 h-4" })}
+                                                <span className="text-sm">{sm.link}</span>
+                                            </div>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => handleRemoveSocialMedia(sm.type)}
+                                                disabled={loading}
+                                            >
+                                                <Trash className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* CAMPOS: Cumpleaños y Referido Por (Fila 3) */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                                <DatePicker
+                                    label="Fecha de Cumpleaños"
+                                    value={formData.birthday}
+                                    onChange={handleBirthdayChange}
+                                    placeholder="Selecciona una fecha"
+                                    disabled={loading}
+                                />
+                                <div>
+                                    <Label htmlFor="referrer-select" className="block text-sm font-medium text-muted-foreground mb-1">Referido Por</Label>
+                                    <Select
+                                        value={formData.referrer_id || ''}
+                                        onValueChange={(value) => {
+                                            const finalValue = value === '__RESET__' ? '' : value;
+                                            setFormData(prev => ({ ...prev, referrer_id: finalValue }));
+                                        }}
+                                        disabled={loading}
+                                        name="referrer_id"
+                                    >
+                                        <SelectTrigger id="referrer-select" className={errors.referrer_id ? "border-destructive" : ""}>
+                                            <SelectValue placeholder="Ninguno" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {referrerOptions.map((option) => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.referrer_id && (
+                                        <p className="text-sm text-destructive mt-1.5">{errors.referrer_id}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* CAMPO: Etiquetas (Fila 4 - Separado) */}
+                            <TagInput
+                                label="Etiquetas"
+                                placeholder="Escribe y presiona Enter para agregar..."
+                                selectedTags={selectedTags}
+                                availableTags={availableTags}
+                                onAddTag={async (tagName) => {
+                                    const normalizedTagName = tagName.toLowerCase().trim();
+                                    
+                                    // 1. Verificar si ya está en las etiquetas seleccionadas (estado local)
+                                    const alreadySelected = selectedTags.some(
+                                        (t) => t.name.toLowerCase() === normalizedTagName
+                                    );
+
+                                    if (alreadySelected) {
+                                        return; // No hacer nada si ya está seleccionada.
+                                    }
+
+                                    // 2. Buscar si ya existe la etiqueta globalmente (en availableTags)
+                                    const existingTag = availableTags.find(
+                                        (t) => t.name.toLowerCase() === normalizedTagName
+                                    );
+
+                                    let tagToAdd: ClientTag | undefined;
+                                    
+                                    if (existingTag) {
+                                        // Si existe globalmente, usar esa.
+                                        tagToAdd = existingTag;
+                                    } else {
+                                        // Si no existe, llamar al servicio para crearla.
+                                    // CORRECCIÓN 3: Usar el nombre normalizado para crear la etiqueta
+                                        const { tag, error } = await createTag({ name: normalizedTagName });
+                                        if (error) {
+                                            toast({ variant: 'destructive', title: 'Error al crear la etiqueta', description: error });
+                                            return;
+                                        }
+                                        tagToAdd = tag;
+                                    }
+
+                                    if (tagToAdd) {
+                                        // Añadir la etiqueta al estado local
+                                        setSelectedTags((prev) => [...prev, tagToAdd!]);
+                                    }
+                                }}
+                                onRemoveTag={(tagId) => {
+                                    setSelectedTags(prev => prev.filter(t => t.id !== tagId));
+                                }}
+                                onDeleteTagGlobally={async (tagId) => {
+                                    await deleteTag(tagId);
+                                    setSelectedTags(prev => prev.filter(t => t.id !== tagId));
+                                }}
+                                maxTags={5}
+                                disabled={loading}
+                                canDeleteGlobally={true}
+                            />
+
+                            {/* CAMPO: Notas (Fila 5 - Ancho Completo) */}
+                            <div>
+                                <label htmlFor="client-notes" className="block text-sm font-medium text-muted-foreground mb-1.5">Notas</label>
+                                <Textarea
+                                    id="client-notes"
+                                    name="notes"
+                                    value={formData.notes}
+                                    onChange={handleFormChange as (e: React.ChangeEvent<HTMLTextAreaElement>) => void} 
+                                    rows={3}
+                                    placeholder="Notas adicionales sobre el cliente..."
+                                    disabled={loading}
+                                />
+                            </div>
+
+                        </div>
+                    </ScrollArea>
+
+                    <DialogFooter className="pb-2 pt-4 border-t border-border bg-background">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="default"
+                            onClick={onClose}
+                            disabled={loading}
+                            className="w-full sm:w-auto"
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            type="submit"
+                            variant="default"
+                            size="default"
+                            disabled={loading || phoneCheckLoading || clientTagsLoading}
+                            className="w-full sm:w-auto"
+                        >
+                            {loading || phoneCheckLoading ? (
+                                <div className="flex items-center gap-2">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-background border-t-transparent" />
+                                    {phoneCheckLoading ? 'Validando...' : 'Guardando...'}
+                                </div>
+                            ) : (
+                                <>{client ? 'Actualizar' : 'Crear'} Cliente</>
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
 }

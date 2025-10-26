@@ -15,11 +15,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Trash } from 'lucide-react';
 import { DatePicker } from '@/components/ui/date-picker';
 import { cn } from "@/lib/utils";
-import { TagInput } from '@/components/ui/TagInput';
+import TagInput from '@/components/ui/TagInput';
 import { useTagsQuery, useClientTagsQuery } from '../../hooks/queries/useTags.query';
 import { useAuth } from '../../contexts/AuthContext';
 import * as clientService from '../../services/client.service';
-import { useToast } from "../../hooks/use-toast"; //
+import { useToast } from "../../hooks/use-toast";
 
 type ClientFormSchema = z.infer<typeof clientFormSchema>;
 

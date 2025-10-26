@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { clientFormSchema } from '@/schemas/client.schema';
 import { tagService } from '@/services/tag.service';
 import { Client } from '@/types/database';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -252,7 +252,6 @@ export function ClientModal({ isOpen, onClose, client }: ClientModalProps) {
                 <FormItem>
                   <FormLabel>Etiquetas</FormLabel>
                   <FormControl>
-                    {/* --- AJUSTE IMPLEMENTADO AQUÍ --- */}
                     <TagInput
                       ref={field.ref}
                       placeholder="Escribe para agregar etiquetas..."
@@ -262,7 +261,6 @@ export function ClientModal({ isOpen, onClose, client }: ClientModalProps) {
                       allTags={allTagsData?.map((t) => t.name) || []}
                       isLoading={isAllTagsLoading}
                     />
-                    {/* --- FIN DEL AJUSTE --- */}
                   </FormControl>
                   <FormMessage />
                 </FormItem>

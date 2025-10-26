@@ -184,7 +184,7 @@ export function TagInput({
                             e.stopPropagation(); // Evita que se dispare el evento de selección del contenedor
                             onDeleteTagGlobally(tag.id);
                           }}
-                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           <Trash2 className="w-3 h-3" />
                         </Button>

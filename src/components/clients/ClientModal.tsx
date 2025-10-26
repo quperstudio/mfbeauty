@@ -1,18 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { Save, UserPlus, X } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-
 import { useCreateClient, useUpdateClient } from '@/hooks/queries/useClients.query';
 import { useTags } from '@/hooks/queries/useTags.query';
 import { useToast } from '@/hooks/use-toast';
 import { clientFormSchema } from '@/schemas/client.schema';
 import { tagService } from '@/services/tag.service';
 import { Client } from '@/types/database';
-
 import { Button } from '../ui/button';
 import {
   Form,

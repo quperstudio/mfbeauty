@@ -21,7 +21,7 @@ import {
   FormMessage,
 } from '../ui/form';
 import { Input } from '@/components/ui/input';
-import { TagInput } from '@/components/ui/TagInput';
+import { TagInput } from '@/components/ui/taginput';
 
 type ClientFormSchema = z.infer<typeof clientFormSchema>;
 

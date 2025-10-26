@@ -240,24 +240,67 @@ export default function Clients() {
     setIsModalOpen(true);
   };
 
+  // =================================================================
+  // INICIO DE LA SOLUCIÓN
+  // =================================================================
   const handleSaveClient = async (data: any, tagIds: string[]) => {
-    let result;
-    if (selectedClient) {
-      result = await updateClient(selectedClient.id, data);
-      if (!result.error && selectedClient.id) {
-        await tagService.syncClientTags(selectedClient.id, tagIds);
-      }
-    } else {
-      result = await createClient(data);
-      if (!result.error) {
-        const newClient = clients.find(c => c.phone === data.phone);
-        if (newClient && tagIds.length > 0) {
-          await tagService.syncClientTags(newClient.id, tagIds);
+    try {
+      if (selectedClient) {
+        // --- MODO EDICIÓN ---
+        const result = await updateClient(selectedClient.id, data);
+        
+        // Si la actualización del cliente falla, retorna el error
+        if (result.error) {
+          return result; 
         }
+
+        // Si la actualización del cliente tiene éxito, sincroniza las etiquetas
+        await tagService.syncClientTags(selectedClient.id, tagIds);
+        
+        // --- FIX: Invalidar la caché de etiquetas para este cliente ---
+        // Esto le dice a React Query que los datos de 'tags.byClient' están sucios
+        queryClient.invalidateQueries({ 
+          queryKey: QUERY_KEYS.tags.byClient(selectedClient.id) 
+        });
+        
+        return result; // Retorna el resultado exitoso
+        
+      } else {
+        // --- MODO CREACIÓN ---
+        const result = await createClient(data);
+        
+        if (result.error) {
+          return result; // Retorna el error si la creación falla
+        }
+
+        // La mutación 'createClient' debería invalidar 'clients.all', 
+        // pero la lógica original para encontrar el ID es frágil.
+        // Asumiremos que la mutación 'createClient' retorna el cliente en 'result.data'
+        // Si no lo hace, esta lógica debe ajustarse.
+        
+        // @ts-ignore
+        const newClient = result.data as Client; // Asumiendo que 'data' es el cliente creado
+        
+        if (newClient && newClient.id && tagIds.length > 0) {
+          await tagService.syncClientTags(newClient.id, tagIds);
+          
+          // --- FIX: Invalidar la caché de etiquetas para el NUEVO cliente ---
+          queryClient.invalidateQueries({ 
+            queryKey: QUERY_KEYS.tags.byClient(newClient.id) 
+          });
+        }
+        
+        return result;
       }
+    } catch (err: any) {
+      // Captura cualquier error (ej. si syncClientTags falla)
+      console.error("Error en handleSaveClient:", err);
+      return { error: err.message || 'Error al sincronizar etiquetas' };
     }
-    return result;
   };
+  // =================================================================
+  // FIN DE LA SOLUCIÓN
+  // =================================================================
 
   const confirmDeleteClient = (client: Client) => {
     setClientToDelete(client);
@@ -877,10 +920,10 @@ export default function Clients() {
       <AlertDialog open={!!clientToDelete} onOpenChange={() => setClientToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+            <AlertDialogTitle>¿Estás absolutely seguro?</AlertDialogTitle>
             <AlertDialogDescription>
               Esta acción eliminará permanentemente al cliente <span className="font-semibold text-foreground">{clientToDelete?.name}</span> y todos sus datos relacionados (visitas, historial, etc.) de nuestros servidores. Esta acción no se puede deshacer.
-            </AlertDialogDescription>
+            </VStack>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>

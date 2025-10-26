@@ -54,8 +54,8 @@
     --muted-foreground: 220 13% 65%; /* Texto de bajo contraste oscuro */
     --accent: 220 13% 18%; /* Resaltado oscuro */
     --accent-foreground: 210 40% 98%; /* Texto sobre el acento oscuro */
-    --destructive: 0 80% 60%; /* Color peligroso oscuro */
-    --destructive-foreground: 210 40% 98%; /* Texto sobre el peligroso oscuro */
+    --destructive: 0 62.8% 30.6%; /* Color peligroso oscuro */
+    --destructive-foreground: 210 60% 90%; /* Texto sobre el peligroso oscuro */
     --border: 220 13% 18%; /* Borde oscuro */
     --input: 220 13% 18%; /* Input oscuro */
     --ring: 270 70% 65%; /* Anillo de enfoque oscuro */

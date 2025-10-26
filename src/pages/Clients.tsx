@@ -802,7 +802,7 @@ export default function Clients() {
                             {user && canDeleteClients(user.role) && (
                               <DropdownMenuItem 
                                 onClick={() => confirmDeleteClient(client)}
-                                className="cursor-pointer text-destructive focus:text-destructive"
+                                className="cursor-pointer text-destructive-foreground focus:text-destructive"
                               >
                                 <Trash2 className="w-4 h-4 mr-2" />
                                 Eliminar

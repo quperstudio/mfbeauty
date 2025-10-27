@@ -465,7 +465,6 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   						</ScrollArea>
   					</div>
   				</div>
-  
   			</DialogContent>
   		</TooltipProvider>
   	</Dialog>

@@ -119,26 +119,27 @@ export default function SocialMediaManager({
       )}
 
       <div className="space-y-2">
-        {socialMediaList.map((sm) => (
-          <div
-            key={sm.type}
-            className="flex items-center justify-between p-2 bg-secondary/30 text-secondary-foreground rounded-lg"
-          >
-            <div className="flex items-center gap-2 pl-2">
-              {React.createElement(getSocialMediaIcon(sm.type)!, { className: 'w-4 h-4' })}
-              <span className="text-sm">{sm.link}</span>
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => handleRemoveSocialMedia(sm.type)}
-              disabled={disabled}
-            >
-              <Trash className="w-4 h-4" />
-            </Button>
-          </div>
-        ))}
+{socialMediaList.map((sm) => (
+  <div
+    key={sm.type}
+    className="group flex items-center justify-between p-2 bg-secondary/30 text-secondary-foreground rounded-lg"
+  >
+    <div className="flex items-center gap-2 pl-2">
+      {React.createElement(getSocialMediaIcon(sm.type)!, { className: 'w-4 h-4' })}
+      <span className="text-sm">{sm.link}</span>
+    </div>
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
+      onClick={() => handleRemoveSocialMedia(sm.type)}
+      disabled={disabled}
+      className="opacity-0 group-hover:opacity-100 transition-opacity" // <-- Clases añadidas
+    >
+      <Trash className="w-4 h-4" />
+    </Button>
+  </div>
+))}
       </div>
     </div>
   );

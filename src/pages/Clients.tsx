@@ -73,7 +73,6 @@ export default function Clients() {
 
   const [clientsWithSelectedTags, setClientsWithSelectedTags] = useState<string[]>([]);
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
-  // Estado para determinar si la pantalla es chica (usando breakpoint 'sm' 640px)
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const MOBILE_BREAKPOINT = 640; 
 
@@ -242,31 +241,27 @@ export default function Clients() {
 
 const handleSaveClient = async (data: any, tagIds: string[]) => {
     try {
-      if (selectedClient) {
-        // --- MODO EDICIÓN ---  
+      if (selectedClient && selectedClient.id) {
+        // --- MODO EDICIÓN ---
+        
         // 1. Actualiza los datos del cliente
         await updateClient(selectedClient.id, data);
         
-        // 2. Sincroniza los tags. 
-        await tagService.syncClientTags(selectedClient.id, tagIds);
-        
-        // 3. INVALIAR CACHÉ (Añadir esta línea)
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
+        // 2. UTILIZA LA FUNCIÓN DEL HOOK QUE INVALIDA LA CACHÉ
+        // (ya que useClientTagsQuery ya tiene la invalidación de 'clients.all')
+        await syncTags(selectedClient.id, tagIds);
+
       } else {
-        // --- MODO CREACIÓN --
-        // 1. Crea el cliente. 
+        // --- MODO CREACIÓN ---
+
+        // 1. Crea el cliente. Asumimos que createClient devuelve el cliente recién creado.
         const newClient = await createClient(data);
 
-        // 2. Sincroniza los tags usando el ID del cliente devuelto
+        // 2. Utiliza la función del hook con el ID recién creado
         if (newClient && newClient.id) {
-          await tagService.syncClientTags(newClient.id, tagIds);
-
-        // 3. INVALIAR CACHÉ
-          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
+          await syncTags(newClient.id, tagIds);
         } else {
-          // Fallback por si createClient no devuelve el cliente
           console.warn("createClient no devolvió el nuevo cliente. Los tags no se pudieron sincronizar.");
-          // La lógica anterior de clients.find() se elimina porque era un bug.
         }
       }
 
@@ -275,7 +270,7 @@ const handleSaveClient = async (data: any, tagIds: string[]) => {
 
     } catch (err: any) {
       console.error("Error al guardar el cliente o sus tags:", err);
-      // Si algo falla (updateClient o createClient), se captura aquí
+      // Si algo falla, se captura aquí
       return { error: err.message || 'Error al guardar los datos' };
     }
   };

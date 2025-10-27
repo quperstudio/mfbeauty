@@ -331,7 +331,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   		<div className="mt-4">
   			<p className="text-lg text-foreground mb-3">
   				Detalle de referidos
-  				<Badge variant="outline" className="ml-2 font-bold">{client.referrals.length}</Badge>
+  				<Badge variant="outline" className="ml-2 font-semibold">{client.referrals.length}</Badge>
   			</p>
   			<div className="space-y-2">
   				{client.referrals.map((referral) => (

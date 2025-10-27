@@ -62,35 +62,46 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
 
     const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>([]);
 
+    // ⬇️ MODIFICACIÓN CRÍTICA PARA REINICIALIZAR ESTADO AL CERRAR/ABRIR
     useEffect(() => {
-        if (!isOpen) return;
+        if (isOpen) {
+            // Lógica de APERTURA
+            if (client) {
+                // Modo EDITAR: Cargar datos del cliente
+                setFormData({
+                    name: client.name,
+                    phone: client.phone,
+                    birthday: client.birthday || null,
+                    notes: client.notes || '',
+                    referrer_id: client.referrer_id || '',
+                });
 
-        if (client) {
-            setFormData({
-                name: client.name,
-                phone: client.phone,
-                birthday: client.birthday || null,
-                notes: client.notes || '',
-                referrer_id: client.referrer_id || '',
-            });
-
-            const initialSocialMedia = mapEntityToSocialMediaList(client);
-            setSocialMediaList(initialSocialMedia);
-
+                const initialSocialMedia = mapEntityToSocialMediaList(client);
+                setSocialMediaList(initialSocialMedia);
+                
+            } else {
+                // Modo NUEVO: Asegurarse de que todo esté reseteado (solo se ejecuta si client es undefined al abrir)
+                setFormData(initialFormData);
+                setSocialMediaList([]);
+                setSelectedTags([]);
+            }
+            setErrors({}); // Limpiar errores al abrir
         } else {
+            // Lógica de CIERRE: Resetear todo el estado cuando el modal se cierra
             setFormData(initialFormData);
             setSocialMediaList([]);
             setSelectedTags([]);
+            setErrors({});
+            // Nota: clientTags se actualizará automáticamente por useClientTagsQuery en el siguiente render si es necesario
         }
-
-        setErrors({});
-        
     }, [client, isOpen]);
+    // ⬆️ FIN DE MODIFICACIÓN CRÍTICA
 
     useEffect(() => {
         if (isOpen && client) {
             setSelectedTags(clientTags);
         }
+        // Nota: Si se cierra el modal, el else del useEffect anterior ya reseteó setSelectedTags.
     }, [client, clientTags, isOpen]);
 
     // ===================================

@@ -358,7 +358,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent 
-                className="sm:max-w-md bg-card text-card-foreground border-border flex flex-col h-full max-h-[90vh]r" 
+                className="w-10/12 lg:max-w-5xl h-[75vh] flex flex-col p-0 bg-card text-card-foreground border-border"  
             > 
                 <DialogHeader className="p-4 border-b border-border">
                     <DialogTitle>{client ? 'Editar Cliente' : 'Nuevo Cliente'}</DialogTitle>

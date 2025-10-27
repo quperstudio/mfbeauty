@@ -412,8 +412,6 @@ const handleSaveClient = async (data: any, tagIds: string[]) => {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      
-      {/* Ajuste 1: Título y Botón */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
@@ -423,16 +421,13 @@ const handleSaveClient = async (data: any, tagIds: string[]) => {
             Gestiona tu base de clientes
           </p>
         </div>
-        {/* Clase 'w-full sm:w-auto min-w-max' removida para que el ancho se adapte al contenido. */}
         <Button onClick={handleCreateClient} className="w-auto"> 
           <Plus className="w-5 h-5 mr-2" />
           Nuevo Cliente
         </Button>
       </div>
 
-      {/* Ajuste 2: Filtros y Búsqueda */}
       <div className="flex items-center justify-between gap-4">
-        {/* Barra de Búsqueda (Izquierda) */}
         <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -443,7 +438,6 @@ const handleSaveClient = async (data: any, tagIds: string[]) => {
             className="pl-10 w-full"
           />
         </div>
-        {/* Filtros (Derecha) - El componente ClientFilters debería adaptarse a su contenido. */}
         <ClientFilters
           activeFilter={activeFilter}
           onFilterChange={setActiveFilter}

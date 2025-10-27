@@ -311,7 +311,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   			</div>
   		</div>
 
-  		<div className="bg-info/5 rounded-lg p-4 border border-info/20">
+  		<div className="bg-primary/5 rounded-lg p-4 border border-primary">
   			<div className="flex items-center justify-between">
   				<div>
   					<p className="text-xs text-info mb-1">Última Visita</p>

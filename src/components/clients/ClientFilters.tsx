@@ -57,7 +57,7 @@ export default function ClientFilters({ activeFilter, onFilterChange, counts, av
         </Button>
       </PopoverTrigger>
       {/* Se eliminó la clase "w-64" de PopoverContent para que el ancho se ajuste al contenido */}
-      <PopoverContent align="end" className="p-4 w-auto">
+      <PopoverContent align="end max-w-60" className="p-4 w-auto">
         <div className="space-y-4 min-w-[200px]">
           
           <div>

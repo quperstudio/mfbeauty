@@ -92,7 +92,7 @@ export default function ClientFilters({ activeFilter, onFilterChange, counts, av
                 <ScrollArea className="max-h-60 px-2">
                   <div className="space-y-2 pb-2"> {/* Agregado pb-2 para evitar cortar el último item */}
                     {availableTags.map((tag) => (
-                      <div key={tag.id} className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted">
+                      <div key={tag.id} className="flex items-center space-x-2 p-2 rounded-md hover:bg-accent">
                         <Checkbox
                           id={`tag-${tag.id}`}
                           checked={selectedTagIds.includes(tag.id)}

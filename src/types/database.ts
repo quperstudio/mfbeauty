@@ -12,6 +12,8 @@ export type CommissionStatus = 'pending' | 'paid';
 
 export type CashRegisterStatus = 'open' | 'closed';
 
+export type SocialMediaType = 'whatsapp' | 'facebook' | 'instagram' | 'tiktok';
+
 export interface User {
   id: string;
   email: string;
@@ -231,4 +233,23 @@ export interface ClientWithDetails extends Client {
 
 export interface ClientWithTags extends Client {
   tags: ClientTag[];
+}
+
+export interface SocialMedia {
+  type: SocialMediaType;
+  link: string;
+}
+
+export interface SocialMediaFields {
+  whatsapp_link?: string | null;
+  facebook_link?: string | null;
+  instagram_link?: string | null;
+  tiktok_link?: string | null;
+}
+
+export interface EntityWithSocialMedia {
+  whatsapp_link?: string;
+  facebook_link?: string;
+  instagram_link?: string;
+  tiktok_link?: string;
 }

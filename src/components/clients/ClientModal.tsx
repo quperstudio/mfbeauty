@@ -6,20 +6,18 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Client, ClientTag } from '../../types/database';
+import { Client, ClientTag, SocialMedia } from '../../types/database';
 import { clientSchema, ClientSchemaType } from '../../schemas/client.schema';
-import { parsePhoneInput, formatPhoneRealTime, cleanSocialMediaInput, getSocialMediaIcon } from '../../lib/formats';
-import { SOCIAL_MEDIA_LABELS, SocialMediaType } from '../../lib/constants';
+import { parsePhoneInput, formatPhoneRealTime, mapSocialMediaListToFields, mapEntityToSocialMediaList } from '../../lib/formats';
 import { format } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Trash } from 'lucide-react';
 import { DatePicker } from '@/components/ui/date-picker';
-import { cn } from "@/lib/utils";
 import { TagInput } from '@/components/ui/TagInput';
 import { useTagsQuery, useClientTagsQuery } from '../../hooks/queries/useTags.query';
 import { useAuth } from '../../contexts/AuthContext';
 import * as clientService from '../../services/client.service';
 import { useToast } from "../../hooks/use-toast";
+import SocialMediaManager from '../shared/SocialMediaManager';
 
 // ===================================
 // TIPOS DE DATOS
@@ -31,45 +29,6 @@ type ClientFormDataBase = {
     notes: string;
     referrer_id: string;
 }
-
-interface SocialMedia {
-    type: SocialMediaType;
-    link: string;
-}
-
-const socialTypeOptions = [
-    { value: 'whatsapp' as SocialMediaType, label: SOCIAL_MEDIA_LABELS.whatsapp },
-    { value: 'facebook' as SocialMediaType, label: SOCIAL_MEDIA_LABELS.facebook },
-    { value: 'instagram' as SocialMediaType, label: SOCIAL_MEDIA_LABELS.instagram },
-    { value: 'tiktok' as SocialMediaType, label: SOCIAL_MEDIA_LABELS.tiktok },
-];
-
-// ===================================
-// FUNCIONES DE MAPEO
-// ===================================
-
-const mapListToFormData = (list: SocialMedia[]): Pick<ClientSchemaType, 'whatsapp_link' | 'facebook_link' | 'instagram_link' | 'tiktok_link'> => {
-    const socialMediaFields = list.reduce((acc, sm) => {
-        acc[`${sm.type}_link`] = sm.link;
-        return acc;
-    }, {} as Record<string, string>);
-
-    return {
-        whatsapp_link: socialMediaFields.whatsapp_link || '',
-        facebook_link: socialMediaFields.facebook_link || '',
-        instagram_link: socialMediaFields.instagram_link || '',
-        tiktok_link: socialMediaFields.tiktok_link || '',
-    } as Pick<ClientSchemaType, 'whatsapp_link' | 'facebook_link' | 'tiktok_link' | 'instagram_link'>;
-};
-
-const mapClientToSocialMediaList = (client: Client): SocialMedia[] => {
-    const list: SocialMedia[] = [];
-    if (client.whatsapp_link) list.push({ type: 'whatsapp', link: client.whatsapp_link });
-    if (client.facebook_link) list.push({ type: 'facebook', link: client.facebook_link });
-    if (client.instagram_link) list.push({ type: 'instagram', link: client.instagram_link });
-    if (client.tiktok_link) list.push({ type: 'tiktok', link: client.tiktok_link });
-    return list;
-};
 
 // ===================================
 // PROPIEDADES Y ESTADO INICIAL
@@ -102,15 +61,11 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     const [phoneCheckLoading, setPhoneCheckLoading] = useState(false);
 
     const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>([]);
-    const [newSocialMediaType, setNewSocialMediaType] = useState<SocialMedia['type']>('whatsapp');
-    const [newSocialMediaLink, setNewSocialMediaLink] = useState<string>('');
-    const [socialMediaInputError, setSocialMediaInputError] = useState<string>('');
 
     useEffect(() => {
         if (!isOpen) return;
 
         if (client) {
-            // Carga datos del cliente existente
             setFormData({
                 name: client.name,
                 phone: client.phone,
@@ -119,38 +74,24 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                 referrer_id: client.referrer_id || '',
             });
 
-            const initialSocialMedia = mapClientToSocialMediaList(client);
+            const initialSocialMedia = mapEntityToSocialMediaList(client);
             setSocialMediaList(initialSocialMedia);
 
         } else {
-            // Resetea para "Nuevo Cliente"
             setFormData(initialFormData);
             setSocialMediaList([]);
-            
-            // Resetear las etiquetas aquí
             setSelectedTags([]);
         }
 
-        // Reseteo de errores y campos de "añadir"
         setErrors({});
-        setSocialMediaInputError('');
-        setNewSocialMediaLink('');
-        setNewSocialMediaType('whatsapp');
         
     }, [client, isOpen]);
 
     useEffect(() => {
-        // Sincroniza las etiquetas si el cliente existe (modo edición)
         if (isOpen && client) {
             setSelectedTags(clientTags);
         }
-    }, [client, clientTags, isOpen]); // Dependencias correctas
-
-    const socialMediaOptions = useMemo(() => {
-        const existingTypes = new Set(socialMediaList.map(sm => sm.type));
-        const availableOptions = socialTypeOptions.filter(opt => !existingTypes.has(opt.value as SocialMedia['type']));
-        return availableOptions;
-    }, [socialMediaList]);
+    }, [client, clientTags, isOpen]);
 
     // ===================================
     // MANEJADORES DE CAMBIOS Y ACCIONES
@@ -175,7 +116,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         const newErrors: Record<string, string> = {};
 
         try {
-            const socialMediaLinks = mapListToFormData(socialMediaList);
+            const socialMediaLinks = mapSocialMediaListToFields(socialMediaList);
             const dataToValidate = {
                 ...formData,
                 ...socialMediaLinks,
@@ -219,7 +160,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
             return;
         }
 
-        const socialMediaLinks = mapListToFormData(socialMediaList);
+        const socialMediaLinks = mapSocialMediaListToFields(socialMediaList);
 
         const rawData = {
             ...formData,
@@ -260,78 +201,20 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         }
     };
 
-    // Manejador específico para el teléfono
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const rawValue = e.target.value;
-        const cleaned = parsePhoneInput(rawValue); // Limpia el valor (solo dígitos)
-        
-        // Actualiza el estado del teléfono con el valor limpio
+        const cleaned = parsePhoneInput(rawValue);
+
         setFormData(prev => ({ ...prev, phone: cleaned }));
 
-        // Lógica para vincular el WhatsApp
-        if (!client) {
-            const whatsappExists = socialMediaList.some(sm => sm.type === 'whatsapp');
-            if (newSocialMediaType === 'whatsapp' && !whatsappExists) {
-                setNewSocialMediaLink(cleaned);
-            }
-        }
-        
         if (errors.phone) {
             setErrors(prev => ({ ...prev, phone: '' }));
         }
     };
 
-    const handleSocialMediaKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handleAddSocialMedia();
-        }
-    };
-
-
-    const handleAddSocialMedia = () => {
-        if (!newSocialMediaLink.trim()) {
-            setSocialMediaInputError('El enlace/usuario no puede estar vacío.');
-            toast({
-                title: 'Advertencia',
-                description: 'Ingresa un usuario o enlace para la red social.',
-            });
-            return;
-        }
-        const exists = socialMediaList.some(sm => sm.type === newSocialMediaType);
-        if (exists) {
-            setSocialMediaInputError(`Ya existe una red social de tipo ${newSocialMediaType}.`);
-            toast({
-                title: 'Advertencia',
-                description: `Ya existe una red social de tipo ${SOCIAL_MEDIA_LABELS[newSocialMediaType]}.`,
-            });
-            return;
-        }
-        
-        const cleanedLink = cleanSocialMediaInput(newSocialMediaType, newSocialMediaLink.trim());
-        const updatedList = [...socialMediaList, { type: newSocialMediaType, link: cleanedLink }];
+    const handleSocialMediaChange = useCallback((updatedList: SocialMedia[]) => {
         setSocialMediaList(updatedList);
-
-        const existingTypes = new Set(updatedList.map(sm => sm.type));
-        const availableOptions = socialTypeOptions.filter(opt => !existingTypes.has(opt.value as SocialMedia['type']));
-
-        const nextDefaultType = availableOptions.length > 0 ? availableOptions[0].value as SocialMedia['type'] : 'whatsapp';
-        setNewSocialMediaType(nextDefaultType);
-        
-        setNewSocialMediaLink('');
-        setSocialMediaInputError('');
-    };
-
-    const handleRemoveSocialMedia = (typeToRemove: SocialMedia['type']) => {
-        setSocialMediaList(prev => prev.filter(sm => sm.type !== typeToRemove));
-        
-        if (socialMediaOptions.length > 0) {
-            setNewSocialMediaType(socialMediaOptions[0].value as SocialMedia['type']);
-            setNewSocialMediaLink('');
-        } else {
-            setNewSocialMediaLink('');
-        }
-    };
+    }, []);
 
     const referrerOptions = useMemo(() => {
         const options = [
@@ -396,70 +279,14 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                 </div>
                             </div>
 
-                            {/* Sección Redes Sociales */}
-                            <div className="space-y-1">
-                                <Label className="text-sm font-medium text-muted-foreground">Redes sociales</Label>
-                                <div className="grid grid-cols-2 gap-3 sm:gap-4 items-end">
-                                    <Select
-                                        value={newSocialMediaType}
-                                        onValueChange={(value) => {
-                                            const newType = value as SocialMedia['type'];
-                                            setNewSocialMediaType(newType);
-                                            setNewSocialMediaLink('');
-                                            setSocialMediaInputError('');
-                                        }}
-                                        disabled={loading || socialMediaOptions.length === 0}
-                                        name="newSocialMediaType"
-                                    >
-                                        <SelectTrigger className={cn(socialMediaInputError && "border-destructive")}>
-                                            <SelectValue placeholder={socialMediaOptions.length === 0 ? 'Todas añadidas' : 'Selecciona Tipo'} />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {socialMediaOptions.map((option) => (
-                                                <SelectItem key={option.value} value={option.value}>
-                                                    {option.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <Input
-                                        value={newSocialMediaLink}
-                                        onChange={(e) => setNewSocialMediaLink(e.target.value)} 
-                                        onKeyDown={handleSocialMediaKeyDown}
-                                        placeholder={newSocialMediaType === 'whatsapp' ? 'Número de teléfono' : 'Usuario o enlace'}
-                                        disabled={loading || socialMediaOptions.length === 0}
-                                        error={socialMediaInputError}
-                                    />
-                                </div>
-
-                                {socialMediaInputError && (
-                                    <p className="text-sm text-destructive">{socialMediaInputError}</p>
-                                )}
-
-                                {/* Lista de Redes Sociales */}
-                                <div className="space-y-2">
-                                    {socialMediaList.map((sm) => (
-                                        <div
-                                            key={sm.type}
-                                            className="flex items-center justify-between p-2 bg-secondary/30 text-secondary-foreground rounded-lg"
-                                        >
-                                            <div className="flex items-center gap-2 pl-2">
-                                                {React.createElement(getSocialMediaIcon(sm.type)!, { className: "w-4 h-4" })}
-                                                <span className="text-sm">{sm.link}</span>
-                                            </div>
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => handleRemoveSocialMedia(sm.type)}
-                                                disabled={loading}
-                                            >
-                                                <Trash className="w-4 h-4" />
-                                            </Button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+                            <SocialMediaManager
+                                initialValues={socialMediaList}
+                                phoneValue={formData.phone}
+                                syncWhatsAppWithPhone={!client}
+                                onChange={handleSocialMediaChange}
+                                disabled={loading}
+                                label="Redes sociales"
+                            />
 
                             {/* CAMPOS: Cumpleaños y Referido Por */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">

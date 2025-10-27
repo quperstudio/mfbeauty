@@ -1,7 +1,8 @@
 import { format, parseISO, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { SOCIAL_MEDIA_BASE_URLS, SocialMediaType } from './constants';
+import { SOCIAL_MEDIA_BASE_URLS } from './constants';
 import { MessageCircle, Facebook, Instagram, Music2 } from 'lucide-react';
+import { SocialMediaType, SocialMedia, SocialMediaFields, EntityWithSocialMedia } from '../types/database';
 
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('es-MX', {
@@ -146,4 +147,27 @@ export function getSocialMediaIcon(type: SocialMediaType) {
     default:
       return null;
   }
+}
+
+export function mapSocialMediaListToFields(list: SocialMedia[]): SocialMediaFields {
+  const socialMediaFields = list.reduce((acc, sm) => {
+    acc[`${sm.type}_link`] = sm.link;
+    return acc;
+  }, {} as Record<string, string>);
+
+  return {
+    whatsapp_link: socialMediaFields.whatsapp_link || null,
+    facebook_link: socialMediaFields.facebook_link || null,
+    instagram_link: socialMediaFields.instagram_link || null,
+    tiktok_link: socialMediaFields.tiktok_link || null,
+  };
+}
+
+export function mapEntityToSocialMediaList(entity: EntityWithSocialMedia): SocialMedia[] {
+  const list: SocialMedia[] = [];
+  if (entity.whatsapp_link) list.push({ type: 'whatsapp', link: entity.whatsapp_link });
+  if (entity.facebook_link) list.push({ type: 'facebook', link: entity.facebook_link });
+  if (entity.instagram_link) list.push({ type: 'instagram', link: entity.instagram_link });
+  if (entity.tiktok_link) list.push({ type: 'tiktok', link: entity.tiktok_link });
+  return list;
 }

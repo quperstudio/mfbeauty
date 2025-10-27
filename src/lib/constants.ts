@@ -102,4 +102,9 @@ export const SOCIAL_MEDIA_BASE_URLS = {
   tiktok: 'https://tiktok.com/@'
 } as const;
 
-export type SocialMediaType = typeof SOCIAL_MEDIA_TYPES[keyof typeof SOCIAL_MEDIA_TYPES];
+export const SOCIAL_TYPE_OPTIONS = [
+  { value: 'whatsapp' as const, label: SOCIAL_MEDIA_LABELS.whatsapp },
+  { value: 'facebook' as const, label: SOCIAL_MEDIA_LABELS.facebook },
+  { value: 'instagram' as const, label: SOCIAL_MEDIA_LABELS.instagram },
+  { value: 'tiktok' as const, label: SOCIAL_MEDIA_LABELS.tiktok },
+];

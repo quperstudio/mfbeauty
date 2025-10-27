@@ -240,23 +240,40 @@ export default function Clients() {
     setIsModalOpen(true);
   };
 
-  const handleSaveClient = async (data: any, tagIds: string[]) => {
-    let result;
-    if (selectedClient) {
-      result = await updateClient(selectedClient.id, data);
-      if (!result.error && selectedClient.id) {
+const handleSaveClient = async (data: any, tagIds: string[]) => {
+    try {
+      if (selectedClient) {
+        // --- MODO EDICIÓN ---  
+        // 1. Actualiza los datos del cliente
+        await updateClient(selectedClient.id, data);
+        
+        // 2. Sincroniza los tags. 
         await tagService.syncClientTags(selectedClient.id, tagIds);
-      }
-    } else {
-      result = await createClient(data);
-      if (!result.error) {
-        const newClient = clients.find(c => c.phone === data.phone);
-        if (newClient && tagIds.length > 0) {
+
+      } else {
+        // --- MODO CREACIÓN --
+        // 1. Crea el cliente. 
+        // Asumimos que createClient devuelve el cliente recién creado.
+        const newClient = await createClient(data);
+
+        // 2. Sincroniza los tags usando el ID del cliente devuelto
+        if (newClient && newClient.id) {
           await tagService.syncClientTags(newClient.id, tagIds);
+        } else {
+          // Fallback por si createClient no devuelve el cliente
+          console.warn("createClient no devolvió el nuevo cliente. Los tags no se pudieron sincronizar.");
+          // La lógica anterior de clients.find() se elimina porque era un bug.
         }
       }
+
+      // Si todo sale bien, devuelve el objeto que ClientModal espera
+      return { error: null };
+
+    } catch (err: any) {
+      console.error("Error al guardar el cliente o sus tags:", err);
+      // Si algo falla (updateClient o createClient), se captura aquí
+      return { error: err.message || 'Error al guardar los datos' };
     }
-    return result;
   };
 
   const confirmDeleteClient = (client: Client) => {

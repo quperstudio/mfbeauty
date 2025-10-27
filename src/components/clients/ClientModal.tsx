@@ -278,7 +278,8 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                     )}
                                 </div>
                             </div>
-
+                            
+                          {/* CAMPOS: Redes sociales */}
                             <SocialMediaManager
                                 initialValues={socialMediaList}
                                 phoneValue={formData.phone}

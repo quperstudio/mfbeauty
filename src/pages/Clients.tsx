@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Plus, Search, Users, Phone, Calendar, DollarSign, Trash2, Pen, Eye, ArrowUp, ArrowDown, MoreVertical, Copy, Download, UserPlus } from 'lucide-react';
+import { Plus, Search, Users, Phone, Calendar, DollarSign, Trash2, Pen, Eye, ArrowUp, ArrowDown, MoreVertical, Copy, Download, UserPlus, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useQueryClient } from '@tanstack/react-query';
@@ -232,6 +232,13 @@ export default function Clients() {
     };
   }, [clients]);
 
+  const filterLabels: Record<ClientFilterType, string> = {
+    all: 'Todos',
+    with_visits: 'Con Visitas',
+    with_sales: 'Con Ventas',
+    referred: 'Referidos',
+  };
+
   // Manejadores de Clientes (CRUD y selección)
   const handleCreateClient = () => {
     setSelectedClient(undefined);
@@ -447,6 +454,44 @@ const handleSaveClient = async (data: any, tagIds: string[]) => {
           onTagsChange={setSelectedTagIds}
         />
       </div>
+
+      {/* ===================================
+      // FILTROS ACTIVOS
+      // =================================== */}
+      {(activeFilter !== 'all' || selectedTagIds.length > 0) && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium">Filtros:</span>
+          
+          {activeFilter !== 'all' && (
+            <Badge variant="outline" className="gap-1.5 pl-2 pr-1">
+              {filterLabels[activeFilter]}
+              <button
+                onClick={() => setActiveFilter('all')}
+                className="rounded-full hover:bg-muted-foreground/20 p-0.5"
+                aria-label={`Quitar filtro ${filterLabels[activeFilter]}`}
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </Badge>
+          )}
+
+          {availableTags
+            .filter(tag => selectedTagIds.includes(tag.id))
+            .map((tag) => (
+              <Badge key={tag.id} variant="outline" className="gap-1.5 pl-2 pr-1">
+                {tag.name}
+                <button
+                  onClick={() => setSelectedTagIds(prevIds => prevIds.filter(id => id !== tag.id))}
+                  className="rounded-full hover:bg-muted-foreground/20 p-0.5"
+                  aria-label={`Quitar etiqueta ${tag.name}`}
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </Badge>
+            ))}
+        </div>
+      )}
+
 
       {/* ===================================
       // BARRA DE ACCIONES MASIVAS

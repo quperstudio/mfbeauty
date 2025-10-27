@@ -156,21 +156,28 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
     	<div>
     		<h2 className="text-lg text-foreground mb-3">Información básica</h2>
     		<div className="space-y-2">
-    			<div className="flex items-center text-muted-foreground text-sm">
-    				<Phone className="w-4 h-4 mr-2" />
-    				<span>{formatPhone(client.phone)}</span>
-    			</div>
+    			<div className="flex items-start text-muted-foreground text-sm">
+  				{/* Ícono con tamaño fijo para evitar cambios en el espaciado */}
+  				<Phone className="w-4 h-4 mr-2 flex-shrink-0" />
+  				{/* Contenedor de texto para aplicar truncado a 2 líneas */}
+  				<span className="line-clamp-2">{formatPhone(client.phone)}</span>
+  			</div>
     			{client.birthday && (
-    				<div className="flex items-center text-muted-foreground text-sm">
-    					<Cake className="w-4 h-4 mr-2" />
-    					{/* Muestra solo día y mes, ej: 26 Octubre */}
-    					<span>Cumpleaños: {format(parseDate(client.birthday) || new Date(), 'dd MMM', { locale: es })}</span>
-    				</div>
+    				<div className="flex items-start text-muted-foreground text-sm">
+  					{/* Ícono con tamaño fijo para evitar cambios en el espaciado */}
+    					<Cake className="w-4 h-4 mr-2 flex-shrink-0" />
+  					{/* Contenedor de texto para aplicar truncado a 2 líneas */}
+  					<span className="line-clamp-2">
+  						Cumpleaños: {format(parseDate(client.birthday) || new Date(), 'dd MMM', { locale: es })}
+  					</span>
+  				</div>
     			)}
   			{/* Información de creación combinada y simplificada */}
-  			<div className="flex items-center text-muted-foreground text-sm">
-  				<Clock className="w-4 h-4 mr-2" />
-  				<span>
+  			<div className="flex items-start text-muted-foreground text-sm">
+  				{/* Ícono con tamaño fijo para evitar cambios en el espaciado */}
+  				<Clock className="w-4 h-4 mr-2 flex-shrink-0" />
+  				{/* Contenedor de texto para aplicar truncado a 2 líneas */}
+  				<span className="line-clamp-2">
   					Creado el {format(parseDate(client.created_at) || new Date(), 'dd/MM/yyyy', { locale: es })}
   					{client.created_by && (
   						<span> por {getUserDisplayName(client)}</span>
@@ -183,152 +190,152 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
     		</div>
     	</div>
   
-    	{/* Sección: Redes Sociales */}
-    	{client.whatsapp_link || client.facebook_link || client.instagram_link || client.tiktok_link ? (
-    		<div>
-    			<h2 className="text-lg text-foreground mb-3">Redes Sociales</h2>
-    			<div className="flex flex-row flex-wrap gap-2">
-    				{client.whatsapp_link && (
-    					<Tooltip>
-    						<TooltipTrigger asChild>
-    							<Button
-    								variant="outline"
-    								size="icon"
-    								onClick={() => openLink(buildSocialMediaUrl('whatsapp', client.whatsapp_link))}
-    							>
-    								<MessageCircle className="w-4 h-4" />
-    							</Button>
-    						</TooltipTrigger>
-    						<TooltipContent><p>Abrir WhatsApp</p></TooltipContent>
-    					</Tooltip>
-    				)}
-    				{client.facebook_link && (
-    					<Tooltip>
-    						<TooltipTrigger asChild>
-    							<Button
-    								variant="outline"
-    								size="icon"
-    								onClick={() => openLink(buildSocialMediaUrl('facebook', client.facebook_link))}
-    							>
-    								<Facebook className="w-4 h-4" />
-    							</Button>
-    						</TooltipTrigger>
-    						<TooltipContent><p>Abrir Facebook</p></TooltipContent>
-    					</Tooltip>
-    				)}
-    				{client.instagram_link && (
-    					<Tooltip>
-    						<TooltipTrigger asChild>
-    							<Button
-    								variant="outline"
-    								size="icon"
-    								onClick={() => openLink(buildSocialMediaUrl('instagram', client.instagram_link))}
-    							>
-    								<Instagram className="w-4 h-4" />
-    							</Button>
-    						</TooltipTrigger>
-    						<TooltipContent><p>Abrir Instagram</p></TooltipContent>
-    					</Tooltip>
-    				)}
-    				{client.tiktok_link && (
-    					<Tooltip>
-    						<TooltipTrigger asChild>
-    							<Button
-    								variant="outline"
-    								size="icon"
-    								onClick={() => openLink(buildSocialMediaUrl('tiktok', client.tiktok_link))}
-    							>
-    								<Music2 className="w-4 h-4" />
-    							</Button>
-    						</TooltipTrigger>
-    						<TooltipContent><p>Abrir TikTok</p></TooltipContent>
-    					</Tooltip>
-    				)}
-    			</div>
-    		</div>
-    	) : null}
+  	{/* Sección: Redes Sociales */}
+  	{client.whatsapp_link || client.facebook_link || client.instagram_link || client.tiktok_link ? (
+  		<div>
+  			<h2 className="text-lg text-foreground mb-3">Redes Sociales</h2>
+  			<div className="flex flex-row flex-wrap gap-2">
+  				{client.whatsapp_link && (
+  					<Tooltip>
+  						<TooltipTrigger asChild>
+  							<Button
+  								variant="outline"
+  								size="icon"
+  								onClick={() => openLink(buildSocialMediaUrl('whatsapp', client.whatsapp_link))}
+  							>
+  								<MessageCircle className="w-4 h-4" />
+  							</Button>
+  						</TooltipTrigger>
+  						<TooltipContent><p>Abrir WhatsApp</p></TooltipContent>
+  					</Tooltip>
+  				)}
+  				{client.facebook_link && (
+  					<Tooltip>
+  						<TooltipTrigger asChild>
+  							<Button
+  								variant="outline"
+  								size="icon"
+  								onClick={() => openLink(buildSocialMediaUrl('facebook', client.facebook_link))}
+  							>
+  								<Facebook className="w-4 h-4" />
+  							</Button>
+  						</TooltipTrigger>
+  						<TooltipContent><p>Abrir Facebook</p></TooltipContent>
+  					</Tooltip>
+  				)}
+  				{client.instagram_link && (
+  					<Tooltip>
+  						<TooltipTrigger asChild>
+  							<Button
+  								variant="outline"
+  								size="icon"
+  								onClick={() => openLink(buildSocialMediaUrl('instagram', client.instagram_link))}
+  							>
+  								<Instagram className="w-4 h-4" />
+  							</Button>
+  						</TooltipTrigger>
+  						<TooltipContent><p>Abrir Instagram</p></TooltipContent>
+  					</Tooltip>
+  				)}
+  				{client.tiktok_link && (
+  					<Tooltip>
+  						<TooltipTrigger asChild>
+  							<Button
+  								variant="outline"
+  								size="icon"
+  								onClick={() => openLink(buildSocialMediaUrl('tiktok', client.tiktok_link))}
+  							>
+  								<Music2 className="w-4 h-4" />
+  							</Button>
+  						</TooltipTrigger>
+  						<TooltipContent><p>Abrir TikTok</p></TooltipContent>
+  					</Tooltip>
+  				)}
+  			</div>
+  		</div>
+  	) : null}
 
 
-    	{/* Sección: Etiquetas */}
-    	{client.tags && client.tags.length > 0 && (
-    		<div>
-    			<h2 className="text-lg text-foreground mb-2 flex items-center gap-2">
-    				<TagIcon className="w-4 h-4" />
-    				Etiquetas
-    			</h2>
-    			<div className="flex flex-wrap gap-2">
-    				{client.tags.map((tag) => (
-    					<Badge key={tag.id} variant="outline">
-    						{tag.name}
-    					</Badge>
-    				))}
-    			</div>
-    		</div>
-    	)}
-    	{/* Sección: Notas */}
-    	{client.notes && (
-    		<div>
-    			<h2 className="text-lg text-foreground mb-2">Notas</h2>
-    			<div className="text-muted-foreground rounded-lg p-3 border-2 border-border space-y-2">
-    				<p className="whitespace-pre-wrap break-words text-sm">
-    					{showAllNotes
-    						? client.notes
-    						: `${client.notes.substring(0, NOTE_TRUNCATE_LENGTH)}${
-    							client.notes.length > NOTE_TRUNCATE_LENGTH ? '...' : ''
-    						}`}
-    				</p>
-    				{client.notes.length > NOTE_TRUNCATE_LENGTH && (
-    					<Button variant="link" onClick={() => setShowAllNotes(!showAllNotes)} className="p-0 h-auto text-xs">
-    						{showAllNotes ? 'Ver menos' : 'Ver más'}
-    					</Button>
-    				)}
-    			</div>
-    		</div>
-    	)}
+  	{/* Sección: Etiquetas */}
+  	{client.tags && client.tags.length > 0 && (
+  		<div>
+  			<h2 className="text-lg text-foreground mb-2 flex items-center gap-2">
+  				<TagIcon className="w-4 h-4" />
+  				Etiquetas
+  			</h2>
+  			<div className="flex flex-wrap gap-2">
+  				{client.tags.map((tag) => (
+  					<Badge key={tag.id} variant="outline">
+  						{tag.name}
+  					</Badge>
+  				))}
+  			</div>
+  		</div>
+  	)}
+  	{/* Sección: Notas */}
+  	{client.notes && (
+  		<div>
+  			<h2 className="text-lg text-foreground mb-2">Notas</h2>
+  			<div className="text-muted-foreground rounded-lg p-3 border-2 border-border space-y-2">
+  				<p className="whitespace-pre-wrap break-words text-sm">
+  					{showAllNotes
+  						? client.notes
+  						: `${client.notes.substring(0, NOTE_TRUNCATE_LENGTH)}${
+  							client.notes.length > NOTE_TRUNCATE_LENGTH ? '...' : ''
+  						}`}
+  				</p>
+  				{client.notes.length > NOTE_TRUNCATE_LENGTH && (
+  					<Button variant="link" onClick={() => setShowAllNotes(!showAllNotes)} className="p-0 h-auto text-xs">
+  						{showAllNotes ? 'Ver menos' : 'Ver más'}
+  					</Button>
+  				)}
+  			</div>
+  		</div>
+  	)}
   	</div>
   );
 
   // --- COLUMNA DERECHA (70% en Desktop) ---
   const RightColumnContent = () => (
   	<div className="space-y-6">
-    	{/* Sección: Métricas (KPIs) */}
-    	<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-    		<div className="bg-primary/5 rounded-lg p-4 border border-primary/20">
-    			<div className="flex items-center justify-between">
-    				<div>
-    					<p className="text-xs text-primary mb-1">Ventas Totales</p>
-    					<p className="text-xl font-bold text-foreground">
-    						{formatCurrency(Number(client.total_spent))}
-    					</p>
-    				</div>
-    				<DollarSign className="w-6 h-6 text-primary" />
-    			</div>
-    		</div>
+  	{/* Sección: Métricas (KPIs) */}
+  	<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+  		<div className="bg-primary/5 rounded-lg p-4 border border-primary/20">
+  			<div className="flex items-center justify-between">
+  				<div>
+  					<p className="text-xs text-primary mb-1">Ventas Totales</p>
+  					<p className="text-xl font-bold text-foreground">
+  						{formatCurrency(Number(client.total_spent))}
+  					</p>
+  				</div>
+  				<DollarSign className="w-6 h-6 text-primary" />
+  			</div>
+  		</div>
 
-    		<div className="bg-primary/5 rounded-lg p-4 border border-primary/20">
-    			<div className="flex items-center justify-between">
-    				<div>
-    					<p className="text-xs text-primary mb-1">Total Visitas</p>
-    					<p className="text-xl font-bold text-foreground">{client.total_visits}</p>
-    				</div>
-    				<CalendarCheck className="w-6 h-6 text-primary" />
-    			</div>
-    		</div>
+  		<div className="bg-primary/5 rounded-lg p-4 border border-primary/20">
+  			<div className="flex items-center justify-between">
+  				<div>
+  					<p className="text-xs text-primary mb-1">Total Visitas</p>
+  					<p className="text-xl font-bold text-foreground">{client.total_visits}</p>
+  				</div>
+  				<CalendarCheck className="w-6 h-6 text-primary" />
+  			</div>
+  		</div>
 
-    		<div className="bg-info/5 rounded-lg p-4 border border-info/20">
-    			<div className="flex items-center justify-between">
-    				<div>
-    					<p className="text-xs text-info mb-1">Última Visita</p>
-    					<p className="text-xl font-semibold text-foreground truncate">
-    						{client.last_visit_date
-    							? format(parseDate(client.last_visit_date) || new Date(), 'dd/MM/yyyy', { locale: es })
-    							: 'Sin visitas'}
-    					</p>
-    				</div>
-    				<CalendarSearch className="w-6 h-6 text-info" />
-    			</div>
-    		</div>
-    	</div>
+  		<div className="bg-info/5 rounded-lg p-4 border border-info/20">
+  			<div className="flex items-center justify-between">
+  				<div>
+  					<p className="text-xs text-info mb-1">Última Visita</p>
+  					<p className="text-xl font-semibold text-foreground truncate">
+  						{client.last_visit_date
+  							? format(parseDate(client.last_visit_date) || new Date(), 'dd/MM/yyyy', { locale: es })
+  							: 'Sin visitas'}
+  					</p>
+  				</div>
+  				<CalendarSearch className="w-6 h-6 text-info" />
+  			</div>
+  		</div>
+  	</div>
   	
   	{/* Clientes Referidos (Movido a la derecha) */}
   	{client.referrals && client.referrals.length > 0 && (

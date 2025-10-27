@@ -42,22 +42,30 @@ export default function SocialMediaManager({
     handleAddSocialMedia,
     handleRemoveSocialMedia,
     clearInputError,
-    resetList,
+    // No necesitamos resetList, pero no estorba
   } = useSocialMediaManager({
     initialList: initialValues,
     phoneValue,
     onSyncWhatsAppWithPhone: syncWhatsAppWithPhone,
   });
 
+  // Este useEffect "sync-up" (sincronización hacia arriba)
+  // sigue siendo necesario para informar al ClientModal de los cambios.
   useEffect(() => {
     if (onChange) {
       onChange(socialMediaList);
     }
   }, [socialMediaList, onChange]);
 
+  // ⬇️ MODIFICACIÓN CRÍTICA: Eliminar este useEffect.
+  // El hook (useSocialMediaManager) ahora maneja su propia
+  // sincronización interna con 'initialValues'.
+  /*
   useEffect(() => {
     resetList(initialValues);
   }, [initialValues, resetList]);
+  */
+  // ⬆️ FIN MODIFICACIÓN
 
   const handleAdd = () => {
     const success = handleAddSocialMedia();
@@ -119,27 +127,28 @@ export default function SocialMediaManager({
       )}
 
       <div className="space-y-2">
-{socialMediaList.map((sm) => (
-  <div
-    key={sm.type}
-    className="group flex items-center justify-between p-2 bg-secondary/30 text-secondary-foreground rounded-lg"
-  >
-    <div className="flex items-center gap-2 pl-2">
-      {React.createElement(getSocialMediaIcon(sm.type)!, { className: 'w-4 h-4' })}
-      <span className="text-sm">{sm.link}</span>
-    </div>
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon"
-      onClick={() => handleRemoveSocialMedia(sm.type)}
-      disabled={disabled}
-      className="opacity-0 group-hover:opacity-100 transition-opacity"
-    >
-      <Trash className="w-4 h-4" />
-    </Button>
-  </div>
-))}
+        {socialMediaList.map((sm) => (
+          // (Mantener la corrección de UX 3 - hover)
+          <div
+            key={sm.type}
+            className="group flex items-center justify-between p-2 bg-secondary/30 text-secondary-foreground rounded-lg"
+          >
+            <div className="flex items-center gap-2 pl-2">
+              {React.createElement(getSocialMediaIcon(sm.type)!, { className: 'w-4 h-4' })}
+              <span className="text-sm">{sm.link}</span>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => handleRemoveSocialMedia(sm.type)}
+              disabled={disabled}
+              className="opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <Trash className="w-4 h-4" />
+            </Button>
+          </div>
+        ))}
       </div>
     </div>
   );

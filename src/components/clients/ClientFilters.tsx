@@ -52,7 +52,7 @@ export default function ClientFilters({ activeFilter, onFilterChange, counts, av
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-64 h-auto" align="end">
+      <PopoverContent className="w-64" align="end">
         <div className="space-y-4">
           
           <div>

@@ -837,7 +837,7 @@ const handleSaveClient = async (data: any, tagIds: string[]) => {
                             {user && canDeleteClients(user.role) && (
                               <DropdownMenuItem 
                                 onClick={() => confirmDeleteClient(client)}
-                                className="cursor-pointer text-destructive focus:text-destructive bg-destructive"
+                                className="cursor-pointer text-destructive hover:text-destructive"
                               >
                                 <Trash2 className="w-4 h-4 mr-2" />
                                 Eliminar

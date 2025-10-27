@@ -328,7 +328,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   	
   	{/* Sección: Clientes Referidos */}
   	{client.referrals && client.referrals.length > 0 && (
-  		<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+  		<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
   			<h2 className="text-lg text-foreground mb-3">
   				Detalle de referidos
   			</h2>

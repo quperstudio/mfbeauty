@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Filter, Tag } from 'lucide-react';
+import { Check, Filter, Tag, ChevronDown } from 'lucide-react'; // Importamos ChevronDown
 import { ClientFilterType, ClientTag } from '../../types/database';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -45,15 +45,20 @@ export default function ClientFilters({ activeFilter, onFilterChange, counts, av
         <Button variant="outline" className="gap-2 w-auto">
           <Filter className="h-4 w-4" />
           <span>Filtrar por</span>
-          {activeFilterCount > 0 && (
+          {activeFilterCount > 0 ? (
+            // Mostrar Badge con el conteo si hay filtros activos
             <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-xs">
               {activeFilterCount}
             </Badge>
+          ) : (
+            // Mostrar ChevronDown si NO hay filtros activos
+            <ChevronDown className="h-4 w-4 opacity-70" />
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-64" align="end">
-        <div className="space-y-4">
+      {/* Se eliminó la clase "w-64" de PopoverContent para que el ancho se ajuste al contenido */}
+      <PopoverContent align="end" className="p-4 w-auto">
+        <div className="space-y-4 min-w-[200px]">
           
           <div>
             <h4 className="font-medium text-sm mb-2 px-2">Estado</h4>
@@ -83,8 +88,9 @@ export default function ClientFilters({ activeFilter, onFilterChange, counts, av
               <Separator />
               <div>
                 <h4 className="font-medium text-sm mb-2 px-2">Etiquetas</h4>
-                <ScrollArea className="h-48 px-2">
-                  <div className="space-y-2">
+                {/* Se eliminó la clase "h-48" y se agregó la clase "max-h-60" a ScrollArea para limitar la altura sin forzarla */}
+                <ScrollArea className="max-h-60 px-2">
+                  <div className="space-y-2 pb-2"> {/* Agregado pb-2 para evitar cortar el último item */}
                     {availableTags.map((tag) => (
                       <div key={tag.id} className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted">
                         <Checkbox

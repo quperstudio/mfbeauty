@@ -134,7 +134,7 @@ export default function SocialMediaManager({
       size="icon"
       onClick={() => handleRemoveSocialMedia(sm.type)}
       disabled={disabled}
-      className="opacity-0 group-hover:opacity-100 transition-opacity" // <-- Clases añadidas
+      className="opacity-0 group-hover:opacity-100 transition-opacity"
     >
       <Trash className="w-4 h-4" />
     </Button>

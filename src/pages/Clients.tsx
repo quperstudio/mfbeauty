@@ -57,8 +57,7 @@ export default function Clients() {
   const { clients, loading, error, createClient, updateClient, deleteClient } = useClientsQuery();
   const { tags: availableTags } = useTagsQuery();
   const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const { syncTags } = useClientTagsQuery(selectedClient?.id || null);
+  const queryClient = useQueryClient(); 
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | undefined>();

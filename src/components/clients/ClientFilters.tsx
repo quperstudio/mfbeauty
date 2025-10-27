@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Filter, Tag, ChevronDown } from 'lucide-react'; // Importamos ChevronDown
+import { Check, Filter, Tag, ChevronDown } from 'lucide-react';
 import { ClientFilterType, ClientTag } from '../../types/database';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -56,7 +56,6 @@ export default function ClientFilters({ activeFilter, onFilterChange, counts, av
           )}
         </Button>
       </PopoverTrigger>
-      {/* Se eliminó la clase "w-64" de PopoverContent para que el ancho se ajuste al contenido */}
       <PopoverContent align="end" className="p-4 max-w-60">
         <div className="space-y-4 min-w-[200px]">
           
@@ -88,9 +87,8 @@ export default function ClientFilters({ activeFilter, onFilterChange, counts, av
               <Separator />
               <div>
                 <h4 className="font-medium text-sm mb-2 px-2">Etiquetas</h4>
-                {/* Se eliminó la clase "h-48" y se agregó la clase "max-h-60" a ScrollArea para limitar la altura sin forzarla */}
                 <ScrollArea className="max-h-60 px-2">
-                  <div className="space-y-2 pb-2"> {/* Agregado pb-2 para evitar cortar el último item */}
+                  <div className="space-y-2 pb-2">
                     {availableTags.map((tag) => (
                       <div key={tag.id} className="flex items-center space-x-2 p-2 rounded-md hover:bg-accent">
                         <Checkbox

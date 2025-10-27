@@ -249,16 +249,20 @@ const handleSaveClient = async (data: any, tagIds: string[]) => {
         
         // 2. Sincroniza los tags. 
         await tagService.syncClientTags(selectedClient.id, tagIds);
-
+        
+        // 3. INVALIAR CACHÉ (Añadir esta línea)
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
       } else {
         // --- MODO CREACIÓN --
         // 1. Crea el cliente. 
-        // Asumimos que createClient devuelve el cliente recién creado.
         const newClient = await createClient(data);
 
         // 2. Sincroniza los tags usando el ID del cliente devuelto
         if (newClient && newClient.id) {
           await tagService.syncClientTags(newClient.id, tagIds);
+
+        // 3. INVALIAR CACHÉ
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
         } else {
           // Fallback por si createClient no devuelve el cliente
           console.warn("createClient no devolvió el nuevo cliente. Los tags no se pudieron sincronizar.");

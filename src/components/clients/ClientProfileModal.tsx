@@ -329,7 +329,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   	{/* Sección: Clientes Referidos */}
   	{client.referrals && client.referrals.length > 0 && (
   		<div className="flex items-center"> 
-  			<h2 className="text-lg text-foreground mb-3">
+  			<h2 className="text-lg text-foreground">
   				Detalle de referidos
   			</h2>
          <Badge variant="outline" className="ml-2 font-semibold tex-primary">{client.referrals.length}</Badge>

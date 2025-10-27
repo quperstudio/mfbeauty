@@ -106,10 +106,6 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     const [newSocialMediaLink, setNewSocialMediaLink] = useState<string>('');
     const [socialMediaInputError, setSocialMediaInputError] = useState<string>('');
 
-
-    // ===================================
-    // AJUSTE DE SOLUCIÓN (EFECTO 1)
-    // ===================================
     useEffect(() => {
         if (!isOpen) return;
 
@@ -141,18 +137,14 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         setNewSocialMediaLink('');
         setNewSocialMediaType('whatsapp');
         
-    }, [client, isOpen]); // Dependencias correctas
+    }, [client, isOpen]);
 
-    // ===================================
-    // AJUSTE DE SOLUCIÓN (EFECTO 2)
-    // ===================================
     useEffect(() => {
         // Sincroniza las etiquetas si el cliente existe (modo edición)
         if (isOpen && client) {
             setSelectedTags(clientTags);
         }
     }, [client, clientTags, isOpen]); // Dependencias correctas
-
 
     const socialMediaOptions = useMemo(() => {
         const existingTypes = new Set(socialMediaList.map(sm => sm.type));

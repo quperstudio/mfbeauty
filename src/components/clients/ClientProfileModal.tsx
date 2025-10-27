@@ -425,7 +425,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   		{(!client.appointments || client.appointments.length === 0) && (
   			<div className="text-center py-8">
   				<CalendarOff className="w-12 h-12 text-muted mx-auto mb-3" />
-  				<p className="text-muted-foreground">Este cliente no tiene citas registradas</p>
+  				<p className="text-muted">Este cliente no tiene citas registradas</p>
   			</div>
   		)}
   	</>

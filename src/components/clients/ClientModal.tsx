@@ -436,7 +436,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                     <p className="text-sm text-destructive">{socialMediaInputError}</p>
                                 )}
 
-                                {/* Lista de Redes Sociales añadidas */}
+                                {/* Lista de Redes Sociales */}
                                 <div className="space-y-2">
                                     {socialMediaList.map((sm) => (
                                         <div

@@ -368,7 +368,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                     <ScrollArea className="flex-grow h-0 min-h-0">
                         <div className="space-y-3 p-6 pt-0 sm:space-y-4"> 
                             
-                            {/* CAMPOS: Nombre y Teléfono (Fila 1) */}
+                            {/* CAMPOS: Nombre y Teléfono */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                                 <div>
                                     <label htmlFor="client-name" className="block text-sm font-medium text-muted-foreground mb-1.5">Nombre Completo *</label>
@@ -404,7 +404,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                 </div>
                             </div>
 
-                            {/* Sección Redes Sociales (Fila 2 - Input/Select) */}
+                            {/* Sección Redes Sociales */}
                             <div className="space-y-1">
                                 <Label className="text-sm font-medium text-muted-foreground">Redes sociales</Label>
                                 <div className="grid grid-cols-2 gap-3 sm:gap-4 items-end">
@@ -469,7 +469,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                 </div>
                             </div>
 
-                            {/* CAMPOS: Cumpleaños y Referido Por (Fila 3) */}
+                            {/* CAMPOS: Cumpleaños y Referido Por */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                                 <DatePicker
                                     label="Fecha de Cumpleaños"
@@ -506,7 +506,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                 </div>
                             </div>
 
-                            {/* CAMPO: Etiquetas (Fila 4 - Separado) */}
+                            {/* CAMPO: Etiquetas */}
                             <TagInput
                                 label="Etiquetas"
                                 placeholder="Escribe y presiona Enter para agregar..."
@@ -561,7 +561,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                 canDeleteGlobally={true}
                             />
 
-                            {/* CAMPO: Notas (Fila 5 - Ancho Completo) */}
+                            {/* CAMPO: Notas */}
                             <div>
                                 <label htmlFor="client-notes" className="block text-sm font-medium text-muted-foreground mb-1.5">Notas</label>
                                 <Textarea

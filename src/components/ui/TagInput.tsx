@@ -98,8 +98,6 @@ export function TagInput({
     }
   };
 
-  // Esta función llama a handleAddTag con el nombre, 
-  // que limpia el input y cierra el dropdown (y activa la lógica en el padre).
   const handleSelectExistingTag = async (tag: ClientTag) => {
     await handleAddTag(tag.name);
   };

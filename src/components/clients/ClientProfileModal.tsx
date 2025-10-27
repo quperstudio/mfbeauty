@@ -314,7 +314,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   		<div className="bg-primary/5 rounded-lg p-4 border border-primary/20">
   			<div className="flex items-center justify-between">
   				<div>
-  					<p className="text-xs text-info mb-1">Última Visita</p>
+  					<p className="text-xs text-primary mb-1">Última Visita</p>
   					<p className="text-xl font-semibold text-foreground truncate">
   						{client.last_visit_date
   							? format(parseDate(client.last_visit_date) || new Date(), 'dd/MM/yyyy', { locale: es })

@@ -366,7 +366,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                 
                 <form onSubmit={handleSubmit} id="client-form" className="flex flex-col flex-grow h-0 min-h-0">
                     <ScrollArea className="flex-grow h-0 min-h-0">
-                        <div className="space-y-3 p-6 sm:space-y-4"> 
+                        <div className="space-y-3 p-6 pt-0 sm:space-y-4"> 
                             
                             {/* CAMPOS: Nombre y Teléfono (Fila 1) */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">

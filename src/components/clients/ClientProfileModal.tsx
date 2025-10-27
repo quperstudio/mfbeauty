@@ -136,10 +136,6 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   	);
   }
 
-  // -----------------------------------------------------------------------------
-  // Componentes Internos de Layout (para reutilización D/M)
-  // -----------------------------------------------------------------------------
-
   // --- COLUMNA IZQUIERDA (30% en Desktop) ---
   const LeftColumnContent = () => (
   	<div className="space-y-6 pr-2">
@@ -157,33 +153,26 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
     		<h2 className="text-lg text-foreground mb-3">Información básica</h2>
     		<div className="space-y-2">
     			<div className="flex items-start text-muted-foreground text-sm">
-  				{/* Ícono con tamaño fijo para evitar cambios en el espaciado */}
   				<Phone className="w-4 h-4 mr-2 flex-shrink-0" />
-  				{/* Contenedor de texto para aplicar truncado a 2 líneas */}
   				<span className="line-clamp-2">{formatPhone(client.phone)}</span>
   			</div>
     			{client.birthday && (
     				<div className="flex items-start text-muted-foreground text-sm">
-  					{/* Ícono con tamaño fijo para evitar cambios en el espaciado */}
     					<Cake className="w-4 h-4 mr-2 flex-shrink-0" />
-  					{/* Contenedor de texto para aplicar truncado a 2 líneas */}
   					<span className="line-clamp-2">
   						Cumpleaños: {format(parseDate(client.birthday) || new Date(), 'dd MMM', { locale: es })}
   					</span>
   				</div>
     			)}
-  			{/* Información de creación combinada y simplificada */}
   			<div className="flex items-start text-muted-foreground text-sm">
-  				{/* Ícono con tamaño fijo para evitar cambios en el espaciado */}
   				<Clock className="w-4 h-4 mr-2 flex-shrink-0" />
-  				{/* Contenedor de texto para aplicar truncado a 2 líneas */}
   				<span className="line-clamp-2">
   					Creado el {format(parseDate(client.created_at) || new Date(), 'dd/MM/yyyy', { locale: es })}
   					{client.created_by && (
   						<span> por {getUserDisplayName(client)}</span>
   					)}
   					{!client.created_by && client.created_by_user_id && (
-  						<span> por [Usuario ID: {client.created_by_user_id}]</span> // Fallback si ID está pero no el objeto
+  						<span> por [Usuario ID: {client.created_by_user_id}]</span>
   					)}
   				</span>
   			</div>
@@ -337,7 +326,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   		</div>
   	</div>
   	
-  	{/* Clientes Referidos (Movido a la derecha) */}
+  	{/* Sección: Clientes Referidos */}
   	{client.referrals && client.referrals.length > 0 && (
   		<div className="mt-4">
   			<h2 className="text-lg text-foreground mb-3">

@@ -366,14 +366,16 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     // ===================================
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-md bg-card text-card-foreground border-border flex flex-col h-full max-h-[90vh]">
-                <DialogHeader>
+            <DialogContent 
+                className="w-10/12 lg:max-w-5xl h-[75vh] flex flex-col p-0 bg-card text-card-foreground border-border" // CLASES MODIFICADAS
+            > 
+                <DialogHeader className="p-4 border-b border-border">
                     <DialogTitle>{client ? 'Editar Cliente' : 'Nuevo Cliente'}</DialogTitle>
                 </DialogHeader>
                 
                 <form onSubmit={handleSubmit} id="client-form" className="flex flex-col flex-grow h-0 min-h-0">
                     <ScrollArea className="flex-grow h-0 min-h-0">
-                        <div className="space-y-3 p-2 sm:space-y-4">
+                        <div className="space-y-3 p-6 sm:space-y-4"> {/* Ajusto p-2 a p-6 para mejor padding en el nuevo tamaño */}
                             
                             {/* CAMPOS: Nombre y Teléfono (Fila 1) */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">

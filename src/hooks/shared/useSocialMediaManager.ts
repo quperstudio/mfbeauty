@@ -20,7 +20,7 @@ export interface UseSocialMediaManagerReturn {
   handleAddSocialMedia: () => boolean;
   handleRemoveSocialMedia: (type: SocialMediaType) => void;
   clearInputError: () => void;
-  resetList: (list: SocialMedia[]) => void;
+  resetList: (list: SocialMedia[]) => void; // Mantenemos resetList por si se usa en otro lugar
 }
 
 export function useSocialMediaManager({
@@ -28,7 +28,13 @@ export function useSocialMediaManager({
   phoneValue = '',
   onSyncWhatsAppWithPhone = false,
 }: UseSocialMediaManagerProps = {}): UseSocialMediaManagerReturn {
-  const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>(initialList);
+  
+  // ⬇️ MODIFICACIÓN CRÍTICA:
+  // Usamos una función en useState para que el estado se establezca
+  // solo con el valor inicial la primera vez.
+  const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>(() => initialList);
+  // ⬆️ FIN MODIFICACIÓN
+
   const [newSocialMediaType, setNewSocialMediaType] = useState<SocialMediaType>('whatsapp');
   const [newSocialMediaLink, setNewSocialMediaLink] = useState<string>('');
   const [socialMediaInputError, setSocialMediaInputError] = useState<string>('');
@@ -37,6 +43,31 @@ export function useSocialMediaManager({
     const existingTypes = new Set(socialMediaList.map(sm => sm.type));
     return SOCIAL_TYPE_OPTIONS.filter(opt => !existingTypes.has(opt.value));
   }, [socialMediaList]);
+
+  // ⬇️ MODIFICACIÓN CRÍTICA:
+  // Este useEffect reemplaza la lógica de 'resetList' y 'useEffect' en SocialMediaManager.
+  // Sincroniza el estado interno del hook si 'initialList' cambia.
+  useEffect(() => {
+    // Convertimos a string para una comparación de valor simple.
+    // Esto evita re-sincronizaciones innecesarias si el padre
+    // (ClientModal) se renderiza pero la lista es la misma.
+    const internalListString = JSON.stringify(socialMediaList);
+    const initialListString = JSON.stringify(initialList);
+
+    if (internalListString !== initialListString) {
+      setSocialMediaList(initialList);
+
+      // También reseteamos el 'Select' a la próxima opción disponible
+      const existingTypes = new Set(initialList.map(sm => sm.type));
+      const availableOptions = SOCIAL_TYPE_OPTIONS.filter(opt => !existingTypes.has(opt.value));
+      const nextDefaultType = availableOptions.length > 0 ? availableOptions[0].value : 'whatsapp';
+      
+      setNewSocialMediaType(nextDefaultType);
+      setNewSocialMediaLink('');
+      setSocialMediaInputError('');
+    }
+  }, [initialList]); // Dependemos SÓLO de initialList
+  // ⬆️ FIN MODIFICACIÓN
 
   useEffect(() => {
     if (onSyncWhatsAppWithPhone && phoneValue) {
@@ -75,9 +106,10 @@ export function useSocialMediaManager({
   }, [newSocialMediaLink, newSocialMediaType, socialMediaList]);
 
   const handleRemoveSocialMedia = useCallback((typeToRemove: SocialMediaType) => {
-    setSocialMediaList(prev => prev.filter(sm => sm.type !== typeToRemove));
+    const updatedList = socialMediaList.filter(sm => sm.type !== typeToRemove);
+    setSocialMediaList(updatedList);
 
-    const existingTypes = new Set(socialMediaList.filter(sm => sm.type !== typeToRemove).map(sm => sm.type));
+    const existingTypes = new Set(updatedList.map(sm => sm.type));
     const availableOptions = SOCIAL_TYPE_OPTIONS.filter(opt => !existingTypes.has(opt.value));
 
     if (availableOptions.length > 0) {
@@ -88,24 +120,24 @@ export function useSocialMediaManager({
     }
   }, [socialMediaList]);
 
+ReadMe
   const clearInputError = useCallback(() => {
     setSocialMediaInputError('');
   }, []);
 
-  // ⬇️ MODIFICACIÓN PARA SELECCIONAR LA PRIMERA OPCIÓN DISPONIBLE AL INICIALIZAR LA LISTA
+  // resetList ahora es solo una función que expone setSocialMediaList
+  // por si es necesario, pero la sincronización principal ya no depende de ella.
   const resetList = useCallback((list: SocialMedia[]) => {
     setSocialMediaList(list);
 
     const existingTypes = new Set(list.map(sm => sm.type));
     const availableOptions = SOCIAL_TYPE_OPTIONS.filter(opt => !existingTypes.has(opt.value));
-
     const nextDefaultType = availableOptions.length > 0 ? availableOptions[0].value : 'whatsapp';
     
     setNewSocialMediaType(nextDefaultType);
     setNewSocialMediaLink('');
     setSocialMediaInputError('');
   }, []);
-  // ⬆️ FIN DE MODIFICACIÓN
 
   return {
     socialMediaList,

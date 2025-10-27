@@ -453,7 +453,18 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   						</div>
   					</ScrollArea>
 
-
+  					{/* --- Layout Desktop --- */}
+  					<div className="hidden md:grid md:grid-cols-10 gap-6 h-full p-6 pt-0">
+  						{/* Col Izq (30%) */}
+  						<ScrollArea className="md:col-span-3 h-full">
+  							<LeftColumnContent />
+  						</ScrollArea>
+  						{/* Col Der (70%) */}
+  						<ScrollArea className="md:col-span-7 h-full">
+  							<RightColumnContent />
+  						</ScrollArea>
+  					</div>
+  				</div>
   
   			</DialogContent>
   		</TooltipProvider>

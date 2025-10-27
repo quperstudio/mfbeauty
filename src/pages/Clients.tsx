@@ -52,16 +52,17 @@ const handleOpenLink = (url: string) => {
 export default function Clients() {
   
   // ===================================
-  // ESTADOS Y HOOKS
+  // ESTADOS Y HOOKS (ORDEN CORREGIDO)
   // ===================================
   const { clients, loading, error, createClient, updateClient, deleteClient } = useClientsQuery();
   const { tags: availableTags } = useTagsQuery();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { syncTags } = useClientTagsQuery(selectedClient?.id || null);
+  
+  // Declaración de estados:
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<Client | undefined>();
+  const [selectedClient, setSelectedClient] = useState<Client | undefined>(); 
   const [activeFilter, setActiveFilter] = useState<ClientFilterType>('all');
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [sortField, setSortField] = useState<ClientSortField>('created_at');
@@ -72,10 +73,12 @@ export default function Clients() {
   const [isAssignReferrerModalOpen, setIsAssignReferrerModalOpen] = useState(false);
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
 
+  // AHORA podemos usar selectedClient de forma segura
+  const { syncTags } = useClientTagsQuery(selectedClient?.id || null);
   const [clientsWithSelectedTags, setClientsWithSelectedTags] = useState<string[]>([]);
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
-  const MOBILE_BREAKPOINT = 640; 
+  const MOBILE_BREAKPOINT = 640;
 
   useEffect(() => {
     const subscription = supabase

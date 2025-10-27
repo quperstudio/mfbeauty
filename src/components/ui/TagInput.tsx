@@ -181,10 +181,10 @@ export function TagInput({
                           variant="ghost"
                           size="icon"
                           onClick={(e) => {
-                            e.stopPropagation(); // Evita que se dispare el evento de selección del contenedor
+                            e.stopPropagation();
                             onDeleteTagGlobally(tag.id);
                           }}
-                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted"
                         >
                           <Trash2 className="w-3 h-3" />
                         </Button>

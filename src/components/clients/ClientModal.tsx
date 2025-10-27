@@ -109,11 +109,6 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
 
     // ===================================
     // AJUSTE DE SOLUCIÓN (EFECTO 1)
-    //
-    // Este efecto resetea TODO el formulario (incluyendo etiquetas a [])
-    // cuando el modal se abre para un NUEVO cliente.
-    // Para un cliente existente, solo carga los datos del formulario,
-    // pero DEJA que el EFECTO 2 se encargue de las etiquetas.
     // ===================================
     useEffect(() => {
         if (!isOpen) return;
@@ -136,7 +131,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
             setFormData(initialFormData);
             setSocialMediaList([]);
             
-            // SOLUCIÓN: Resetear las etiquetas aquí
+            // Resetear las etiquetas aquí
             setSelectedTags([]);
         }
 
@@ -150,10 +145,6 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
 
     // ===================================
     // AJUSTE DE SOLUCIÓN (EFECTO 2)
-    //
-    // Este efecto AHORA SÓLO se encarga de sincronizar las etiquetas
-    // de la base de datos (clientTags) CUANDO el cliente existe.
-    // Ya no interfiere con el modo "Nuevo Cliente".
     // ===================================
     useEffect(() => {
         // Sincroniza las etiquetas si el cliente existe (modo edición)
@@ -367,7 +358,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent 
-                className="w-10/12 lg:max-w-5xl h-[75vh] flex flex-col p-0 bg-card text-card-foreground border-border" // CLASES MODIFICADAS
+                className="w-10/12 lg:max-w-5xl h-[75vh] flex flex-col p-0 bg-card text-card-foreground border-border" 
             > 
                 <DialogHeader className="p-4 border-b border-border">
                     <DialogTitle>{client ? 'Editar Cliente' : 'Nuevo Cliente'}</DialogTitle>
@@ -375,7 +366,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                 
                 <form onSubmit={handleSubmit} id="client-form" className="flex flex-col flex-grow h-0 min-h-0">
                     <ScrollArea className="flex-grow h-0 min-h-0">
-                        <div className="space-y-3 p-6 sm:space-y-4"> {/* Ajusto p-2 a p-6 para mejor padding en el nuevo tamaño */}
+                        <div className="space-y-3 p-6 sm:space-y-4"> 
                             
                             {/* CAMPOS: Nombre y Teléfono (Fila 1) */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
@@ -587,7 +578,9 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                         </div>
                     </ScrollArea>
 
-                    <DialogFooter className="pb-2 pt-4 border-t border-border bg-background">
+                    <DialogFooter 
+                        className="pb-2 pt-4 border-t border-border bg-background px-6 gap-2" // CLASES MODIFICADAS: Agrego px-6 y gap-2
+                    >
                         <Button
                             type="button"
                             variant="outline"

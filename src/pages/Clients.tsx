@@ -488,7 +488,7 @@ const handleSaveClient = async (data: any, tagIds: string[]) => {
         ) : (
           <TooltipProvider>
             
-            {/* Tabla para pantallas grandes (md:block) -> Muestra todas las redes sociales */}
+            {/* Tabla para pantallas grandes */}
             <div className="hidden md:block overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -530,7 +530,6 @@ const handleSaveClient = async (data: any, tagIds: string[]) => {
                 </TableHeader>
                 <TableBody>
                   {filteredAndSortedClients.map((client) => {
-                    // Para pantallas grandes, se obtienen todos los enlaces (limit: null)
                     const { visibleLinks } = getSocialMediaLinks(client, null);
                     
                     return (
@@ -541,20 +540,14 @@ const handleSaveClient = async (data: any, tagIds: string[]) => {
                             onCheckedChange={(checked) => handleSelectClient(client.id, !!checked)}
                           />
                         </TableCell>
-                        
-                        {/* Celda Cliente (Nombre + Teléfono sin link ni icono) */}
                         <TableCell>
                           <p className="font-medium">{client.name}</p>
                           <span className="text-sm text-muted-foreground mt-0.5">
                             {formatPhone(client.phone)}
                           </span>
                         </TableCell>
-
-                        {/* Celda Contacto (Todas las Redes Sociales) */}
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            
-                            {/* Mostrar todos los enlaces disponibles */}
                             {visibleLinks.map((link) => (
                               <Tooltip delayDuration={200} key={link.type}>
                                 <TooltipTrigger asChild>
@@ -613,8 +606,7 @@ const handleSaveClient = async (data: any, tagIds: string[]) => {
                                 </button>
                               </TooltipTrigger>
                               <TooltipContent>Editar cliente</TooltipContent>
-                            </Tooltip>
-                            
+                            </Tooltip>     
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" className="w-8 h-8 p-0 text-muted-foreground hover:bg-muted/50">
@@ -656,8 +648,7 @@ const handleSaveClient = async (data: any, tagIds: string[]) => {
                                   </DropdownMenuItem>
                                 )}
                               </DropdownMenuContent>
-                            </DropdownMenu>
-                            
+                            </DropdownMenu> 
                           </div>
                         </TableCell>
                       </TableRow>
@@ -670,16 +661,11 @@ const handleSaveClient = async (data: any, tagIds: string[]) => {
             {/* Lista para pantallas chicas/medianas*/}
             <div className="md:hidden divide-y divide-border">
               {filteredAndSortedClients.map((client) => {
-                // Para pantallas medianas/chicas, se limita a 1 enlace visible
                 const { visibleLinks, hiddenCount, hiddenLinks } = getSocialMediaLinks(client, 1);
-                
-                // Función para manejar el clic en el badge según el tamaño de la pantalla
                 const handleBadgeClick = () => {
                     if (isSmallScreen) {
-                        // Pantallas chicas (Small): Abre el modal de perfil
                         handleViewProfile(client.id);
                     }
-                    // Pantallas medianas: El Popover maneja la visibilidad, no se necesita acción programática aquí
                 };
 
                 return (
@@ -692,18 +678,13 @@ const handleSaveClient = async (data: any, tagIds: string[]) => {
                           className="mt-1"
                         />
                         <div className="flex-1">
-                          {/* Nombre y Teléfono sin link ni icono */}
                           <h3 className="font-semibold text-foreground mb-1">
                             {client.name}
                           </h3>
                           <span className="text-sm text-muted-foreground">
                             {formatPhone(client.phone)}
                           </span>
-
-                          {/* Botones de Redes Sociales */}
                           <div className="flex items-center gap-2 mt-2 flex-wrap">
-                            
-                            {/* 1. Enlace visible (máx. 1) */}
                             {visibleLinks.map((link) => (
                               <Tooltip delayDuration={200} key={link.type}>
                                 <TooltipTrigger asChild>
@@ -721,10 +702,9 @@ const handleSaveClient = async (data: any, tagIds: string[]) => {
                               </Tooltip>
                             ))}
 
-                            {/* 2. Botón de agrupación (+X) con lógica Popover/Modal */}
+                            {/* Botón de agrupación (+X)*/}
                             {hiddenCount > 0 && (
                                 isSmallScreen ? (
-                                    // Pantallas chicas: Click abre modal
                                     <Badge 
                                         variant="secondary" 
                                         className="cursor-pointer hover:bg-muted-foreground/20 transition-colors"
@@ -846,8 +826,7 @@ const handleSaveClient = async (data: any, tagIds: string[]) => {
                   </div>
                 );
               })}
-            </div>
-            
+            </div>     
           </TooltipProvider>
         )}
       </div>

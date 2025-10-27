@@ -434,7 +434,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                         value={newSocialMediaLink}
                                         onChange={(e) => setNewSocialMediaLink(e.target.value)} 
                                         onKeyDown={handleSocialMediaKeyDown}
-                                        placeholder={newSocialMediaType === 'whatsapp' ? 'Número de teléfono (presiona Enter)' : 'Usuario o enlace (presiona Enter)'}
+                                        placeholder={newSocialMediaType === 'whatsapp' ? 'Número de teléfono (presiona Enter)' : 'Usuario o enlace'}
                                         disabled={loading || socialMediaOptions.length === 0}
                                         error={socialMediaInputError}
                                     />

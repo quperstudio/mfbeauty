@@ -294,7 +294,6 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
     			<h2 className="text-lg text-foreground mb-2">Notas</h2>
     			<div className="text-muted-foreground rounded-lg p-3 border-2 border-border space-y-2">
     				<p className="whitespace-pre-wrap break-words text-sm">
-    					{/* Lógica de truncado "Ver más" */}
     					{showAllNotes
     						? client.notes
     						: `${client.notes.substring(0, NOTE_TRUNCATE_LENGTH)}${
@@ -438,17 +437,14 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   // -----------------------------------------------------------------------------
   return (
   	<Dialog open={isOpen} onOpenChange={onClose}>
-  		{/* TooltipProvider es requerido por los botones de redes */}
   		<TooltipProvider>
   			<DialogContent className="w-10/12 lg:max-w-5xl h-[75vh] flex flex-col p-0">
     				<DialogHeader className="p-4 border-b border-border">
     					<DialogTitle>Perfil del Cliente</DialogTitle>
     				</DialogHeader>
-  
-    				{/* Contenedor principal del layout (Flex + Overflow) */}
   				<div className="flex-grow overflow-hidden">
   			
-  					{/* --- Layout Móvil (md:hidden) --- */}
+  					{/* --- Layout Móvil --- */}
   					{/* Apila LeftColumnContent y RightColumnContent */}
   					<ScrollArea className="h-full md:hidden">
   						<div className="p-6 space-y-6">
@@ -457,7 +453,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   						</div>
   					</ScrollArea>
 
-  					{/* --- Layout Desktop (hidden md:grid) --- */}
+  					{/* --- Layout Desktop --- */}
   					{/* Layout 30/70 (cols-10 -> 3/7) */}
   					<div className="hidden md:grid md:grid-cols-10 gap-6 h-full p-6 pt-0">
   				

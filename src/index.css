@@ -20,7 +20,7 @@
     --accent: 220 14.3% 95.9%; /* Resaltado (ej: hover) */
     --accent-foreground: 220 8.9% 10%; /* Texto sobre el color de acento */
     --destructive: 0 84.2% 60.2%; /* Color para acciones peligrosas (Rojo) */
-    --destructive-foreground: 210 85% 50%; /* Texto sobre el color peligroso */
+    --destructive-foreground: 0 85% 50%; /* Texto sobre el color peligroso */
     --border: 220 13% 85%; /* Color de bordes y separadores */
     --input: 220 13% 85%; /* Color para campos de entrada */
     --ring: 270 80% 55%; /* Color del anillo de enfoque (Morado) */

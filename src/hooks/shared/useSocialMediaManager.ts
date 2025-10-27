@@ -66,7 +66,6 @@ export function useSocialMediaManager({
     const existingTypes = new Set(updatedList.map(sm => sm.type));
     const availableOptions = SOCIAL_TYPE_OPTIONS.filter(opt => !existingTypes.has(opt.value));
 
-    // Seleccionar la siguiente opción disponible
     const nextDefaultType = availableOptions.length > 0 ? availableOptions[0].value : 'whatsapp';
     setNewSocialMediaType(nextDefaultType);
 
@@ -93,20 +92,20 @@ export function useSocialMediaManager({
     setSocialMediaInputError('');
   }, []);
 
+  // ⬇️ MODIFICACIÓN PARA SELECCIONAR LA PRIMERA OPCIÓN DISPONIBLE AL INICIALIZAR LA LISTA
   const resetList = useCallback((list: SocialMedia[]) => {
     setSocialMediaList(list);
 
-    // FIX para que el Select muestre la primera opción disponible (soluciona errores 1, 2 y mejora UX 2)
     const existingTypes = new Set(list.map(sm => sm.type));
     const availableOptions = SOCIAL_TYPE_OPTIONS.filter(opt => !existingTypes.has(opt.value));
 
-    // Seleccionar la primera opción disponible. Usar 'whatsapp' como valor por defecto/fallback
     const nextDefaultType = availableOptions.length > 0 ? availableOptions[0].value : 'whatsapp';
     
     setNewSocialMediaType(nextDefaultType);
     setNewSocialMediaLink('');
     setSocialMediaInputError('');
   }, []);
+  // ⬆️ FIN DE MODIFICACIÓN
 
   return {
     socialMediaList,

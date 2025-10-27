@@ -579,7 +579,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                     </ScrollArea>
 
                     <DialogFooter 
-                        className="pb-2 pt-4 border-t border-border bg-background px-6 gap-2" // CLASES MODIFICADAS: Agrego px-6 y gap-2
+                        className="pb-4 pt-4 border-t border-border bg-background px-6 gap-2"
                     >
                         <Button
                             type="button"

@@ -246,18 +246,15 @@ export default function Clients() {
 const handleSaveClient = async (data: any, tagIds: string[]) => {
     try {
       if (selectedClient && selectedClient.id) {
-        // --- MODO EDICIÓN ---
-        
+        // --- MODO EDICIÓN ---   
         // 1. Actualiza los datos del cliente
         await updateClient(selectedClient.id, data);
         
-        // 2. UTILIZA LA FUNCIÓN DEL HOOK QUE INVALIDA LA CACHÉ
-        // (ya que useClientTagsQuery ya tiene la invalidación de 'clients.all')
+        // 2. Utiliz la función de hook que invalida el caché
         await syncTags(selectedClient.id, tagIds);
 
       } else {
         // --- MODO CREACIÓN ---
-
         // 1. Crea el cliente. Asumimos que createClient devuelve el cliente recién creado.
         const newClient = await createClient(data);
 
@@ -271,7 +268,6 @@ const handleSaveClient = async (data: any, tagIds: string[]) => {
 
       // Si todo sale bien, devuelve el objeto que ClientModal espera
       return { error: null };
-
     } catch (err: any) {
       console.error("Error al guardar el cliente o sus tags:", err);
       // Si algo falla, se captura aquí

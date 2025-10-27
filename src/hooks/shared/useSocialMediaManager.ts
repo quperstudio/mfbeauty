@@ -20,7 +20,7 @@ export interface UseSocialMediaManagerReturn {
   handleAddSocialMedia: () => boolean;
   handleRemoveSocialMedia: (type: SocialMediaType) => void;
   clearInputError: () => void;
-  resetList: (list: SocialMedia[]) => void; // Mantenemos resetList por si se usa en otro lugar
+  resetList: (list: SocialMedia[]) => void;
 }
 
 export function useSocialMediaManager({
@@ -29,12 +29,7 @@ export function useSocialMediaManager({
   onSyncWhatsAppWithPhone = false,
 }: UseSocialMediaManagerProps = {}): UseSocialMediaManagerReturn {
   
-  // ⬇️ MODIFICACIÓN CRÍTICA:
-  // Usamos una función en useState para que el estado se establezca
-  // solo con el valor inicial la primera vez.
   const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>(() => initialList);
-  // ⬆️ FIN MODIFICACIÓN
-
   const [newSocialMediaType, setNewSocialMediaType] = useState<SocialMediaType>('whatsapp');
   const [newSocialMediaLink, setNewSocialMediaLink] = useState<string>('');
   const [socialMediaInputError, setSocialMediaInputError] = useState<string>('');
@@ -44,20 +39,15 @@ export function useSocialMediaManager({
     return SOCIAL_TYPE_OPTIONS.filter(opt => !existingTypes.has(opt.value));
   }, [socialMediaList]);
 
-  // ⬇️ MODIFICACIÓN CRÍTICA:
-  // Este useEffect reemplaza la lógica de 'resetList' y 'useEffect' en SocialMediaManager.
-  // Sincroniza el estado interno del hook si 'initialList' cambia.
+  // Este useEffect sincroniza el estado interno si 'initialList' cambia.
+  // Resuelve el Error 3 (datos que no cargan al editar).
   useEffect(() => {
-    // Convertimos a string para una comparación de valor simple.
-    // Esto evita re-sincronizaciones innecesarias si el padre
-    // (ClientModal) se renderiza pero la lista es la misma.
     const internalListString = JSON.stringify(socialMediaList);
     const initialListString = JSON.stringify(initialList);
 
     if (internalListString !== initialListString) {
       setSocialMediaList(initialList);
 
-      // También reseteamos el 'Select' a la próxima opción disponible
       const existingTypes = new Set(initialList.map(sm => sm.type));
       const availableOptions = SOCIAL_TYPE_OPTIONS.filter(opt => !existingTypes.has(opt.value));
       const nextDefaultType = availableOptions.length > 0 ? availableOptions[0].value : 'whatsapp';
@@ -66,8 +56,7 @@ export function useSocialMediaManager({
       setNewSocialMediaLink('');
       setSocialMediaInputError('');
     }
-  }, [initialList]); // Dependemos SÓLO de initialList
-  // ⬆️ FIN MODIFICACIÓN
+  }, [initialList, socialMediaList]); // Añadimos socialMediaList para una comparación más robusta
 
   useEffect(() => {
     if (onSyncWhatsAppWithPhone && phoneValue) {
@@ -120,13 +109,11 @@ export function useSocialMediaManager({
     }
   }, [socialMediaList]);
 
-ReadMe
+  // ⬇️ MODIFICACIÓN: La palabra 'ReadMe' fue eliminada de aquí
   const clearInputError = useCallback(() => {
     setSocialMediaInputError('');
   }, []);
 
-  // resetList ahora es solo una función que expone setSocialMediaList
-  // por si es necesario, pero la sincronización principal ya no depende de ella.
   const resetList = useCallback((list: SocialMedia[]) => {
     setSocialMediaList(list);
 

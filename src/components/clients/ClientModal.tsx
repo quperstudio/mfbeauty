@@ -26,7 +26,7 @@ import { TagInput } from '@/components/ui/TagInput';
 import { useTagsQuery, useClientTagsQuery } from '../../hooks/tags/useTags.query';
 import { useAuth } from '../../contexts/AuthContext';
 import * as clientService from '../../services/client.service';
-import { toast } from "sonner"; // MODIFICADO: Reemplazado useToast con importación de sonner
+import { toast } from "sonner"; // Sonner import
 import SocialMediaManager from '../shared/SocialMediaManager';
 
 // ===================================
@@ -62,7 +62,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     const { user } = useAuth();
     const { tags: availableTags, createTag, deleteTag } = useTagsQuery();
     const { clientTags } = useClientTagsQuery(client?.id || null);
-    // const { toast } = useToast(); // ELIMINADO
+    // const { toast } = useToast(); // Eliminada
 
     const [formData, setFormData] = useState<ClientFormDataBase>(initialFormData);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -151,8 +151,9 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validateForm()) {
-            toast.error('Por favor, revisa los campos marcados en rojo para corregir los errores.', { // MODIFICADO  
-                title: 'Fallo en la validación', // MODIFICADO
+            // CORRECCIÓN 1: El título ahora es el primer argumento, el cuerpo es 'description'
+            toast.error('Fallo en la validación', {
+                description: 'Por favor, revisa los campos marcados en rojo para corregir los errores.', 
             });
             return;
         }
@@ -162,8 +163,9 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         setPhoneCheckLoading(false);
 
         if (duplicateClient) {
-            toast.error(`Este número ya está registrado para el cliente ${duplicateClient.name}.`, { // MODIFICADO
-                title: `Error: Teléfono duplicado.`, // MODIFICADO
+            // CORRECCIÓN 2: El título ahora es el primer argumento, el cuerpo es 'description'
+            toast.error(`Error: Teléfono duplicado.`, { 
+                description: `Este número ya está registrado para el cliente ${duplicateClient.name}.`,
             });
             return;
         }
@@ -195,14 +197,16 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         setLoading(false);
 
         if (result.error) {
-            toast.error(result.error, { // MODIFICADO
-                title: 'Error al guardar el cliente', // MODIFICADO
+            // CORRECCIÓN 4: El título ahora es el primer argumento, el error es 'description'
+            toast.error('Error al guardar el cliente', { 
+                description: result.error,
             });
         } else {
             resetModalState();
             onClose();
-            toast.success(`Cliente ${client ? 'actualizado' : 'creado'} con éxito!`, { // MODIFICADO
-                title: 'Operación Exitosa', // MODIFICADO
+            // CORRECCIÓN 5: El título ahora es el primer argumento, el mensaje de éxito es 'description'
+            toast.success('Operación Exitosa', { 
+                description: `Cliente ${client ? 'actualizado' : 'creado'} con éxito!`,
             });
         }
     };
@@ -420,7 +424,8 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                     } else {
                                         const { tag, error } = await createTag({ name: tagName });
                                         if (error) {
-                                            toast.error(error, { title: 'Error al crear la etiqueta' }); // MODIFICADO
+                                            // CORRECCIÓN 3: El título ahora es el primer argumento, el error es 'description'
+                                            toast.error('Error al crear la etiqueta', { description: error }); 
                                             return;
                                         }
                                         tagToAdd = tag ?? undefined;

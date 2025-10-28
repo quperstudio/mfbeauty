@@ -29,7 +29,11 @@ export function useSocialMediaManager({
   onSyncWhatsAppWithPhone = false,
 }: UseSocialMediaManagerProps = {}): UseSocialMediaManagerReturn {
   
-  const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>(() => initialList);
+  // ⬇️ MODIFICACIÓN CRÍTICA:
+  // Corregir la inicialización del estado. Debe usar initialList directamente.
+  const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>(initialList);
+  // ⬆️ FIN MODIFICACIÓN
+
   const [newSocialMediaType, setNewSocialMediaType] = useState<SocialMediaType>('whatsapp');
   const [newSocialMediaLink, setNewSocialMediaLink] = useState<string>('');
   const [socialMediaInputError, setSocialMediaInputError] = useState<string>('');
@@ -39,8 +43,10 @@ export function useSocialMediaManager({
     return SOCIAL_TYPE_OPTIONS.filter(opt => !existingTypes.has(opt.value));
   }, [socialMediaList]);
 
-  // Este useEffect sincroniza el estado interno si 'initialList' cambia.
-  // Resuelve el Error 3 (datos que no cargan al editar).
+  // ⬇️ MODIFICACIÓN CRÍTICA: ELIMINAR ESTE EFFECT
+  // Este useEffect estaba causando la condición de carrera
+  // al intentar sincronizar el estado internamente.
+  /*
   useEffect(() => {
     const internalListString = JSON.stringify(socialMediaList);
     const initialListString = JSON.stringify(initialList);
@@ -56,7 +62,9 @@ export function useSocialMediaManager({
       setNewSocialMediaLink('');
       setSocialMediaInputError('');
     }
-  }, [initialList, socialMediaList]); // Añadimos socialMediaList para una comparación más robusta
+  }, [initialList]); // <- Este useEffect se elimina
+  */
+  // ⬆️ FIN MODIFICACIÓN
 
   useEffect(() => {
     if (onSyncWhatsAppWithPhone && phoneValue) {
@@ -109,11 +117,12 @@ export function useSocialMediaManager({
     }
   }, [socialMediaList]);
 
-  // ⬇️ MODIFICACIÓN: La palabra 'ReadMe' fue eliminada de aquí
   const clearInputError = useCallback(() => {
     setSocialMediaInputError('');
   }, []);
 
+  // La función 'resetList' ahora es la única responsable de sincronizar
+  // el estado que viene del padre (ClientModal) con el estado interno del hook.
   const resetList = useCallback((list: SocialMedia[]) => {
     setSocialMediaList(list);
 
@@ -124,7 +133,7 @@ export function useSocialMediaManager({
     setNewSocialMediaType(nextDefaultType);
     setNewSocialMediaLink('');
     setSocialMediaInputError('');
-  }, []);
+  }, []); // El array de dependencias vacío es correcto
 
   return {
     socialMediaList,

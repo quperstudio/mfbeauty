@@ -57,7 +57,7 @@ export default function ClientBulkActionBar({
                 <X className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Limpiar selección</TooltipContent>
+            <TooltipContent>Descartar selección</TooltipContent>
           </Tooltip>
         </div>
 

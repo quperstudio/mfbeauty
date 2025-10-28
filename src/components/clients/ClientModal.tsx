@@ -196,7 +196,13 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
             toast.error('Error al guardar el cliente', { 
                 description: result.error,
             });
-
+        } else {
+            resetModalState(); 
+            onClose();
+            toast.success('Operación exitosa', { 
+                description: `¡Cliente ${client ? 'actualizado' : 'creado'} con éxito!`,
+            });
+        }
     };
 
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {

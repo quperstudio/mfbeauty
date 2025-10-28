@@ -86,7 +86,7 @@ export default function SocialMediaManager({
     clearInputError();
   };
 
-  return (
+return (
     <div className={cn('space-y-1', className)}>
       <Label className="text-sm font-medium text-muted-foreground">{label}</Label>
       <div className="grid grid-cols-2 gap-3 sm:gap-4 items-end">
@@ -121,7 +121,8 @@ export default function SocialMediaManager({
         <p className="text-sm text-destructive">{socialMediaInputError}</p>
       )}
 
-      <div className="space-y-2 pt-2">
+      {/* MODIFICACIÓN AQUÍ: Reemplazando 'space-y-2' por 'grid grid-cols-1 sm:grid-cols-2 gap-2' */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
         {socialMediaList.map((sm) => (
           <div
             key={sm.type}
@@ -129,7 +130,7 @@ export default function SocialMediaManager({
           >
             <div className="flex items-center gap-2 pl-2">
               {React.createElement(getSocialMediaIcon(sm.type)!, { className: 'w-4 h-4' })}
-              <span className="text-sm">{sm.link}</span>
+              <span className="text-sm truncate">{sm.link}</span>
             </div>
             <Button
               type="button"

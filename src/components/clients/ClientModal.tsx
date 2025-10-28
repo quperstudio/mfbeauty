@@ -21,7 +21,7 @@ import { clientSchema, ClientSchemaType } from '../../schemas/client.schema';
 import { parsePhoneInput, formatPhoneRealTime, mapSocialMediaListToFields, mapEntityToSocialMediaList } from '../../lib/formats';
 import { format } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { DatePicker } from '@/components/ui/date-picker';
+import { DatePicker } from '@/components/ui/date-picker'; 
 import { TagInput } from '@/components/ui/TagInput';
 import { useTagsQuery, useClientTagsQuery } from '../../hooks/tags/useTags.query';
 import { useAuth } from '../../contexts/AuthContext';
@@ -197,7 +197,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                 description: result.error,
             });
         } else {
-            resetModalState();
+            resetModalState(); 
             onClose();
             toast.success('Operación exitosa', { 
                 description: `¡Cliente ${client ? 'actualizado' : 'creado'} con éxito!`,

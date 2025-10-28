@@ -52,7 +52,7 @@ const handleOpenLink = (url: string) => {
 export default function Clients() {
   
   // ===================================
-  // ESTADOS Y HOOKS (ORDEN CORREGIDO)
+  // ESTADOS Y HOOKS
   // ===================================
   const { clients, loading, error, createClient, updateClient, deleteClient } = useClientsQuery();
   const { tags: availableTags } = useTagsQuery();

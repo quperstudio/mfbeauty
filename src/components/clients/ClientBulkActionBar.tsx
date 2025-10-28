@@ -129,7 +129,7 @@ export default function ClientBulkActionBar({
                 size="icon"
                 onClick={onDelete}
                 disabled={isLoading}
-                className="hidden md:inline-flex w-8 h-8 text-foreground/80 hover:bg-muted"
+                className="hidden md:inline-flex w-8 h-8 text-foreground/80 hover:bg-primary/50"
               >
                 {isLoading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />

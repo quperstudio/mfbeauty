@@ -1,7 +1,10 @@
+// src/hooks/clients/useClientLogic.ts
+
 import { useCallback } from 'react';
 import { useClientsQuery } from './useClients.query';
 import { useClientTagsQuery } from '../tags/useTags.query';
 import * as clientService from '../../services/client.service';
+import * as tagService from '../../services/tag.service'; // <-- AÑADIDO: Necesario para leer/sincronizar tags
 import { ClientSchemaType } from '../../schemas/client.schema';
 
 /**
@@ -57,13 +60,31 @@ export function useClientLogic() {
   }, [deleteClient]);
 
   /**
-   * Duplicar múltiples clientes
+   * Duplicar múltiples clientes (ORQUESTACIÓN CORREGIDA)
+   * Asegura que se copien las entidades relacionadas (tags).
    */
   const duplicateClients = useCallback(async (clientIds: string[]): Promise<void> => {
-    for (const clientId of clientIds) {
-      await duplicateClient(clientId);
-    }
-  }, [duplicateClient]);
+    // Usamos Promise.all para manejar la duplicación de forma concurrente
+    const duplicationPromises = clientIds.map(async (clientId) => {
+      // 1. Obtener las tags del cliente original
+      const originalTags = await tagService.fetchTagsByClientId(clientId);
+      const originalTagIds = originalTags.map(tag => tag.id);
+
+      // 2. Duplicar el cliente principal (asumimos que devuelve el nuevo cliente)
+      const newClient = await clientService.duplicateClient(clientId);
+
+      if (!newClient || !newClient.id) {
+          throw new Error(`Fallo al obtener ID del cliente duplicado: ${clientId}`);
+      }
+      
+      // 3. Sincronizar tags al nuevo cliente
+      if (originalTagIds.length > 0) {
+        await tagService.syncClientTags(newClient.id, originalTagIds);
+      }
+    });
+
+    await Promise.all(duplicationPromises); // Ejecutar todas las duplicaciones concurrentemente
+  }, []); // Dependencias: clientService, tagService
 
   /**
    * Asignar referente a múltiples clientes

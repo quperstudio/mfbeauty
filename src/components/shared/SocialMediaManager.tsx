@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react'; // <--- 1. Importar useRef
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,16 @@ export default function SocialMediaManager({
 }: SocialMediaManagerProps) {
   const { toast } = useToast();
 
+  // --- INICIO DE LA SOLUCIÓN ---
+
+  // 2. Crear una referencia para rastrear si es el primer renderizado.
+  // La clave aquí es que esta referencia persistirá durante toda la vida del componente.
+  // A diferencia de la key de React, esta no se reinicia al editar.
+  const isFirstRender = useRef(true);
+
+  // --- FIN DE LA SOLUCIÓN ---
+
+
   const {
     socialMediaList,
     newSocialMediaType,
@@ -49,11 +59,26 @@ export default function SocialMediaManager({
     onSyncWhatsAppWithPhone: syncWhatsAppWithPhone,
   });
 
+
   useEffect(() => {
+    // --- INICIO DE LA SOLUCIÓN ---
+
+    // 3. Comprobar si es el primer renderizado
+    if (isFirstRender.current) {
+      // Si es el primer render, lo marcamos como falso y no hacemos NADA.
+      // Esto rompe el bucle de "condición de carrera".
+      // No llamará a onChange([]) y no borrará el estado del padre.
+      isFirstRender.current = false;
+      return;
+    }
+
+    // --- FIN DE LA SOLUCIÓN ---
+
+    // 4. A partir del segundo render, este useEffect funcionará normalmente.
     if (onChange) {
       onChange(socialMediaList);
     }
-  }, [socialMediaList, onChange]);
+  }, [socialMediaList, onChange]); // Las dependencias siguen igual
 
   const handleAdd = () => {
     const success = handleAddSocialMedia();
@@ -139,4 +164,4 @@ export default function SocialMediaManager({
       </div>
     </div>
   );
-} 
+}

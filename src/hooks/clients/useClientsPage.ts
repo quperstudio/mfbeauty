@@ -383,4 +383,4 @@ export function useClientsPage() {
     handleBulkExport,
     handleAssignReferrer,
   };
-}
+} 

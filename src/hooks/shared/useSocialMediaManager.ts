@@ -43,29 +43,6 @@ export function useSocialMediaManager({
     return SOCIAL_TYPE_OPTIONS.filter(opt => !existingTypes.has(opt.value));
   }, [socialMediaList]);
 
-  // ⬇️ MODIFICACIÓN CRÍTICA: ELIMINAR ESTE EFFECT
-  // Este useEffect estaba causando la condición de carrera
-  // al intentar sincronizar el estado internamente.
-  /*
-  useEffect(() => {
-    const internalListString = JSON.stringify(socialMediaList);
-    const initialListString = JSON.stringify(initialList);
-
-    if (internalListString !== initialListString) {
-      setSocialMediaList(initialList);
-
-      const existingTypes = new Set(initialList.map(sm => sm.type));
-      const availableOptions = SOCIAL_TYPE_OPTIONS.filter(opt => !existingTypes.has(opt.value));
-      const nextDefaultType = availableOptions.length > 0 ? availableOptions[0].value : 'whatsapp';
-      
-      setNewSocialMediaType(nextDefaultType);
-      setNewSocialMediaLink('');
-      setSocialMediaInputError('');
-    }
-  }, [initialList]); // <- Este useEffect se elimina
-  */
-  // ⬆️ FIN MODIFICACIÓN
-
   useEffect(() => {
     if (onSyncWhatsAppWithPhone && phoneValue) {
       const whatsappExists = socialMediaList.some(sm => sm.type === 'whatsapp');
@@ -121,8 +98,6 @@ export function useSocialMediaManager({
     setSocialMediaInputError('');
   }, []);
 
-  // La función 'resetList' ahora es la única responsable de sincronizar
-  // el estado que viene del padre (ClientModal) con el estado interno del hook.
   const resetList = useCallback((list: SocialMedia[]) => {
     setSocialMediaList(list);
 
@@ -133,7 +108,7 @@ export function useSocialMediaManager({
     setNewSocialMediaType(nextDefaultType);
     setNewSocialMediaLink('');
     setSocialMediaInputError('');
-  }, []); // El array de dependencias vacío es correcto
+  }, []);
 
   return {
     socialMediaList,

@@ -29,15 +29,14 @@ export function useSocialMediaManager({
   onSyncWhatsAppWithPhone = false,
 }: UseSocialMediaManagerProps = {}): UseSocialMediaManagerReturn {
 
-  const initialized = useRef(false);
-
-  const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>(() => {
-    initialized.current = true;
-    return initialList;
-  });
+  const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>(initialList);
   const [newSocialMediaType, setNewSocialMediaType] = useState<SocialMediaType>('whatsapp');
   const [newSocialMediaLink, setNewSocialMediaLink] = useState<string>('');
   const [socialMediaInputError, setSocialMediaInputError] = useState<string>('');
+
+  useEffect(() => {
+    setSocialMediaList(initialList);
+  }, [initialList]);
 
   const socialMediaOptions = useMemo(() => {
     const existingTypes = new Set(socialMediaList.map(sm => sm.type));

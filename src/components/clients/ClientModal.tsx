@@ -231,21 +231,34 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     }, []);
 
     const hasUnsavedChanges = useCallback((): boolean => {
-        const formChanged = JSON.stringify(formData) !== JSON.stringify(
-            client ? {
-                name: client.name,
-                phone: client.phone,
-                birthday: client.birthday || null,
-                notes: client.notes || '',
-                referrer_id: client.referrer_id || '',
-            } : initialFormData
-        );
+        const normalizeFormData = (data: ClientFormDataBase) => ({
+            name: data.name.trim(),
+            phone: data.phone,
+            birthday: data.birthday || null,
+            notes: (data.notes || '').trim() || null,
+            referrer_id: (data.referrer_id || '').trim() || null,
+        });
 
-        const socialMediaChanged = JSON.stringify(socialMediaList) !== JSON.stringify(initialSocialMediaList);
+        const currentNormalized = normalizeFormData(formData);
+        const initialNormalized = client ? normalizeFormData({
+            name: client.name,
+            phone: client.phone,
+            birthday: client.birthday || null,
+            notes: client.notes || '',
+            referrer_id: client.referrer_id || '',
+        }) : normalizeFormData(initialFormData);
 
-        const tagsChanged = JSON.stringify(selectedTags.map(t => t.id).sort()) !== JSON.stringify(
-            (client ? clientTags : []).map(t => t.id).sort()
-        );
+        const formChanged = JSON.stringify(currentNormalized) !== JSON.stringify(initialNormalized);
+
+        const normalizeSocialMedia = (list: SocialMedia[]) =>
+            list.map(sm => ({ type: sm.type, link: sm.link.trim() })).sort((a, b) => a.type.localeCompare(b.type));
+
+        const socialMediaChanged = JSON.stringify(normalizeSocialMedia(socialMediaList)) !==
+                                  JSON.stringify(normalizeSocialMedia(initialSocialMediaList));
+
+        const currentTagIds = selectedTags.map(t => t.id).sort();
+        const initialTagIds = (client && clientTags.length > 0) ? clientTags.map(t => t.id).sort() : [];
+        const tagsChanged = JSON.stringify(currentTagIds) !== JSON.stringify(initialTagIds);
 
         return formChanged || socialMediaChanged || tagsChanged;
     }, [formData, socialMediaList, selectedTags, client, initialSocialMediaList, clientTags]);

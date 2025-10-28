@@ -26,7 +26,7 @@ import { TagInput } from '@/components/ui/TagInput';
 import { useTagsQuery, useClientTagsQuery } from '../../hooks/tags/useTags.query';
 import { useAuth } from '../../contexts/AuthContext';
 import * as clientService from '../../services/client.service';
-import { useToast } from "../../hooks/use-toast";
+import { toast } from "sonner"; // MODIFICADO: Reemplazado useToast con importación de sonner
 import SocialMediaManager from '../shared/SocialMediaManager';
 
 // ===================================
@@ -62,7 +62,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     const { user } = useAuth();
     const { tags: availableTags, createTag, deleteTag } = useTagsQuery();
     const { clientTags } = useClientTagsQuery(client?.id || null);
-    const { toast } = useToast();
+    // const { toast } = useToast(); // ELIMINADO
 
     const [formData, setFormData] = useState<ClientFormDataBase>(initialFormData);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -151,10 +151,8 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validateForm()) {
-            toast({
-                variant: 'destructive',
-                title: 'Fallo en la validación',
-                description: 'Por favor, revisa los campos marcados en rojo para corregir los errores.',
+            toast.error('Por favor, revisa los campos marcados en rojo para corregir los errores.', { // MODIFICADO
+                title: 'Fallo en la validación', // MODIFICADO
             });
             return;
         }
@@ -164,10 +162,8 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         setPhoneCheckLoading(false);
 
         if (duplicateClient) {
-            toast({
-                variant: 'destructive',
-                title: `Error: Teléfono duplicado.`,
-                description: `Este número ya está registrado para el cliente ${duplicateClient.name}.`,
+            toast.error(`Este número ya está registrado para el cliente ${duplicateClient.name}.`, { // MODIFICADO
+                title: `Error: Teléfono duplicado.`, // MODIFICADO
             });
             return;
         }
@@ -199,17 +195,14 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         setLoading(false);
 
         if (result.error) {
-            toast({
-                variant: 'destructive',
-                title: 'Error al guardar el cliente',
-                description: result.error,
+            toast.error(result.error, { // MODIFICADO
+                title: 'Error al guardar el cliente', // MODIFICADO
             });
         } else {
             resetModalState();
             onClose();
-            toast({
-                title: 'Operación Exitosa',
-                description: `Cliente ${client ? 'actualizado' : 'creado'} con éxito!`,
+            toast.success(`Cliente ${client ? 'actualizado' : 'creado'} con éxito!`, { // MODIFICADO
+                title: 'Operación Exitosa', // MODIFICADO
             });
         }
     };
@@ -350,7 +343,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                             </div>
                             
                           {/* CAMPOS: Redes sociales */}
-<SocialMediaManager
+                            <SocialMediaManager
                                 key={client?.id || 'new-client'}
                                 initialValues={initialSocialMediaList}
                                 phoneValue={formData.phone}
@@ -427,7 +420,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                     } else {
                                         const { tag, error } = await createTag({ name: tagName });
                                         if (error) {
-                                            toast({ variant: 'destructive', title: 'Error al crear la etiqueta', description: error });
+                                            toast.error(error, { title: 'Error al crear la etiqueta' }); // MODIFICADO
                                             return;
                                         }
                                         tagToAdd = tag ?? undefined;
@@ -520,4 +513,4 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         </AlertDialog>
         </>
     );
-} 
+}

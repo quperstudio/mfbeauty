@@ -151,8 +151,8 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validateForm()) {
-            toast.error('Por favor, revisa los campos marcados en rojo para corregir los errores.', { // MODIFICADO
-                title: 'Fallo en la validación', // MODIFICADO
+            toast.error('Por favor, revisa los campos marcados en rojo para corregir los errores.',
+                title: 'Fallo en la validación',
             });
             return;
         }

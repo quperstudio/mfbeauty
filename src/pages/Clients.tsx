@@ -182,7 +182,11 @@ export default function Clients() {
       filtered = filtered.filter(
         (client) =>
           client.name.toLowerCase().includes(query) ||
-          client.phone.includes(query)
+          client.phone.includes(query) ||
+          client.whatsapp_link?.toLowerCase().includes(query) ||
+          client.facebook_link?.toLowerCase().includes(query) ||
+          client.instagram_link?.toLowerCase().includes(query) ||
+          client.tiktok_link?.toLowerCase().includes(query)
       );
     }
 
@@ -427,7 +431,7 @@ const handleSaveClient = async (data: any, tagIds: string[]): Promise<{ error: s
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Buscar por nombre o teléfono..."
+            placeholder="Buscar por nombre, teléfono o redes sociales..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 w-full"

@@ -9,6 +9,7 @@ import { ClientSchemaType } from '../../schemas/client.schema';
 import * as clientService from '../../services/client.service';
 import * as tagService from '../../services/tag.service';
 import { MOBILE_BREAKPOINT } from '../../constants/clients.constants';
+import { toast } from 'sonner'; // AÑADIDO
 
 export function useClientsPage() {
   const queryClient = useQueryClient();
@@ -230,8 +231,10 @@ export function useClientsPage() {
       await clientService.deleteMultipleClients(Array.from(selectedClientIds));
       setSelectedClientIds(new Set());
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
+      toast.success(`Se eliminaron ${count} cliente(s) con éxito.`, { title: 'Eliminación Masiva' }); // AÑADIDO
     } catch (error) {
-      alert('Error al eliminar clientes');
+      // alert('Error al eliminar clientes'); // ELIMINADO
+      toast.error('Error al eliminar clientes. Intenta de nuevo.', { title: 'Error de Eliminación' }); // AÑADIDO
     } finally {
       setBulkActionLoading(false);
     }
@@ -241,6 +244,7 @@ export function useClientsPage() {
     async (clientIdsToDuplicate?: string[]) => {
       const idsToUse = clientIdsToDuplicate || Array.from(selectedClientIds);
       if (idsToUse.length === 0) return;
+      const count = idsToUse.length; // AÑADIDO para el mensaje de éxito
 
       setBulkActionLoading(true);
       try {
@@ -250,8 +254,10 @@ export function useClientsPage() {
           setSelectedClientIds(new Set());
         }
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
+        toast.success(`Se duplicaron ${count} cliente(s) con éxito.`, { title: 'Duplicación Masiva' }); // AÑADIDO
       } catch (error) {
-        alert('Error al duplicar clientes');
+        // alert('Error al duplicar clientes'); // ELIMINADO
+        toast.error('Error al duplicar clientes. Intenta de nuevo.', { title: 'Error de Duplicación' }); // AÑADIDO
       } finally {
         setBulkActionLoading(false);
       }
@@ -290,13 +296,16 @@ export function useClientsPage() {
   const handleAssignReferrer = useCallback(
     async (referrerId: string | null) => {
       setBulkActionLoading(true);
+      const count = selectedClientIds.size; // AÑADIDO para el mensaje de éxito
       try {
         await clientService.updateMultipleClientsReferrer(Array.from(selectedClientIds), referrerId);
         setSelectedClientIds(new Set());
         setIsAssignReferrerModalOpen(false);
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
+        toast.success(`Se actualizó el referente de ${count} cliente(s) con éxito.`, { title: 'Referente Asignado' }); // AÑADIDO
       } catch (error) {
-        alert('Error al asignar referente');
+        // alert('Error al asignar referente'); // ELIMINADO
+        toast.error('Error al asignar referente. Intenta de nuevo.', { title: 'Error de Asignación' }); // AÑADIDO
       } finally {
         setBulkActionLoading(false);
       }

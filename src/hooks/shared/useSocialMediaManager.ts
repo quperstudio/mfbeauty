@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { SocialMedia, SocialMediaType } from '../../types/database';
 import { SOCIAL_TYPE_OPTIONS, SOCIAL_MEDIA_LABELS } from '../../lib/constants';
 import { cleanSocialMediaInput } from '../../lib/formats';
@@ -28,8 +28,13 @@ export function useSocialMediaManager({
   phoneValue = '',
   onSyncWhatsAppWithPhone = false,
 }: UseSocialMediaManagerProps = {}): UseSocialMediaManagerReturn {
-  
-  const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>(initialList);
+
+  const initialized = useRef(false);
+
+  const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>(() => {
+    initialized.current = true;
+    return initialList;
+  });
   const [newSocialMediaType, setNewSocialMediaType] = useState<SocialMediaType>('whatsapp');
   const [newSocialMediaLink, setNewSocialMediaLink] = useState<string>('');
   const [socialMediaInputError, setSocialMediaInputError] = useState<string>('');

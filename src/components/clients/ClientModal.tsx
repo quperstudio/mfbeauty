@@ -292,6 +292,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                             
                           {/* CAMPOS: Redes sociales */}
                             <SocialMediaManager
+                                key={client?.id || 'new-client'}
                                 initialValues={socialMediaList}
                                 phoneValue={formData.phone}
                                 syncWhatsAppWithPhone={!client}

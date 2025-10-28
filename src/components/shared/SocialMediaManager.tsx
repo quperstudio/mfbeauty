@@ -55,10 +55,6 @@ export default function SocialMediaManager({
     }
   }, [socialMediaList, onChange]);
 
-  useEffect(() => {
-    resetList(initialValues);
-  }, [initialValues, resetList]);
-
   const handleAdd = () => {
     const success = handleAddSocialMedia();
     if (!success && socialMediaInputError) {

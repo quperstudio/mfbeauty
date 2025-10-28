@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { getSocialMediaIcon } from '@/lib/formats';
 import { SocialMedia, SocialMediaType } from '../../types/database';
 import { useSocialMediaManager } from '../../hooks/shared/useSocialMediaManager';
-import { useToast } from '../../hooks/use-toast';
+import { toast } from 'sonner'; 
 
 export interface SocialMediaManagerProps {
   initialValues?: SocialMedia[];
@@ -29,7 +29,7 @@ export default function SocialMediaManager({
   label = 'Redes sociales',
   className,
 }: SocialMediaManagerProps) {
-  const { toast } = useToast();
+  // const { toast } = useToast(); // ELIMINADO
   const isFirstRender = useRef(true);
 
   const {
@@ -65,8 +65,7 @@ export default function SocialMediaManager({
   const handleAdd = () => {
     const success = handleAddSocialMedia();
     if (!success && socialMediaInputError) {
-      toast({
-        title: 'Advertencia',
+      toast.warning('Advertencia', { 
         description: socialMediaInputError,
       });
     }
@@ -121,7 +120,6 @@ return (
         <p className="text-sm text-destructive">{socialMediaInputError}</p>
       )}
 
-      {/* MODIFICACIÓN AQUÍ: Reemplazando 'space-y-2' por 'grid grid-cols-1 sm:grid-cols-2 gap-2' */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
         {socialMediaList.map((sm) => (
           <div

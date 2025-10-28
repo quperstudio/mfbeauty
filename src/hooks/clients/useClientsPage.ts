@@ -1,3 +1,5 @@
+// src/hooks/clients/useClientsPage.ts
+
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
@@ -8,15 +10,17 @@ import { Client, ClientFilterType, ClientSortField, ClientSortDirection } from '
 import { ClientSchemaType } from '../../schemas/client.schema';
 import * as clientService from '../../services/client.service';
 import * as tagService from '../../services/tag.service';
-import { useClientLogic } from './useClientLogic';
 import { MOBILE_BREAKPOINT } from '../../constants/clients.constants';
 import { toast } from 'sonner';
+import { useClientLogic } from './useClientLogic'; // <-- CORREGIDO: Importación del hook de lógica
 
 export function useClientsPage() {
   const queryClient = useQueryClient();
-  const { clients, loading, error } = useClientsQuery();
+  // Se asume que las mutaciones se eliminaron del hook de query y se inyectan en useClientLogic,
+  // pero mantendremos la estructura original de la refactorización para compatibilidad con el código proporcionado.
+  const { clients, loading, error, createClient, updateClient, deleteClient } = useClientsQuery();
   const { tags: availableTags } = useTagsQuery();
-  const logic = useClientLogic();
+  const logic = useClientLogic(); // <-- USO DEL HOOK DE LÓGICA
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,7 +29,7 @@ export function useClientsPage() {
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [sortField, setSortField] = useState<ClientSortField>('created_at');
   const [sortDirection, setSortDirection] = useState<ClientSortDirection>('desc');
-  const [selectedClientIds, setSelectedClientIds] = useState<Set<string>>(new Set()); // CORREGIDO: Línea 26
+  const [selectedClientIds, setSelectedClientIds] = useState<Set<string>>(new Set());
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [profileClientId, setProfileClientId] = useState<string | null>(null);
   const [isAssignReferrerModalOpen, setIsAssignReferrerModalOpen] = useState(false);
@@ -34,6 +38,8 @@ export function useClientsPage() {
   const [clientsWithSelectedTags, setClientsWithSelectedTags] = useState<string[]>([]);
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  // ... (useEffect y useMemo permanecen iguales)
 
   useEffect(() => {
     const subscription = supabase
@@ -151,14 +157,18 @@ export function useClientsPage() {
     setIsModalOpen(true);
   }, []);
 
+  // Handler de guardado de cliente que delega la lógica al useClientLogic
   const handleSaveClient = useCallback(
     async (data: ClientSchemaType, tagIds: string[]): Promise<{ error: string | null }> => {
       try {
+        // Delegar la orquestación (guardar + tags + validación) al hook de lógica
         await logic.saveClient(data, tagIds, selectedClient?.id);
         toast.success(selectedClient ? 'Cliente actualizado' : 'Cliente creado');
         return { error: null };
       } catch (err: any) {
-        toast.error('Error al guardar cliente', { description: err.message });
+        console.error('Error al guardar el cliente o sus tags:', err);
+        // Mostrar el error generado por la capa de lógica (ej. 'El teléfono ya está registrado')
+        toast.error('Error al guardar cliente', { description: err.message || 'Error al guardar los datos' });
         return { error: err.message || 'Error al guardar los datos' };
       }
     },
@@ -184,19 +194,23 @@ export function useClientsPage() {
     const deletedClientId = clientToDelete.id;
     const deletedClientName = clientToDelete.name;
 
-    // 1. Ejecutar la eliminación
-    await logic.deleteClients(deletedClientId);
-    setClientToDelete(null);
+    try {
+        // 1. Ejecutar la eliminación (Delegar al hook de lógica)
+        await logic.deleteClients(deletedClientId);
+        setClientToDelete(null);
 
-    // 2. Mostrar TOAST con botón para deshacer
-    toast.success('Cliente eliminado', {
-      description: `Cliente "${deletedClientName}" eliminado. Puedes deshacer esta acción inmediatamente.`,
-      duration: 8000,
-      action: {
-        label: 'Deshacer',
-        onClick: () => handleUndoDelete(deletedClientId, deletedClientName),
-      },
-    });
+        // 2. Mostrar TOAST con botón para deshacer
+        toast.success('Cliente eliminado', {
+          description: `Cliente "${deletedClientName}" eliminado. Puedes deshacer esta acción inmediatamente.`,
+          duration: 8000,
+          action: {
+            label: 'Deshacer',
+            onClick: () => handleUndoDelete(deletedClientId, deletedClientName),
+          },
+        });
+    } catch (error) {
+         toast.error('Error al eliminar cliente', { description: 'No se pudo completar la acción.' });
+    }
   }, [clientToDelete, logic, handleUndoDelete]);
 
   const handleSort = useCallback(
@@ -245,7 +259,7 @@ export function useClientsPage() {
 
     setBulkActionLoading(true);
     try {
-      await logic.deleteClients(Array.from(selectedClientIds));
+      await logic.deleteClients(Array.from(selectedClientIds)); // <-- AJUSTE: Delegar a la Capa 3
       setSelectedClientIds(new Set());
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
       toast.success('Eliminación masiva exitosa', {
@@ -258,7 +272,7 @@ export function useClientsPage() {
     } finally {
       setBulkActionLoading(false);
     }
-  }, [selectedClientIds, queryClient]);
+  }, [selectedClientIds, queryClient, logic]); // <-- AGREGAR LÓGICA COMO DEPENDENCIA
 
   const handleBulkDuplicate = useCallback(
     async (clientIdsToDuplicate?: string[]) => {
@@ -268,7 +282,8 @@ export function useClientsPage() {
 
       setBulkActionLoading(true);
       try {
-        await logic.duplicateClients(idsToUse);
+        await logic.duplicateClients(idsToUse); // <-- AJUSTE: Delegar a la Capa 3
+        
         if (!clientIdsToDuplicate) {
           setSelectedClientIds(new Set());
         }
@@ -284,7 +299,7 @@ export function useClientsPage() {
         setBulkActionLoading(false);
       }
     },
-    [selectedClientIds, queryClient]
+    [selectedClientIds, queryClient, logic] // <-- AGREGAR LÓGICA COMO DEPENDENCIA
   );
 
   const handleBulkExport = useCallback(
@@ -292,14 +307,41 @@ export function useClientsPage() {
       const idsToUse = clientIdsToExport || Array.from(selectedClientIds);
       const selectedClients = clients.filter((c) => idsToUse.includes(c.id));
 
+      // AJUSTE CRÍTICO: Exportar todos los campos del cliente
       const csvContent = [
-        ['Nombre', 'Teléfono', 'Total Gastado', 'Total Visitas', 'Última Visita', 'Fecha de Creación'],
+        [
+          'ID', 
+          'Nombre', 
+          'Teléfono', 
+          'Email', 
+          'Fecha Nacimiento', 
+          'Notas', 
+          'Total Gastado', 
+          'Total Visitas', 
+          'Última Visita', 
+          'WhatsApp', 
+          'Facebook', 
+          'Instagram', 
+          'TikTok', 
+          'ID Referente',
+          'Fecha Creación'
+        ], // <-- CABECERA CORREGIDA
         ...selectedClients.map((c) => [
-          c.name,
+          c.id, 
+          c.name, 
           c.phone,
+          // Se asume que 'email' no existe en la interfaz Client, se deja vacío.
+          '', 
+          c.birthday || '',
+          c.notes || '',
           c.total_spent.toString(),
           c.total_visits.toString(),
           c.last_visit_date || '',
+          c.whatsapp_link || '', 
+          c.facebook_link || '',
+          c.instagram_link || '',
+          c.tiktok_link || '',
+          c.referrer_id || '', 
           c.created_at,
         ]),
       ]
@@ -320,7 +362,7 @@ export function useClientsPage() {
       setBulkActionLoading(true);
       const count = selectedClientIds.size;
       try {
-        await logic.assignReferrerToClients(Array.from(selectedClientIds), referrerId);
+        await logic.assignReferrerToClients(Array.from(selectedClientIds), referrerId); // <-- AJUSTE: Delegar a la Capa 3
         setSelectedClientIds(new Set());
         setIsAssignReferrerModalOpen(false);
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
@@ -335,7 +377,7 @@ export function useClientsPage() {
         setBulkActionLoading(false);
       }
     },
-    [selectedClientIds, queryClient]
+    [selectedClientIds, queryClient, logic] // <-- AGREGAR LÓGICA COMO DEPENDENCIA
   );
 
   return {

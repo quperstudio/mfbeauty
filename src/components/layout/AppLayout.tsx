@@ -1,7 +1,6 @@
 import { ReactNode, useState } from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
-// <--- CAMBIO AQUÍ: Importación de Toaster eliminada
 
 interface AppLayoutProps {
   children: ReactNode;

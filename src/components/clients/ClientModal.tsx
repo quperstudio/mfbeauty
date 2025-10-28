@@ -151,7 +151,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validateForm()) {
-            toast.error('Fallo en la validación', {
+            toast.error('Teléfono duplicado', {
                 description: 'Por favor, revisa los campos marcados en rojo para corregir los errores.', 
             });
             return;

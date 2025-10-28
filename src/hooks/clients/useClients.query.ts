@@ -47,7 +47,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ClientSchemaType } from '../../schemas/client.schema';
 import * as clientService from '../../services/client.service';
 import { QUERY_KEYS } from '../../lib/queryKeys';
-import { toast } from '../use-toast';
+import { toast } from 'sonner'; 
 
 export function useClientsQuery() {
   // SECCIÓN: HOOKS Y CLIENTE DE CONSULTA

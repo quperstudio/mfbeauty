@@ -76,7 +76,6 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   	);
   }
 
-  // --- COLUMNA IZQUIERDA (30% en Desktop) ---
   const LeftColumnContent = () => (
   	<div className="space-y-6 pr-2">
     	{/* Sección: Info principal */}

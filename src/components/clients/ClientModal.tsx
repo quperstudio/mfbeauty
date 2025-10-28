@@ -26,7 +26,7 @@ import { TagInput } from '@/components/ui/TagInput';
 import { useTagsQuery, useClientTagsQuery } from '../../hooks/tags/useTags.query';
 import { useAuth } from '../../contexts/AuthContext';
 import * as clientService from '../../services/client.service';
-import { toast } from "sonner"; // Sonner import
+import { toast } from "sonner";
 import SocialMediaManager from '../shared/SocialMediaManager';
 
 // ===================================

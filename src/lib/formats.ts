@@ -1,6 +1,6 @@
 import { format, parseISO, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { SOCIAL_MEDIA_BASE_URLS } from './constants';
+import { SOCIAL_MEDIA_BASE_URLS, SOCIAL_MEDIA_COLORS } from './constants';
 import { MessageCircle, Facebook, Instagram, Music2 } from 'lucide-react';
 import { SocialMediaType, SocialMedia, SocialMediaFields, EntityWithSocialMedia } from '../types/database';
 

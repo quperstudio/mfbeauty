@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'; // <--- 1. Importar useRef
+import React, { useEffect, useRef } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -52,24 +52,15 @@ export default function SocialMediaManager({
 
 
   useEffect(() => {
-    // --- INICIO DE LA SOLUCIÓN ---
-
-    // 3. Comprobar si es el primer renderizado
     if (isFirstRender.current) {
-      // Si es el primer render, lo marcamos como falso y no hacemos NADA.
-      // Esto rompe el bucle de "condición de carrera".
-      // No llamará a onChange([]) y no borrará el estado del padre.
       isFirstRender.current = false;
       return;
     }
 
-    // --- FIN DE LA SOLUCIÓN ---
-
-    // 4. A partir del segundo render, este useEffect funcionará normalmente.
     if (onChange) {
       onChange(socialMediaList);
     }
-  }, [socialMediaList, onChange]); // Las dependencias siguen igual
+  }, [socialMediaList, onChange]); 
 
   const handleAdd = () => {
     const success = handleAddSocialMedia();

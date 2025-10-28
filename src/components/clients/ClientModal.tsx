@@ -151,7 +151,6 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validateForm()) {
-            // CORRECCIÓN 1: El título ahora es el primer argumento, el cuerpo es 'description'
             toast.error('Fallo en la validación', {
                 description: 'Por favor, revisa los campos marcados en rojo para corregir los errores.', 
             });
@@ -163,7 +162,6 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         setPhoneCheckLoading(false);
 
         if (duplicateClient) {
-            // CORRECCIÓN 2: El título ahora es el primer argumento, el cuerpo es 'description'
             toast.error(`Error: Teléfono duplicado.`, { 
                 description: `Este número ya está registrado para el cliente ${duplicateClient.name}.`,
             });
@@ -197,14 +195,12 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         setLoading(false);
 
         if (result.error) {
-            // CORRECCIÓN 4: El título ahora es el primer argumento, el error es 'description'
             toast.error('Error al guardar el cliente', { 
                 description: result.error,
             });
         } else {
             resetModalState();
             onClose();
-            // CORRECCIÓN 5: El título ahora es el primer argumento, el mensaje de éxito es 'description'
             toast.success('Operación exitosa', { 
                 description: `¡Cliente ${client ? 'actualizado' : 'creado'} con éxito!`,
             });

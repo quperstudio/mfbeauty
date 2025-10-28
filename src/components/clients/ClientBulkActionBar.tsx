@@ -125,11 +125,11 @@ export default function ClientBulkActionBar({
           <Tooltip delayDuration={200}>
             <TooltipTrigger asChild>
               <Button
-                variant="destructive"
+                variant="ghost"
                 size="icon"
                 onClick={onDelete}
                 disabled={isLoading}
-                className="ml-2 w-8 h-8"
+                className="hidden md:inline-flex w-8 h-8 text-foreground/80 hover:bg-muted"
               >
                 {isLoading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />

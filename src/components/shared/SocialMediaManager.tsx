@@ -30,16 +30,7 @@ export default function SocialMediaManager({
   className,
 }: SocialMediaManagerProps) {
   const { toast } = useToast();
-
-  // --- INICIO DE LA SOLUCIÓN ---
-
-  // 2. Crear una referencia para rastrear si es el primer renderizado.
-  // La clave aquí es que esta referencia persistirá durante toda la vida del componente.
-  // A diferencia de la key de React, esta no se reinicia al editar.
   const isFirstRender = useRef(true);
-
-  // --- FIN DE LA SOLUCIÓN ---
-
 
   const {
     socialMediaList,

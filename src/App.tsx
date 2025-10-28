@@ -1,7 +1,7 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
-import { Toaster } from './components/ui/toaster';
+import { Toaster } from './components/ui/sonner'; // MODIFICADO
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { queryClient } from './lib/queryClient';

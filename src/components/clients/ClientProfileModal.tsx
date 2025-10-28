@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Cake, Phone, DollarSign, Edit, MessageCircle, Facebook, Instagram, Music2, CalendarOff, CalendarCheck, CalendarSearch, AlertCircle, User as UserIcon, Tag as TagIcon, Clock } from 'lucide-react';
+import { Cake, Phone, DollarSign, Edit, MessageCircle, Facebook, Instagram, Music2, CalendarOff, CalendarCheck, CalendarSearch, AlertCircle, User as UserIcon, Clock } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -188,7 +188,6 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   	{client.tags && client.tags.length > 0 && (
   		<div>
   			<h2 className="text-lg text-foreground mb-2 flex items-center gap-2">
-  				<TagIcon className="w-4 h-4" />
   				Etiquetas
   			</h2>
   			<div className="flex flex-wrap gap-2">

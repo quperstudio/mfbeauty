@@ -143,7 +143,7 @@ export default function SocialMediaManager({
         {socialMediaList.map((sm) => (
           <div
             key={sm.type}
-            className="group flex items-center justify-between p-2 bg-muted/30 text-secondary-foreground rounded-lg"
+            className="group flex items-center justify-between p-2 bg-secondary/30 text-secondary-foreground rounded-xl"
           >
             <div className="flex items-center gap-2 pl-2">
               {React.createElement(getSocialMediaIcon(sm.type)!, { className: 'w-4 h-4' })}

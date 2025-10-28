@@ -205,8 +205,8 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
             resetModalState();
             onClose();
             // CORRECCIÓN 5: El título ahora es el primer argumento, el mensaje de éxito es 'description'
-            toast.success('Operación Exitosa', { 
-                description: `Cliente ${client ? 'actualizado' : 'creado'} con éxito!`,
+            toast.success('Operación exitosa', { 
+                description: `¡Cliente ${client ? 'actualizado' : 'creado'} con éxito!`,
             });
         }
     };

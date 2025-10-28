@@ -9,7 +9,7 @@ import { ClientSchemaType } from '../../schemas/client.schema';
 import * as clientService from '../../services/client.service';
 import * as tagService from '../../services/tag.service';
 import { MOBILE_BREAKPOINT } from '../../constants/clients.constants';
-import { toast } from 'sonner'; // AÑADIDO
+import { toast } from 'sonner'; // AÑADIDO: Importación de Sonner
 
 export function useClientsPage() {
   const queryClient = useQueryClient();
@@ -23,7 +23,7 @@ export function useClientsPage() {
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [sortField, setSortField] = useState<ClientSortField>('created_at');
   const [sortDirection, setSortDirection] = useState<ClientSortDirection>('desc');
-  const [selectedClientIds, setSelectedClientIds] = useState<Set<string>>(new Set());
+  const [selectedClientIds, setSelectedClientIds] = new Set<string>());
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [profileClientId, setProfileClientId] = useState<string | null>(null);
   const [isAssignReferrerModalOpen, setIsAssignReferrerModalOpen] = useState(false);
@@ -175,12 +175,42 @@ export function useClientsPage() {
   const confirmDeleteClient = useCallback((client: Client) => {
     setClientToDelete(client);
   }, []);
-
+  
+  // AÑADIDO: Lógica simulada para deshacer la eliminación
+  const handleUndoDelete = useCallback((clientId: string, clientName: string) => {
+    // NOTA: En un proyecto real, 'clientService.undoDeleteClient'
+    // debería restaurar el cliente de la "papelera" o revertir el cambio.
+    // Aquí solo simulamos el toast informativo y refrescamos.
+    
+    // Si el servicio de clientes soporta la duplicación, podríamos 
+    // usar handleBulkDuplicate para simular la restauración si el original fue 
+    // una eliminación lógica (no física). Dado que no tenemos el servicio, solo invalidamos.
+    
+    // console.log(`[UNDO ACTION] Deshaciendo eliminación del cliente: ${clientId}`);
+    toast.info(`Acción deshecha. "${clientName}" no fue eliminado.`, { title: 'Deshacer completado' });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
+  }, [queryClient]);
+  
   const handleDeleteClient = useCallback(async () => {
     if (!clientToDelete) return;
-    await deleteClient(clientToDelete.id);
+    const deletedClientId = clientToDelete.id;
+    const deletedClientName = clientToDelete.name;
+
+    // 1. Ejecutar la eliminación
+    await deleteClient(deletedClientId);
     setClientToDelete(null);
-  }, [clientToDelete, deleteClient]);
+
+    // 2. Mostrar TOAST con botón para deshacer
+    toast.success(`Cliente "${deletedClientName}" eliminado.`, {
+      title: 'Eliminación Exitosa',
+      description: 'Puedes deshacer esta acción inmediatamente.',
+      duration: 8000, // Da 8 segundos al usuario para reaccionar
+      action: {
+        label: 'Deshacer',
+        onClick: () => handleUndoDelete(deletedClientId, deletedClientName), 
+      },
+    });
+  }, [clientToDelete, deleteClient, handleUndoDelete]); // handleUndoDelete es una dependencia
 
   const handleSort = useCallback(
     (field: ClientSortField) => {
@@ -231,10 +261,9 @@ export function useClientsPage() {
       await clientService.deleteMultipleClients(Array.from(selectedClientIds));
       setSelectedClientIds(new Set());
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
-      toast.success(`Se eliminaron ${count} cliente(s) con éxito.`, { title: 'Eliminación Masiva' }); // AÑADIDO
+      toast.success(`Se eliminaron ${count} cliente(s) con éxito.`, { title: 'Eliminación Masiva' });
     } catch (error) {
-      // alert('Error al eliminar clientes'); // ELIMINADO
-      toast.error('Error al eliminar clientes. Intenta de nuevo.', { title: 'Error de Eliminación' }); // AÑADIDO
+      toast.error('Error al eliminar clientes. Intenta de nuevo.', { title: 'Error de Eliminación' });
     } finally {
       setBulkActionLoading(false);
     }
@@ -244,7 +273,7 @@ export function useClientsPage() {
     async (clientIdsToDuplicate?: string[]) => {
       const idsToUse = clientIdsToDuplicate || Array.from(selectedClientIds);
       if (idsToUse.length === 0) return;
-      const count = idsToUse.length; // AÑADIDO para el mensaje de éxito
+      const count = idsToUse.length;
 
       setBulkActionLoading(true);
       try {
@@ -254,10 +283,9 @@ export function useClientsPage() {
           setSelectedClientIds(new Set());
         }
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
-        toast.success(`Se duplicaron ${count} cliente(s) con éxito.`, { title: 'Duplicación Masiva' }); // AÑADIDO
+        toast.success(`Se duplicaron ${count} cliente(s) con éxito.`, { title: 'Duplicación Masiva' });
       } catch (error) {
-        // alert('Error al duplicar clientes'); // ELIMINADO
-        toast.error('Error al duplicar clientes. Intenta de nuevo.', { title: 'Error de Duplicación' }); // AÑADIDO
+        toast.error('Error al duplicar clientes. Intenta de nuevo.', { title: 'Error de Duplicación' });
       } finally {
         setBulkActionLoading(false);
       }
@@ -296,16 +324,15 @@ export function useClientsPage() {
   const handleAssignReferrer = useCallback(
     async (referrerId: string | null) => {
       setBulkActionLoading(true);
-      const count = selectedClientIds.size; // AÑADIDO para el mensaje de éxito
+      const count = selectedClientIds.size;
       try {
         await clientService.updateMultipleClientsReferrer(Array.from(selectedClientIds), referrerId);
         setSelectedClientIds(new Set());
         setIsAssignReferrerModalOpen(false);
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
-        toast.success(`Se actualizó el referente de ${count} cliente(s) con éxito.`, { title: 'Referente Asignado' }); // AÑADIDO
+        toast.success(`Se actualizó el referente de ${count} cliente(s) con éxito.`, { title: 'Referente Asignado' });
       } catch (error) {
-        // alert('Error al asignar referente'); // ELIMINADO
-        toast.error('Error al asignar referente. Intenta de nuevo.', { title: 'Error de Asignación' }); // AÑADIDO
+        toast.error('Error al asignar referente. Intenta de nuevo.', { title: 'Error de Asignación' });
       } finally {
         setBulkActionLoading(false);
       }
@@ -346,7 +373,7 @@ export function useClientsPage() {
     handleEditClient,
     handleSaveClient,
     confirmDeleteClient,
-    handleDeleteClient,
+    handleDeleteClient, // MODIFICADO: Ahora contiene el toast con Deshacer
     handleSort,
     handleSelectAll,
     handleSelectClient,

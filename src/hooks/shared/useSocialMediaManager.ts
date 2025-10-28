@@ -29,11 +29,7 @@ export function useSocialMediaManager({
   onSyncWhatsAppWithPhone = false,
 }: UseSocialMediaManagerProps = {}): UseSocialMediaManagerReturn {
   
-  // ⬇️ MODIFICACIÓN CRÍTICA:
-  // Corregir la inicialización del estado. Debe usar initialList directamente.
   const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>(initialList);
-  // ⬆️ FIN MODIFICACIÓN
-
   const [newSocialMediaType, setNewSocialMediaType] = useState<SocialMediaType>('whatsapp');
   const [newSocialMediaLink, setNewSocialMediaLink] = useState<string>('');
   const [socialMediaInputError, setSocialMediaInputError] = useState<string>('');

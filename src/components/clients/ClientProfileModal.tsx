@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { format, isFuture, parseISO } from 'date-fns';
+import { useState } from 'react';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Cake, Phone, DollarSign, Edit, MessageCircle, Facebook, Instagram, Music2, CalendarOff, CalendarCheck, CalendarSearch, AlertCircle, User as UserIcon, Tag as TagIcon, Clock } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -9,8 +9,10 @@ import { Spinner } from '@/components/ui/spinner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useClientDetailsQuery } from '../../hooks/clients/useClientDetails.query';
-import { formatCurrency, formatPhone, parseDate, buildSocialMediaUrl } from '../../lib/formats';
-import { Appointment, Client } from '../../types/database';
+import { handleOpenLink } from '../../lib/utils';
+import { NOTE_TRUNCATE_LENGTH } from '../../constants/clients.constants';
+import { formatCurrency, formatPhone, parseDate, buildSocialMediaUrl, getStatusBadgeVariant, getStatusLabel, getUserDisplayName } from '../../lib/formats';
+import { Client } from '../../types/database';
 
 // -----------------------------------------------------------------------------
 // INTERFACES Y CONSTANTES
@@ -23,8 +25,6 @@ interface ClientProfileModalProps {
   onEdit: (client: Client) => void;
 }
 
-// Límite de caracteres para truncar notas
-const NOTE_TRUNCATE_LENGTH = 200;
 
 // -----------------------------------------------------------------------------
 // COMPONENTE: ClientProfileModal
@@ -35,67 +35,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   const [showAllNotes, setShowAllNotes] = useState(false);
 
   // Hook de datos del cliente
-  const { client, loading, error } = useClientDetailsQuery(clientId); 
-
-  // Memoriza y clasifica citas (futuras/pasadas)
-  const { futureAppointments, pastAppointments } = useMemo(() => {
-  	if (!client?.appointments) {
-    	return { futureAppointments: [], pastAppointments: [] };
-  	}
-  	const future: Appointment[] = [];
-  	const past: Appointment[] = [];
-  	client.appointments.forEach((appointment) => {
-    	const appointmentDate = parseISO(appointment.appointment_date);
-    	if (isFuture(appointmentDate)) {
-      	future.push(appointment);
-    	} else {
-      	past.push(appointment);
-    	}
-  	});
-  	future.sort((a, b) => parseISO(a.appointment_date).getTime() - parseISO(b.appointment_date).getTime());
-  	past.sort((a, b) => parseISO(b.appointment_date).getTime() - parseISO(a.appointment_date).getTime());
-  	return { futureAppointments: future, pastAppointments: past };
-  }, [client?.appointments]);
-
-  // ---------------------------------------------------------------------------
-  // Funciones Helpers
-  // ---------------------------------------------------------------------------
-
-  // Retorna 'variant' de Badge según estado
-  const getStatusBadgeVariant = (status: string) => {
-  	switch (status) {
-    	case 'completed': return 'success';
-    	case 'confirmed': return 'info';
-    	case 'pending': return 'warning';
-    	case 'canceled': return 'destructive';
-    	default: return 'default';
-  	}
-  };
-
-  // Retorna label traducido de estado
-  const getStatusLabel = (status: string) => {
-  	switch (status) {
-    	case 'completed': return 'Completada';
-    	case 'confirmed': return 'Confirmada';
-    	case 'pending': return 'Pendiente';
-    	case 'canceled': return 'Cancelada';
-    	default: return status;
-  	}
-  };
-
-  // Helper para abrir enlaces en nueva pestaña
-  const openLink = (url: string) => {
-  	window.open(url, '_blank', 'noopener,noreferrer');
-  };
-
-  // Función para obtener el nombre de usuario (o rol por defecto)
-  const getUserDisplayName = (client: Client) => {
-  	if (client.created_by) {
-  		return client.created_by.name || (client.created_by.role === 'administrator' ? 'Administrador' : 'Empleado');
-  	}
-  	// Si no hay created_by (puede ser un registro muy antiguo o importado)
-  	return 'Sistema';
-  };
+  const { client, loading, futureAppointments, pastAppointments } = useClientDetailsQuery(clientId); 
 
   // -----------------------------------------------------------------------------
   // ESTADO DE CARGA (Early Return)
@@ -119,7 +59,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   // ESTADO DE ERROR (Early Return)
   // -----------------------------------------------------------------------------
   // Maneja error de fetch o cliente no encontrado
-  if (error || !client) {
+  if (!client && !loading) {
   	return (
     	<Dialog open={isOpen} onOpenChange={onClose}>
       	<DialogContent className="sm:max-w-lg">
@@ -190,7 +130,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   							<Button
   								variant="outline"
   								size="icon"
-  								onClick={() => openLink(buildSocialMediaUrl('whatsapp', client.whatsapp_link))}
+  								onClick={() => handleOpenLink(buildSocialMediaUrl('whatsapp', client.whatsapp_link))}
   							>
   								<MessageCircle className="w-4 h-4" />
   							</Button>
@@ -204,7 +144,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   							<Button
   								variant="outline"
   								size="icon"
-  								onClick={() => openLink(buildSocialMediaUrl('facebook', client.facebook_link))}
+  								onClick={() => handleOpenLink(buildSocialMediaUrl('facebook', client.facebook_link))}
   							>
   								<Facebook className="w-4 h-4" />
   							</Button>
@@ -218,7 +158,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   							<Button
   								variant="outline"
   								size="icon"
-  								onClick={() => openLink(buildSocialMediaUrl('instagram', client.instagram_link))}
+  								onClick={() => handleOpenLink(buildSocialMediaUrl('instagram', client.instagram_link))}
   							>
   								<Instagram className="w-4 h-4" />
   							</Button>
@@ -232,7 +172,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   							<Button
   								variant="outline"
   								size="icon"
-  								onClick={() => openLink(buildSocialMediaUrl('tiktok', client.tiktok_link))}
+  								onClick={() => handleOpenLink(buildSocialMediaUrl('tiktok', client.tiktok_link))}
   							>
   								<Music2 className="w-4 h-4" />
   							</Button>

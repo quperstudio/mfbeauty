@@ -38,3 +38,13 @@ export const CLIENT_SOCIAL_MEDIA_LIMIT = {
   DESKTOP: null,
   MOBILE: 1,
 } as const;
+
+export const NOTE_TRUNCATE_LENGTH = 200;
+
+export const initialFormData = {
+  name: '',
+  phone: '',
+  birthday: null,
+  notes: '',
+  referrer_id: '',
+};

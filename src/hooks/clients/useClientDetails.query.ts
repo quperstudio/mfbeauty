@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import { parseISO, isFuture } from 'date-fns';
 import * as clientService from '../../services/client.service';
 import * as appointmentService from '../../services/appointment.service';
 import * as tagService from '../../services/tag.service';
 import { QUERY_KEYS } from '../../lib/queryKeys';
-import { ClientWithDetails, User } from '../../types/database';
+import { ClientWithDetails, User, Appointment } from '../../types/database';
 import { supabase } from '../../lib/supabase';
 
 export function useClientDetailsQuery(clientId: string | null) {
@@ -56,9 +58,30 @@ export function useClientDetailsQuery(clientId: string | null) {
       }
     : null;
 
+  const { futureAppointments, pastAppointments } = useMemo(() => {
+    if (!clientWithDetails?.appointments) {
+      return { futureAppointments: [], pastAppointments: [] };
+    }
+    const future: Appointment[] = [];
+    const past: Appointment[] = [];
+    clientWithDetails.appointments.forEach((appointment) => {
+      const appointmentDate = parseISO(appointment.appointment_date);
+      if (isFuture(appointmentDate)) {
+        future.push(appointment);
+      } else {
+        past.push(appointment);
+      }
+    });
+    future.sort((a, b) => parseISO(a.appointment_date).getTime() - parseISO(b.appointment_date).getTime());
+    past.sort((a, b) => parseISO(b.appointment_date).getTime() - parseISO(a.appointment_date).getTime());
+    return { futureAppointments: future, pastAppointments: past };
+  }, [clientWithDetails?.appointments]);
+
   return {
     client: clientWithDetails,
     loading: clientLoading || appointmentsLoading || referralsLoading || tagsLoading || createdByLoading,
     error: null,
+    futureAppointments,
+    pastAppointments,
   };
 }

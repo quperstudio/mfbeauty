@@ -2,7 +2,7 @@ import { format, parseISO, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { SOCIAL_MEDIA_BASE_URLS, SOCIAL_MEDIA_COLORS } from './constants';
 import { MessageCircle, Facebook, Instagram, Music2 } from 'lucide-react';
-import { SocialMediaType, SocialMedia, SocialMediaFields, EntityWithSocialMedia } from '../types/database';
+import { SocialMediaType, SocialMedia, SocialMediaFields, EntityWithSocialMedia, Client } from '../types/database';
 
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('es-MX', {
@@ -227,4 +227,31 @@ export function getSocialMediaLinks(
   const hiddenLinks = links.slice(limit);
 
   return { visibleLinks, hiddenCount, hiddenLinks };
+}
+
+export function getStatusBadgeVariant(status: string): 'success' | 'info' | 'warning' | 'destructive' | 'default' {
+  switch (status) {
+    case 'completed': return 'success';
+    case 'confirmed': return 'info';
+    case 'pending': return 'warning';
+    case 'canceled': return 'destructive';
+    default: return 'default';
+  }
+}
+
+export function getStatusLabel(status: string): string {
+  switch (status) {
+    case 'completed': return 'Completada';
+    case 'confirmed': return 'Confirmada';
+    case 'pending': return 'Pendiente';
+    case 'canceled': return 'Cancelada';
+    default: return status;
+  }
+}
+
+export function getUserDisplayName(client: Client): string {
+  if (client.created_by) {
+    return client.created_by.name || (client.created_by.role === 'administrator' ? 'Administrador' : 'Empleado');
+  }
+  return 'Sistema';
 }

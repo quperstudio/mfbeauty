@@ -7,14 +7,15 @@ import { useClientTagsQuery, useTagsQuery } from '../tags/useTags.query';
 import { Client, ClientFilterType, ClientSortField, ClientSortDirection } from '../../types/database';
 import { ClientSchemaType } from '../../schemas/client.schema';
 import * as clientService from '../../services/client.service';
-import * as tagService from '../../services/tag.service';
+import { useClientLogic } from './useClientLogic';
 import { MOBILE_BREAKPOINT } from '../../constants/clients.constants';
 import { toast } from 'sonner'; // AÑADIDO: Importación de Sonner
 
 export function useClientsPage() {
   const queryClient = useQueryClient();
-  const { clients, loading, error, createClient, updateClient, deleteClient } = useClientsQuery();
+  const { clients, loading, error } = useClientsQuery();
   const { tags: availableTags } = useTagsQuery();
+  const logic = useClientLogic();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -152,22 +153,15 @@ export function useClientsPage() {
   const handleSaveClient = useCallback(
     async (data: ClientSchemaType, tagIds: string[]): Promise<{ error: string | null }> => {
       try {
-        if (selectedClient && selectedClient.id) {
-          await updateClient(selectedClient.id, data);
-          await syncTags(selectedClient.id, tagIds);
-        } else {
-          const newClient = await createClient(data);
-          if (newClient && newClient.id) {
-            await syncTags(newClient.id, tagIds);
-          }
-        }
+        await logic.saveClient(data, tagIds, selectedClient?.id);
+        toast.success(selectedClient ? 'Cliente actualizado' : 'Cliente creado');
         return { error: null };
       } catch (err: any) {
-        console.error('Error al guardar el cliente o sus tags:', err);
+        toast.error('Error al guardar cliente', { description: err.message });
         return { error: err.message || 'Error al guardar los datos' };
       }
     },
-    [selectedClient, updateClient, createClient, syncTags]
+    [selectedClient, logic]
   );
 
   const confirmDeleteClient = useCallback((client: Client) => {
@@ -190,7 +184,7 @@ export function useClientsPage() {
     const deletedClientName = clientToDelete.name;
 
     // 1. Ejecutar la eliminación
-    await deleteClient(deletedClientId);
+    await logic.deleteClients(deletedClientId);
     setClientToDelete(null);
 
     // 2. Mostrar TOAST con botón para deshacer
@@ -250,7 +244,7 @@ export function useClientsPage() {
 
     setBulkActionLoading(true);
     try {
-      await clientService.deleteMultipleClients(Array.from(selectedClientIds));
+      await logic.deleteClients(Array.from(selectedClientIds));
       setSelectedClientIds(new Set());
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
       toast.success('Eliminación masiva exitosa', {
@@ -273,8 +267,7 @@ export function useClientsPage() {
 
       setBulkActionLoading(true);
       try {
-        const promises = idsToUse.map((id) => clientService.duplicateClient(id));
-        await Promise.all(promises);
+        await logic.duplicateClients(idsToUse);
         if (!clientIdsToDuplicate) {
           setSelectedClientIds(new Set());
         }
@@ -326,7 +319,7 @@ export function useClientsPage() {
       setBulkActionLoading(true);
       const count = selectedClientIds.size;
       try {
-        await clientService.updateMultipleClientsReferrer(Array.from(selectedClientIds), referrerId);
+        await logic.assignReferrerToClients(Array.from(selectedClientIds), referrerId);
         setSelectedClientIds(new Set());
         setIsAssignReferrerModalOpen(false);
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });

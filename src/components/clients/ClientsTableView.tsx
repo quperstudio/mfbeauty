@@ -1,3 +1,4 @@
+import { handleOpenLink } from "../../lib/utils";
 import { Eye, Pen, Trash2, Copy, Download, UserPlus, MoreVertical, ArrowUp, ArrowDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -29,9 +30,6 @@ interface ClientsTableViewProps {
   onAssignReferrer: (clientIds: string[]) => void;
 }
 
-const handleOpenLink = (url: string) => {
-  window.open(url, '_blank', 'noopener,noreferrer');
-};
 
 export default function ClientsTableView({
   clients,

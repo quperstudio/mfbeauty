@@ -50,10 +50,18 @@ export async function updateClient(id: string, clientData: ClientSchemaType): Pr
 }
 
 /**
- * Delete a client
+ * Delete one or multiple clients by ID(s)
+ * Handles both single client deletion and batch operations
  */
-export async function deleteClient(id: string): Promise<void> {
-  return baseService.remove(TABLE_NAME, id);
+export async function deleteClients(ids: string | string[]): Promise<void> {
+  const idsArray = Array.isArray(ids) ? ids : [ids];
+
+  const { error } = await supabase
+    .from(TABLE_NAME)
+    .delete()
+    .in('id', idsArray);
+
+  if (error) throw error;
 }
 
 /**
@@ -81,18 +89,6 @@ export async function fetchClientReferrals(clientId: string): Promise<Client[]> 
     column: 'created_at',
     ascending: false,
   });
-}
-
-/**
- * Delete multiple clients by their IDs
- */
-export async function deleteMultipleClients(ids: string[]): Promise<void> {
-  const { error } = await supabase
-    .from(TABLE_NAME)
-    .delete()
-    .in('id', ids);
-
-  if (error) throw error;
 }
 
 /**

@@ -75,3 +75,7 @@ export function sortBy<T>(array: T[], key: keyof T, direction: 'asc' | 'desc' = 
     return 0;
   });
 }
+
+export function handleOpenLink(url: string): void {
+  window.open(url, '_blank', 'noopener,noreferrer');
+}

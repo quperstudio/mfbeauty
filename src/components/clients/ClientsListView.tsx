@@ -1,3 +1,4 @@
+import { handleOpenLink } from "../../lib/utils";
 import { Eye, Pen, Trash2, Copy, Download, UserPlus, MoreVertical } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -27,9 +28,6 @@ interface ClientsListViewProps {
   onAssignReferrer: (clientIds: string[]) => void;
 }
 
-const handleOpenLink = (url: string) => {
-  window.open(url, '_blank', 'noopener,noreferrer');
-};
 
 export default function ClientsListView({
   clients,

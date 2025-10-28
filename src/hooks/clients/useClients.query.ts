@@ -46,8 +46,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ClientSchemaType } from '../../schemas/client.schema';
 import * as clientService from '../../services/client.service';
-import { QUERY_KEYS } from '../../lib/queryKeys';
-import { toast } from 'sonner'; 
+import { QUERY_KEYS } from '../../lib/queryKeys'; 
 
 export function useClientsQuery() {
   // SECCIÓN: HOOKS Y CLIENTE DE CONSULTA
@@ -58,21 +57,11 @@ export function useClientsQuery() {
     queryFn: clientService.fetchClients,
   });
 
-  // SECCIÓN: MUTACIONES
+  // SECCIÓN: MUTACIONES (Silenciosas - sin toasts)
   const createMutation = useMutation({
     mutationFn: clientService.createClient,
     onSuccess: () => {
-      // Mostrar toast de éxito al crear
-      toast.success('Cliente creado', {
-        description: 'El nuevo cliente se ha guardado exitosamente.',
-      });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
-    },
-    onError: (err) => {
-      // Mostrar toast de error al crear
-      toast.error('Error al crear cliente', {
-        description: err instanceof Error ? err.message : 'Ocurrió un error inesperado.',
-      });
     },
   });
 
@@ -80,64 +69,54 @@ export function useClientsQuery() {
     mutationFn: ({ id, data }: { id: string; data: ClientSchemaType }) =>
       clientService.updateClient(id, data),
     onSuccess: () => {
-      // Mostrar toast de éxito al actualizar
-      toast.success('Cliente actualizado', {
-        description: 'La información del cliente ha sido modificada.',
-      });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
-      // Opcional: Invalidar el detalle si estuviera visible
-      // queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.detail() });
-    },
-    onError: (err) => {
-      // Mostrar toast de error al actualizar
-      toast.error('Error al actualizar cliente', {
-        description: err instanceof Error ? err.message : 'Ocurrió un error inesperado.',
-      });
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: clientService.deleteClient,
+    mutationFn: (ids: string | string[]) => clientService.deleteClients(ids),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
     },
-    onError: (err) => {
-      // Mostrar toast de error al eliminar
-      toast.error('Error al eliminar cliente', {
-        description: err instanceof Error ? err.message : 'Ocurrió un error inesperado.',
-      });
+  });
+
+  const duplicateMutation = useMutation({
+    mutationFn: clientService.duplicateClient,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
+    },
+  });
+
+  const assignReferrerMutation = useMutation({
+    mutationFn: ({ clientIds, referrerId }: { clientIds: string[]; referrerId: string }) =>
+      clientService.updateMultipleClientsReferrer(clientIds, referrerId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
     },
   });
 
   // SECCIÓN: FUNCIONES PÚBLICAS
   const createClient = async (data: ClientSchemaType) => {
-    try {
-      const newClient = await createMutation.mutateAsync(data);
-      return newClient;
-    } catch (err) {
-      // El error ya se maneja en onError de useMutation, lanzamos la excepción
-      throw err;
-    }
+    const newClient = await createMutation.mutateAsync(data);
+    return newClient;
   };
 
   const updateClient = async (id: string, data: ClientSchemaType) => {
-    try {
-      await updateMutation.mutateAsync({ id, data });
-      return { error: null };
-    } catch (err) {
-      // El error ya se maneja en onError de useMutation, solo devolvemos el resultado.
-      return { error: err instanceof Error ? err.message : 'Error al actualizar cliente' };
-    }
+    const updatedClient = await updateMutation.mutateAsync({ id, data });
+    return updatedClient;
   };
 
-  const deleteClient = async (id: string) => {
-    try {
-      await deleteMutation.mutateAsync(id);
-      return { error: null };
-    } catch (err) {
-      // El error ya se maneja en onError de useMutation, solo devolvemos el resultado.
-      return { error: err instanceof Error ? err.message : 'Error al eliminar cliente' };
-    }
+  const deleteClient = async (ids: string | string[]) => {
+    await deleteMutation.mutateAsync(ids);
+  };
+
+  const duplicateClient = async (id: string) => {
+    const duplicatedClient = await duplicateMutation.mutateAsync(id);
+    return duplicatedClient;
+  };
+
+  const assignReferrer = async (clientIds: string[], referrerId: string) => {
+    await assignReferrerMutation.mutateAsync({ clientIds, referrerId });
   };
 
   // SECCIÓN: RETORNO DEL HOOK
@@ -148,6 +127,8 @@ export function useClientsQuery() {
     createClient,
     updateClient,
     deleteClient,
+    duplicateClient,
+    assignReferrer,
     refresh: () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all }),
   };
 }

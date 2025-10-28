@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react'; // <--- No se necesita useRef
 import { SocialMedia, SocialMediaType } from '../../types/database';
 import { SOCIAL_TYPE_OPTIONS, SOCIAL_MEDIA_LABELS } from '../../lib/constants';
 import { cleanSocialMediaInput } from '../../lib/formats';
@@ -23,6 +23,21 @@ export interface UseSocialMediaManagerReturn {
   resetList: (list: SocialMedia[]) => void;
 }
 
+// --- INICIO DE LA SOLUCIÓN ---
+
+// 1. Creamos una función helper para calcular el *siguiente* tipo disponible
+// basándonos en una lista.
+const getNextAvailableType = (list: SocialMedia[]): SocialMediaType => {
+  const existingTypes = new Set(list.map(sm => sm.type));
+  const availableOptions = SOCIAL_TYPE_OPTIONS.filter(opt => !existingTypes.has(opt.value));
+  
+  // Devuelve la primera opción disponible, o 'whatsapp' como fallback si todo está lleno
+  return availableOptions.length > 0 ? availableOptions[0].value : 'whatsapp'; 
+};
+
+// --- FIN DE LA SOLUCIÓN ---
+
+
 export function useSocialMediaManager({
   initialList = [],
   phoneValue = '',
@@ -30,12 +45,31 @@ export function useSocialMediaManager({
 }: UseSocialMediaManagerProps = {}): UseSocialMediaManagerReturn {
 
   const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>(initialList);
-  const [newSocialMediaType, setNewSocialMediaType] = useState<SocialMediaType>('whatsapp');
+  
+  // --- INICIO DE LA SOLUCIÓN ---
+  
+  // 2. Usamos el helper para inicializar el estado del Select.
+  // Usamos un inicializador de función en useState para que esto solo se ejecute una vez.
+  const [newSocialMediaType, setNewSocialMediaType] = useState<SocialMediaType>(() => 
+    getInitialType(initialList)
+  );
+  
+  // --- FIN DE LA SOLUCIÓN ---
+  
   const [newSocialMediaLink, setNewSocialMediaLink] = useState<string>('');
   const [socialMediaInputError, setSocialMediaInputError] = useState<string>('');
 
   useEffect(() => {
     setSocialMediaList(initialList);
+    
+    // --- INICIO DE LA SOLUCIÓN ---
+
+    // 3. Cuando la lista inicial cambia (p.ej. al editar),
+    // también debemos re-calcular el tipo por defecto para el Select.
+    setNewSocialMediaType(getInitialType(initialList));
+    setNewSocialMediaLink(''); // Y limpiar el input
+    
+    // --- FIN DE LA SOLUCIÓN ---
   }, [initialList]);
 
   const socialMediaOptions = useMemo(() => {
@@ -68,11 +102,13 @@ export function useSocialMediaManager({
     const updatedList = [...socialMediaList, { type: newSocialMediaType, link: cleanedLink }];
     setSocialMediaList(updatedList);
 
-    const existingTypes = new Set(updatedList.map(sm => sm.type));
-    const availableOptions = SOCIAL_TYPE_OPTIONS.filter(opt => !existingTypes.has(opt.value));
-
-    const nextDefaultType = availableOptions.length > 0 ? availableOptions[0].value : 'whatsapp';
+    // --- INICIO DE LA SOLUCIÓN ---
+    
+    // 4. Usamos el helper aquí también para mantener la lógica consistente.
+    const nextDefaultType = getInitialType(updatedList);
     setNewSocialMediaType(nextDefaultType);
+    
+    // --- FIN DE LA SOLUCIÓN ---
 
     setNewSocialMediaLink('');
     setSocialMediaInputError('');
@@ -83,15 +119,15 @@ export function useSocialMediaManager({
     const updatedList = socialMediaList.filter(sm => sm.type !== typeToRemove);
     setSocialMediaList(updatedList);
 
-    const existingTypes = new Set(updatedList.map(sm => sm.type));
-    const availableOptions = SOCIAL_TYPE_OPTIONS.filter(opt => !existingTypes.has(opt.value));
+    // --- INICIO DE LA SOLUCIÓN ---
 
-    if (availableOptions.length > 0) {
-      setNewSocialMediaType(availableOptions[0].value);
-      setNewSocialMediaLink('');
-    } else {
-      setNewSocialMediaLink('');
-    }
+    // 5. Usamos el helper aquí también.
+    const nextDefaultType = getInitialType(updatedList);
+    setNewSocialMediaType(nextDefaultType);
+    setNewSocialMediaLink('');
+    
+    // --- FIN DE LA SOLUCIÓN ---
+    
   }, [socialMediaList]);
 
   const clearInputError = useCallback(() => {
@@ -101,9 +137,12 @@ export function useSocialMediaManager({
   const resetList = useCallback((list: SocialMedia[]) => {
     setSocialMediaList(list);
 
-    const existingTypes = new Set(list.map(sm => sm.type));
-    const availableOptions = SOCIAL_TYPE_OPTIONS.filter(opt => !existingTypes.has(opt.value));
-    const nextDefaultType = availableOptions.length > 0 ? availableOptions[0].value : 'whatsapp';
+    // --- INICIO DE LA SOLUCIÓN ---
+
+    // 6. Y finalmente, usamos el helper aquí.
+    const nextDefaultType = getInitialType(list);
+    
+    // --- FIN DE LA SOLUCIÓN ---
     
     setNewSocialMediaType(nextDefaultType);
     setNewSocialMediaLink('');
@@ -124,3 +163,6 @@ export function useSocialMediaManager({
     resetList,
   };
 }
+
+// Renombramos la función para que coincida con los puntos 2-6
+const getInitialType = getNextAvailableType;

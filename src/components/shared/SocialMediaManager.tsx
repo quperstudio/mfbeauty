@@ -139,7 +139,7 @@ export default function SocialMediaManager({
         <p className="text-sm text-destructive">{socialMediaInputError}</p>
       )}
 
-      <div className="space-y-2">
+      <div className="space-y-2 pt-2">
         {socialMediaList.map((sm) => (
           <div
             key={sm.type}

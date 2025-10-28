@@ -1,6 +1,16 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { z } from 'zod';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -61,13 +71,12 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     const [phoneCheckLoading, setPhoneCheckLoading] = useState(false);
 
     const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>([]);
+    const [initialSocialMediaList, setInitialSocialMediaList] = useState<SocialMedia[]>([]);
+    const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false);
 
-    // ⬇️ MODIFICACIÓN CRÍTICA PARA REINICIALIZAR ESTADO AL CERRAR/ABRIR
     useEffect(() => {
         if (isOpen) {
-            // Lógica de APERTURA
             if (client) {
-                // Modo EDITAR: Cargar datos del cliente
                 setFormData({
                     name: client.name,
                     phone: client.phone,
@@ -78,24 +87,17 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
 
                 const initialSocialMedia = mapEntityToSocialMediaList(client);
                 setSocialMediaList(initialSocialMedia);
-                
+                setInitialSocialMediaList(initialSocialMedia);
+
             } else {
-                // Modo NUEVO: Asegurarse de que todo esté reseteado (solo se ejecuta si client es undefined al abrir)
                 setFormData(initialFormData);
                 setSocialMediaList([]);
+                setInitialSocialMediaList([]);
                 setSelectedTags([]);
             }
-            setErrors({}); // Limpiar errores al abrir
-        } else {
-            // Lógica de CIERRE: Resetear todo el estado cuando el modal se cierra
-            setFormData(initialFormData);
-            setSocialMediaList([]);
-            setSelectedTags([]);
             setErrors({});
-            // Nota: clientTags se actualizará automáticamente por useClientTagsQuery en el siguiente render si es necesario
         }
     }, [client, isOpen]);
-    // ⬆️ FIN DE MODIFICACIÓN CRÍTICA
 
     useEffect(() => {
         if (isOpen && client) {
@@ -204,6 +206,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                 description: result.error,
             });
         } else {
+            resetModalState();
             onClose();
             toast({
                 title: 'Operación Exitosa',
@@ -227,6 +230,49 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         setSocialMediaList(updatedList);
     }, []);
 
+    const hasUnsavedChanges = useCallback((): boolean => {
+        const formChanged = JSON.stringify(formData) !== JSON.stringify(
+            client ? {
+                name: client.name,
+                phone: client.phone,
+                birthday: client.birthday || null,
+                notes: client.notes || '',
+                referrer_id: client.referrer_id || '',
+            } : initialFormData
+        );
+
+        const socialMediaChanged = JSON.stringify(socialMediaList) !== JSON.stringify(initialSocialMediaList);
+
+        const tagsChanged = JSON.stringify(selectedTags.map(t => t.id).sort()) !== JSON.stringify(
+            (client ? clientTags : []).map(t => t.id).sort()
+        );
+
+        return formChanged || socialMediaChanged || tagsChanged;
+    }, [formData, socialMediaList, selectedTags, client, initialSocialMediaList, clientTags]);
+
+    const handleClose = useCallback(() => {
+        if (hasUnsavedChanges()) {
+            setShowUnsavedChangesDialog(true);
+        } else {
+            resetModalState();
+            onClose();
+        }
+    }, [hasUnsavedChanges, onClose]);
+
+    const resetModalState = useCallback(() => {
+        setFormData(initialFormData);
+        setSocialMediaList([]);
+        setInitialSocialMediaList([]);
+        setSelectedTags([]);
+        setErrors({});
+    }, []);
+
+    const confirmClose = useCallback(() => {
+        setShowUnsavedChangesDialog(false);
+        resetModalState();
+        onClose();
+    }, [onClose, resetModalState]);
+
     const referrerOptions = useMemo(() => {
         const options = [
             { value: '__RESET__', label: 'Ninguno' }, 
@@ -242,7 +288,8 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     // RENDERIZADO
     // ===================================
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
+        <>
+        <Dialog open={isOpen} onOpenChange={handleClose}>
             <DialogContent 
                 className="w-10/12 md:max-w-l h-[85vh] flex flex-col p-0 bg-card text-card-foreground border-border"
             > 
@@ -362,22 +409,19 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                     );
 
                                     let tagToAdd: ClientTag | undefined;
-                                    
+
                                     if (existingTag) {
-                                        // Si existe globalmente, usar esa.
                                         tagToAdd = existingTag;
                                     } else {
-                                        // Si no existe, llamar al servicio para crearla.
                                         const { tag, error } = await createTag({ name: tagName });
                                         if (error) {
                                             toast({ variant: 'destructive', title: 'Error al crear la etiqueta', description: error });
                                             return;
                                         }
-                                        tagToAdd = tag;
+                                        tagToAdd = tag ?? undefined;
                                     }
 
                                     if (tagToAdd) {
-                                        // Añadir la etiqueta al estado local
                                         setSelectedTags((prev) => [...prev, tagToAdd!]);
                                     }
                                 }}
@@ -417,7 +461,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                             type="button"
                             variant="outline"
                             size="default"
-                            onClick={onClose}
+                            onClick={handleClose}
                             disabled={loading}
                             className="w-full sm:w-auto"
                         >
@@ -443,5 +487,25 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                 </form>
             </DialogContent>
         </Dialog>
+
+        <AlertDialog open={showUnsavedChangesDialog} onOpenChange={setShowUnsavedChangesDialog}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>¿Descartar cambios?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Tienes cambios sin guardar. Si cierras ahora, se perderán todos los cambios realizados.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setShowUnsavedChangesDialog(false)}>
+                        Continuar editando
+                    </AlertDialogCancel>
+                    <AlertDialogAction onClick={confirmClose} className="bg-destructive hover:bg-destructive/90">
+                        Descartar cambios
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+        </>
     );
 } 

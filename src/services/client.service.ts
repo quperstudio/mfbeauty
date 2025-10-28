@@ -96,7 +96,7 @@ export async function deleteMultipleClients(ids: string[]): Promise<void> {
 }
 
 /**
- * Duplicate a client (create a copy with modified name)
+ * Duplicate a client (create a copy with modified name and all related data including social media and tags)
  */
 export async function duplicateClient(id: string): Promise<Client> {
   const client = await fetchClientById(id);
@@ -107,9 +107,35 @@ export async function duplicateClient(id: string): Promise<Client> {
   const duplicatedData = {
     ...clientData,
     name: `${client.name} (Copia)`,
+    whatsapp_link: client.whatsapp_link,
+    facebook_link: client.facebook_link,
+    instagram_link: client.instagram_link,
+    tiktok_link: client.tiktok_link,
   };
 
-  return baseService.create<Client, typeof duplicatedData>(TABLE_NAME, duplicatedData);
+  const newClient = await baseService.create<Client, typeof duplicatedData>(TABLE_NAME, duplicatedData);
+
+  const { data: tagAssignments, error: tagError } = await supabase
+    .from('client_tags_assignments')
+    .select('tag_id')
+    .eq('client_id', id);
+
+  if (tagError) throw tagError;
+
+  if (tagAssignments && tagAssignments.length > 0) {
+    const newAssignments = tagAssignments.map((assignment) => ({
+      client_id: newClient.id,
+      tag_id: assignment.tag_id,
+    }));
+
+    const { error: insertError } = await supabase
+      .from('client_tags_assignments')
+      .insert(newAssignments);
+
+    if (insertError) throw insertError;
+  }
+
+  return newClient;
 }
 
 /**

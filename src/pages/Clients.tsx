@@ -250,34 +250,22 @@ export default function Clients() {
     setIsModalOpen(true);
   };
 
-const handleSaveClient = async (data: any, tagIds: string[]) => {
+const handleSaveClient = async (data: any, tagIds: string[]): Promise<{ error: string | null }> => {
     try {
       if (selectedClient && selectedClient.id) {
-        // --- MODO EDICIÓN ---   
-        // 1. Actualiza los datos del cliente
         await updateClient(selectedClient.id, data);
-        
-        // 2. Utiliz la función de hook que invalida el caché
         await syncTags(selectedClient.id, tagIds);
-
       } else {
-        // --- MODO CREACIÓN ---
-        // 1. Crea el cliente. Asumimos que createClient devuelve el cliente recién creado.
         const newClient = await createClient(data);
-
-        // 2. Utiliza la función del hook con el ID recién creado
         if (newClient && newClient.id) {
           await syncTags(newClient.id, tagIds);
         } else {
           console.warn("createClient no devolvió el nuevo cliente. Los tags no se pudieron sincronizar.");
         }
       }
-
-      // Si todo sale bien, devuelve el objeto que ClientModal espera
       return { error: null };
     } catch (err: any) {
       console.error("Error al guardar el cliente o sus tags:", err);
-      // Si algo falla, se captura aquí
       return { error: err.message || 'Error al guardar los datos' };
     }
   };
@@ -890,7 +878,7 @@ const handleSaveClient = async (data: any, tagIds: string[]) => {
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
         clientId={profileClientId}
-        onPen={(client) => {
+        onEdit={(client: Client) => {
           setIsProfileModalOpen(false);
           handlePenClient(client);
         }}

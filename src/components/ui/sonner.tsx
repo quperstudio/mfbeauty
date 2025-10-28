@@ -1,3 +1,5 @@
+// src/components/ui/sonner.tsx
+
 import { useTheme } from "next-themes"
 import { Toaster as Sonner } from "sonner"
 
@@ -10,7 +12,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       position="bottom-left"
       theme={theme as ToasterProps["theme"]}
-      className="toaster group"
+      // MODIFICACIÓN CLAVE AQUÍ: Aplicar la clase de tipografía principal
+      className="toaster group font-sans" // Usamos 'font-sans' si esa es la fuente base.
       toastOptions={{
         classNames: {
           toast:

@@ -97,31 +97,6 @@ export default function ClientBulkActionBar({
             </Tooltip>
           ))}
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                disabled={isLoading}
-                className="hidden md:inline-flex w-8 h-8 text-foreground/80 hover:bg-primary/50"
-              >
-                <MoreVertical className="w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {[...primaryActions, ...secondaryActions].map(action => (
-                <DropdownMenuItem 
-                  key={action.label} 
-                  onClick={action.onClick}
-                  className="cursor-pointer"
-                >
-                  <action.icon className="w-4 h-4 mr-2" />
-                  {action.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
           <Tooltip delayDuration={200}>
             <TooltipTrigger asChild>
               <Button

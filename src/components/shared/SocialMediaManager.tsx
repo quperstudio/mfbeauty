@@ -42,29 +42,22 @@ export default function SocialMediaManager({
     handleAddSocialMedia,
     handleRemoveSocialMedia,
     clearInputError,
-    resetList, // <-- Importante: necesitamos esta función del hook
+    resetList,
   } = useSocialMediaManager({
     initialList: initialValues,
     phoneValue,
     onSyncWhatsAppWithPhone: syncWhatsAppWithPhone,
   });
 
-  // Este useEffect "sincroniza hacia arriba" (avisa al padre de los cambios)
   useEffect(() => {
     if (onChange) {
       onChange(socialMediaList);
     }
   }, [socialMediaList, onChange]);
 
-  // ⬇️ MODIFICACIÓN CRÍTICA: AÑADIR ESTE EFFECT
-  // Este useEffect "sincroniza hacia abajo".
-  // Cuando 'initialValues' (del ClientModal) cambia,
-  // le ordena al hook que actualice su estado interno con 'resetList'.
-  // Esta es la pieza que faltaba para arreglar el Error 3.
   useEffect(() => {
     resetList(initialValues);
   }, [initialValues, resetList]);
-  // ⬆️ FIN MODIFICACIÓN
 
   const handleAdd = () => {
     const success = handleAddSocialMedia();
@@ -127,7 +120,6 @@ export default function SocialMediaManager({
 
       <div className="space-y-2">
         {socialMediaList.map((sm) => (
-          // (Mejora de UX 3 - hover)
           <div
             key={sm.type}
             className="group flex items-center justify-between p-2 bg-secondary/30 text-secondary-foreground rounded-lg"

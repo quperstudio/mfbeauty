@@ -62,8 +62,6 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     const { user } = useAuth();
     const { tags: availableTags, createTag, deleteTag } = useTagsQuery();
     const { clientTags } = useClientTagsQuery(client?.id || null);
-    // const { toast } = useToast(); // Eliminada
-
     const [formData, setFormData] = useState<ClientFormDataBase>(initialFormData);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(false);

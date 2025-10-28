@@ -7,9 +7,10 @@ import { useClientTagsQuery, useTagsQuery } from '../tags/useTags.query';
 import { Client, ClientFilterType, ClientSortField, ClientSortDirection } from '../../types/database';
 import { ClientSchemaType } from '../../schemas/client.schema';
 import * as clientService from '../../services/client.service';
+import * as tagService from '../../services/tag.service';
 import { useClientLogic } from './useClientLogic';
 import { MOBILE_BREAKPOINT } from '../../constants/clients.constants';
-import { toast } from 'sonner'; // AÑADIDO: Importación de Sonner
+import { toast } from 'sonner';
 
 export function useClientsPage() {
   const queryClient = useQueryClient();
@@ -196,7 +197,7 @@ export function useClientsPage() {
         onClick: () => handleUndoDelete(deletedClientId, deletedClientName),
       },
     });
-  }, [clientToDelete, deleteClient, handleUndoDelete]);
+  }, [clientToDelete, logic, handleUndoDelete]);
 
   const handleSort = useCallback(
     (field: ClientSortField) => {

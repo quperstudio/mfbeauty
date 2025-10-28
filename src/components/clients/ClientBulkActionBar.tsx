@@ -42,7 +42,7 @@ export default function ClientBulkActionBar({
       <div className="bg-primary/10 border border-primary rounded-xl p-3 sm:p-4 mb-4 shadow-soft flex items-center justify-between transition-opacity duration-200" style={{ opacity: isLoading ? 0.7 : 1 }}>
         
         <div className="flex items-center gap-3">
-          <span className="text-base font-semibold text-foreground whitespace-nowrap">
+          <span className="text-base font-semibold text-foreground whitespace-nowrap pl-2">
             {selectedCount} {selectedCount === 1 ? 'cliente seleccionado' : 'clientes seleccionados'}
           </span>
           <Tooltip delayDuration={200}>

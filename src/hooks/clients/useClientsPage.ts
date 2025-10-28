@@ -23,7 +23,7 @@ export function useClientsPage() {
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [sortField, setSortField] = useState<ClientSortField>('created_at');
   const [sortDirection, setSortDirection] = useState<ClientSortDirection>('desc');
-  const [selectedClientIds, setSelectedClientIds] = new Set<string>());
+  const [selectedClientIds, setSelectedClientIds] = useState<Set<string>>(new Set()); // CORREGIDO: Línea 26
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [profileClientId, setProfileClientId] = useState<string | null>(null);
   const [isAssignReferrerModalOpen, setIsAssignReferrerModalOpen] = useState(false);
@@ -176,17 +176,10 @@ export function useClientsPage() {
     setClientToDelete(client);
   }, []);
   
-  // AÑADIDO: Lógica simulada para deshacer la eliminación
+  // Lógica simulada para deshacer la eliminación
   const handleUndoDelete = useCallback((clientId: string, clientName: string) => {
-    // NOTA: En un proyecto real, 'clientService.undoDeleteClient'
-    // debería restaurar el cliente de la "papelera" o revertir el cambio.
-    // Aquí solo simulamos el toast informativo y refrescamos.
-    
-    // Si el servicio de clientes soporta la duplicación, podríamos 
-    // usar handleBulkDuplicate para simular la restauración si el original fue 
-    // una eliminación lógica (no física). Dado que no tenemos el servicio, solo invalidamos.
-    
-    // console.log(`[UNDO ACTION] Deshaciendo eliminación del cliente: ${clientId}`);
+    // NOTA: Esta función requiere un servicio backend para restaurar el cliente.
+    // Aquí solo refrescamos la UI y mostramos el toast informativo.
     toast.info(`Acción deshecha. "${clientName}" no fue eliminado.`, { title: 'Deshacer completado' });
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
   }, [queryClient]);
@@ -210,7 +203,7 @@ export function useClientsPage() {
         onClick: () => handleUndoDelete(deletedClientId, deletedClientName), 
       },
     });
-  }, [clientToDelete, deleteClient, handleUndoDelete]); // handleUndoDelete es una dependencia
+  }, [clientToDelete, deleteClient, handleUndoDelete]);
 
   const handleSort = useCallback(
     (field: ClientSortField) => {
@@ -373,7 +366,7 @@ export function useClientsPage() {
     handleEditClient,
     handleSaveClient,
     confirmDeleteClient,
-    handleDeleteClient, // MODIFICADO: Ahora contiene el toast con Deshacer
+    handleDeleteClient,
     handleSort,
     handleSelectAll,
     handleSelectClient,
@@ -383,4 +376,4 @@ export function useClientsPage() {
     handleBulkExport,
     handleAssignReferrer,
   };
-} 
+}

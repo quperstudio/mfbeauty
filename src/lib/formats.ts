@@ -171,3 +171,60 @@ export function mapEntityToSocialMediaList(entity: EntityWithSocialMedia): Socia
   if (entity.tiktok_link) list.push({ type: 'tiktok', link: entity.tiktok_link });
   return list;
 }
+
+export interface SocialMediaLink {
+  type: string;
+  url: string;
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
+}
+
+export function getSocialMediaLinks(
+  entity: EntityWithSocialMedia,
+  limit: number | null = null
+): { visibleLinks: SocialMediaLink[]; hiddenCount: number; hiddenLinks: SocialMediaLink[] } {
+  const links: SocialMediaLink[] = [];
+
+  if (entity.whatsapp_link) {
+    links.push({
+      type: 'WhatsApp',
+      url: buildSocialMediaUrl('whatsapp', entity.whatsapp_link),
+      icon: getSocialMediaIcon('whatsapp')!,
+      color: SOCIAL_MEDIA_COLORS.whatsapp,
+    });
+  }
+  if (entity.facebook_link) {
+    links.push({
+      type: 'Facebook',
+      url: buildSocialMediaUrl('facebook', entity.facebook_link),
+      icon: getSocialMediaIcon('facebook')!,
+      color: SOCIAL_MEDIA_COLORS.facebook,
+    });
+  }
+  if (entity.instagram_link) {
+    links.push({
+      type: 'Instagram',
+      url: buildSocialMediaUrl('instagram', entity.instagram_link),
+      icon: getSocialMediaIcon('instagram')!,
+      color: SOCIAL_MEDIA_COLORS.instagram,
+    });
+  }
+  if (entity.tiktok_link) {
+    links.push({
+      type: 'TikTok',
+      url: buildSocialMediaUrl('tiktok', entity.tiktok_link),
+      icon: getSocialMediaIcon('tiktok')!,
+      color: SOCIAL_MEDIA_COLORS.tiktok,
+    });
+  }
+
+  if (limit === null) {
+    return { visibleLinks: links, hiddenCount: 0, hiddenLinks: [] };
+  }
+
+  const visibleLinks = links.slice(0, limit);
+  const hiddenCount = links.length - visibleLinks.length;
+  const hiddenLinks = links.slice(limit);
+
+  return { visibleLinks, hiddenCount, hiddenLinks };
+}

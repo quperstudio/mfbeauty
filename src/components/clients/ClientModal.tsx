@@ -23,7 +23,7 @@ import { format } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DatePicker } from '@/components/ui/date-picker';
 import { TagInput } from '@/components/ui/TagInput';
-import { useTagsQuery, useClientTagsQuery } from '../../hooks/queries/useTags.query';
+import { useTagsQuery, useClientTagsQuery } from '../../hooks/tags/useTags.query';
 import { useAuth } from '../../contexts/AuthContext';
 import * as clientService from '../../services/client.service';
 import { useToast } from "../../hooks/use-toast";

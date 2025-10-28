@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useClientDetailsQuery } from '../../hooks/queries/useClientDetails.query';
+import { useClientDetailsQuery } from '../../hooks/clients/useClientDetails.query';
 import { formatCurrency, formatPhone, parseDate, buildSocialMediaUrl } from '../../lib/formats';
 import { Appointment, Client } from '../../types/database';
 

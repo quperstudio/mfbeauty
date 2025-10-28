@@ -72,8 +72,6 @@ export default function Clients() {
   const [profileClientId, setProfileClientId] = useState<string | null>(null);
   const [isAssignReferrerModalOpen, setIsAssignReferrerModalOpen] = useState(false);
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
-
-  // AHORA podemos usar selectedClient de forma segura
   const { syncTags } = useClientTagsQuery(selectedClient?.id || null);
   const [clientsWithSelectedTags, setClientsWithSelectedTags] = useState<string[]>([]);
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null);

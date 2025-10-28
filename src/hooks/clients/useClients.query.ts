@@ -63,18 +63,15 @@ export function useClientsQuery() {
     mutationFn: clientService.createClient,
     onSuccess: () => {
       // Mostrar toast de éxito al crear
-      toast({
-        title: 'Cliente creado',
+      toast.success('Cliente creado', {
         description: 'El nuevo cliente se ha guardado exitosamente.',
       });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
     },
     onError: (err) => {
       // Mostrar toast de error al crear
-      toast({
-        title: 'Error al crear cliente',
+      toast.error('Error al crear cliente', {
         description: err instanceof Error ? err.message : 'Ocurrió un error inesperado.',
-        variant: 'destructive',
       });
     },
   });
@@ -84,8 +81,7 @@ export function useClientsQuery() {
       clientService.updateClient(id, data),
     onSuccess: () => {
       // Mostrar toast de éxito al actualizar
-      toast({
-        title: 'Cliente actualizado',
+      toast.success('Cliente actualizado', {
         description: 'La información del cliente ha sido modificada.',
       });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
@@ -94,10 +90,8 @@ export function useClientsQuery() {
     },
     onError: (err) => {
       // Mostrar toast de error al actualizar
-      toast({
-        title: 'Error al actualizar cliente',
+      toast.error('Error al actualizar cliente', {
         description: err instanceof Error ? err.message : 'Ocurrió un error inesperado.',
-        variant: 'destructive',
       });
     },
   });
@@ -105,20 +99,12 @@ export function useClientsQuery() {
   const deleteMutation = useMutation({
     mutationFn: clientService.deleteClient,
     onSuccess: () => {
-      // Mostrar toast de éxito al eliminar
-      toast({
-        title: 'Cliente eliminado',
-        description: 'El cliente ha sido borrado del sistema.',
-        variant: 'destructive',
-      });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
     },
     onError: (err) => {
       // Mostrar toast de error al eliminar
-      toast({
-        title: 'Error al eliminar cliente',
+      toast.error('Error al eliminar cliente', {
         description: err instanceof Error ? err.message : 'Ocurrió un error inesperado.',
-        variant: 'destructive',
       });
     },
   });
@@ -126,11 +112,11 @@ export function useClientsQuery() {
   // SECCIÓN: FUNCIONES PÚBLICAS
   const createClient = async (data: ClientSchemaType) => {
     try {
-      await createMutation.mutateAsync(data);
-      return { error: null };
+      const newClient = await createMutation.mutateAsync(data);
+      return newClient;
     } catch (err) {
-      // El error ya se maneja en onError de useMutation, solo devolvemos el resultado.
-      return { error: err instanceof Error ? err.message : 'Error al crear cliente' };
+      // El error ya se maneja en onError de useMutation, lanzamos la excepción
+      throw err;
     }
   };
 

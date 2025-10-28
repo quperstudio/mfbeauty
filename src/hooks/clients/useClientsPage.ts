@@ -159,8 +159,6 @@ export function useClientsPage() {
           const newClient = await createClient(data);
           if (newClient && newClient.id) {
             await syncTags(newClient.id, tagIds);
-          } else {
-            console.warn('createClient no devolvió el nuevo cliente. Los tags no se pudieron sincronizar.');
           }
         }
         return { error: null };
@@ -180,7 +178,9 @@ export function useClientsPage() {
   const handleUndoDelete = useCallback((clientId: string, clientName: string) => {
     // NOTA: Esta función requiere un servicio backend para restaurar el cliente.
     // Aquí solo refrescamos la UI y mostramos el toast informativo.
-    toast.info(`Acción deshecha. "${clientName}" no fue eliminado.`, { title: 'Deshacer completado' });
+    toast.info('Deshacer completado', {
+      description: `Acción deshecha. "${clientName}" no fue eliminado.`
+    });
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
   }, [queryClient]);
   
@@ -194,13 +194,12 @@ export function useClientsPage() {
     setClientToDelete(null);
 
     // 2. Mostrar TOAST con botón para deshacer
-    toast.success(`Cliente "${deletedClientName}" eliminado.`, {
-      title: 'Eliminación Exitosa',
-      description: 'Puedes deshacer esta acción inmediatamente.',
-      duration: 8000, // Da 8 segundos al usuario para reaccionar
+    toast.success('Cliente eliminado', {
+      description: `Cliente "${deletedClientName}" eliminado. Puedes deshacer esta acción inmediatamente.`,
+      duration: 8000,
       action: {
         label: 'Deshacer',
-        onClick: () => handleUndoDelete(deletedClientId, deletedClientName), 
+        onClick: () => handleUndoDelete(deletedClientId, deletedClientName),
       },
     });
   }, [clientToDelete, deleteClient, handleUndoDelete]);
@@ -254,9 +253,13 @@ export function useClientsPage() {
       await clientService.deleteMultipleClients(Array.from(selectedClientIds));
       setSelectedClientIds(new Set());
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
-      toast.success(`Se eliminaron ${count} cliente(s) con éxito.`, { title: 'Eliminación Masiva' });
+      toast.success('Eliminación masiva exitosa', {
+        description: `Se eliminaron ${count} cliente(s) con éxito.`
+      });
     } catch (error) {
-      toast.error('Error al eliminar clientes. Intenta de nuevo.', { title: 'Error de Eliminación' });
+      toast.error('Error al eliminar clientes', {
+        description: 'No se pudieron eliminar los clientes. Intenta de nuevo.'
+      });
     } finally {
       setBulkActionLoading(false);
     }
@@ -276,9 +279,13 @@ export function useClientsPage() {
           setSelectedClientIds(new Set());
         }
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
-        toast.success(`Se duplicaron ${count} cliente(s) con éxito.`, { title: 'Duplicación Masiva' });
+        toast.success('Duplicación masiva exitosa', {
+          description: `Se duplicaron ${count} cliente(s) con éxito.`
+        });
       } catch (error) {
-        toast.error('Error al duplicar clientes. Intenta de nuevo.', { title: 'Error de Duplicación' });
+        toast.error('Error al duplicar clientes', {
+          description: 'No se pudieron duplicar los clientes. Intenta de nuevo.'
+        });
       } finally {
         setBulkActionLoading(false);
       }
@@ -323,9 +330,13 @@ export function useClientsPage() {
         setSelectedClientIds(new Set());
         setIsAssignReferrerModalOpen(false);
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
-        toast.success(`Se actualizó el referente de ${count} cliente(s) con éxito.`, { title: 'Referente Asignado' });
+        toast.success('Referente asignado', {
+          description: `Se actualizó el referente de ${count} cliente(s) con éxito.`
+        });
       } catch (error) {
-        toast.error('Error al asignar referente. Intenta de nuevo.', { title: 'Error de Asignación' });
+        toast.error('Error al asignar referente', {
+          description: 'No se pudo asignar el referente. Intenta de nuevo.'
+        });
       } finally {
         setBulkActionLoading(false);
       }

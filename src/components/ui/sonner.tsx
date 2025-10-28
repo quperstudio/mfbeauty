@@ -12,8 +12,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       position="bottom-left"
       theme={theme as ToasterProps["theme"]}
-      // MODIFICACIÓN CLAVE AQUÍ: Aplicar la clase de tipografía principal
-      className="toaster group font-sans" // Usamos 'font-sans' si esa es la fuente base.
+      className="toaster group font-sans"
       toastOptions={{
         classNames: {
           toast:

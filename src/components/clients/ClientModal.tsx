@@ -103,7 +103,6 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         if (isOpen && client) {
             setSelectedTags(clientTags);
         }
-        // Nota: Si se cierra el modal, el else del useEffect anterior ya reseteó setSelectedTags.
     }, [client, clientTags, isOpen]);
 
     // ===================================
@@ -353,7 +352,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                           {/* CAMPOS: Redes sociales */}
 <SocialMediaManager
                                 key={client?.id || 'new-client'}
-                                initialValues={initialSocialMediaList} // <--- ESTA ES LA SOLUCIÓN
+                                initialValues={initialSocialMediaList}
                                 phoneValue={formData.phone}
                                 syncWhatsAppWithPhone={!client}
                                 onChange={handleSocialMediaChange}
@@ -413,7 +412,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                                     );
 
                                     if (alreadySelected) {
-                                        return; // No hacer nada si ya está seleccionada.
+                                        return;
                                     }
 
                                     // 2. Buscar si ya existe la etiqueta globalmente (en availableTags)

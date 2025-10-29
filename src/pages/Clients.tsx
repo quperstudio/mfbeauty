@@ -267,7 +267,6 @@ export default function Clients() {
       <AssignReferrerModal
         isOpen={isAssignReferrerModalOpen}
         onClose={() => setIsAssignReferrerModalOpen(false)}
-        // PROPS ACTUALIZADAS:
         onSubmit={handleAssignReferrer}
         isLoading={bulkActionLoading} 
         allClients={allClients}

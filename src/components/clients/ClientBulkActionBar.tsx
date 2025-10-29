@@ -19,8 +19,8 @@ interface Action {
 // -----
 interface ClientBulkActionBarProps {
   selectedCount: number;
-  onDelete: () => void;
-  onDuplicate: () => void;
+  onDelete: () => void; // Llama a handleBulkDelete (inicia AlertDialog)
+  onDuplicate: () => void; // Llama a handleBulkDuplicate (ejecuta acción)
   onExport: () => void;
   onAssignReferrer: () => void;
   onClearSelection: () => void;
@@ -78,7 +78,7 @@ export default function ClientBulkActionBar({
           <Tooltip delayDuration={200}>
             <TooltipTrigger asChild>
               <Button
-                onClick={onClearSelection}
+                onClick={onClearSelection} // Usa el prop onClearSelection
                 variant="ghost"
                 size="icon"
                 disabled={isLoading}

@@ -8,10 +8,9 @@ import SearchBar from '../components/shared/SearchBar';
 import EmptyState from '../components/shared/EmptyState';
 import ClientModal from '../components/clients/ClientModal';
 import ClientFilters from '../components/clients/ClientFilters';
-import AssignReferrerModal from '@/components/clients/AssignReferrerModal'; // IMPORTACIÓN CORRECTA
+import AssignReferrerModal from '@/components/clients/AssignReferrerModal';
 import ClientBulkActionBar from '../components/clients/ClientBulkActionBar';
 import ClientProfileModal from '../components/clients/ClientProfileModal';
-// ELIMINADA: import AssignReferrerModal from '../components/clients/AssignReferrerModal';
 import ClientsTableView from '../components/clients/ClientsTableView';
 import ClientsListView from '../components/clients/ClientsListView';
 import { useClientsPage } from '../hooks/clients/useClientsPage';

@@ -205,6 +205,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         </DialogContent>
       </Dialog>
 
+
       {/* ALERTA: Descartar Cambios */}
       <AlertDialog open={showUnsavedChangesDialog} onOpenChange={handlers.setShowUnsavedChangesDialog}>
         <AlertDialogContent>
@@ -226,3 +227,4 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
       </AlertDialog>
     </>
   );
+}

@@ -290,6 +290,7 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
     if (existingTag) {
       tagToAdd = existingTag;
     } else {
+      
       // Crea un nuevo tag si no existe
       const { tag, error } = await createTag({ name: tagName });
       if (error) {

@@ -129,7 +129,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   								<MessageCircle className="w-4 h-4" />
   							</Button>
   						</TooltipTrigger>
-  						<TooltipContent><p>Abrir WhatsApp</p></TooltipContent>
+  						<TooltipContent side="top"><p>Abrir WhatsApp</p></TooltipContent>
   					</Tooltip>
   				)}
   				{client!.facebook_link && (
@@ -143,7 +143,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   								<Facebook className="w-4 h-4" />
   							</Button>
   						</TooltipTrigger>
-  						<TooltipContent><p>Abrir Facebook</p></TooltipContent>
+  						<TooltipContent side="top"><p>Abrir Facebook</p></TooltipContent>
   					</Tooltip>
   				)}
   				{client!.instagram_link && (
@@ -157,7 +157,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   								<Instagram className="w-4 h-4" />
   							</Button>
   						</TooltipTrigger>
-  						<TooltipContent><p>Abrir Instagram</p></TooltipContent>
+  						<TooltipContent side="top"><p>Abrir Instagram</p></TooltipContent>
   					</Tooltip>
   				)}
   				{client!.tiktok_link && (
@@ -171,7 +171,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   								<Music2 className="w-4 h-4" />
   							</Button>
   						</TooltipTrigger>
-  						<TooltipContent><p>Abrir TikTok</p></TooltipContent>
+  						<TooltipContent side="top"><p>Abrir TikTok</p></TooltipContent>
   					</Tooltip>
   				)}
   			</div>

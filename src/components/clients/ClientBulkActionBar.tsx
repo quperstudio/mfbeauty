@@ -43,7 +43,7 @@ export default function ClientBulkActionBar({
 
   // Componente interno para renderizar un botón de acción con Tooltip
   const ActionButton = ({ action }: { action: Action }) => (
-    <Tooltip delayDuration={200} key={action.label}>
+    <Tooltip delayDuration={200} >
       <TooltipTrigger asChild>
         <Button
           variant="ghost"
@@ -59,7 +59,7 @@ export default function ClientBulkActionBar({
           )}
         </Button>
       </TooltipTrigger>
-      <TooltipContent>{action.label}</TooltipContent>
+      <TooltipContent side="bottom">{action.label}</TooltipContent>
     </Tooltip>
   );
 
@@ -87,7 +87,7 @@ export default function ClientBulkActionBar({
                 <X className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Descartar selección</TooltipContent>
+            <TooltipContent side="bottom">Descartar selección</TooltipContent>
           </Tooltip>
         </div>
 

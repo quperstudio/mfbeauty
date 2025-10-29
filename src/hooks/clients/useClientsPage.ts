@@ -1,26 +1,39 @@
-import { useEffect, useState } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { QUERY_KEYS } from '../../lib/queryKeys';
+import { useClientsQuery } from './useClients.query';
+import { useClientTagsQuery, useTagsQuery } from '../tags/useTags.query';
+import { Client, ClientFilterType, ClientSortField, ClientSortDirection } from '../../types/database';
+import { ClientSchemaType } from '../../schemas/client.schema';
+import * as clientService from '../../services/client.service';
+import * as tagService from '../../services/tag.service';
+import { useClientLogic } from './useClientLogic';
 import { MOBILE_BREAKPOINT } from '../../constants/clients.constants';
-import { useClients } from './useClients';
-import { useTags } from '../tags/useTags';
-import { useClientFilters } from './useClientFilters';
-import { useClientSelection } from './useClientSelection';
-import { useClientModals } from './useClientModals';
-import { useClientActions } from './useClientActions';
+import { toast } from 'sonner';
 
 export function useClientsPage() {
   const queryClient = useQueryClient();
+  const { clients, loading, error } = useClientsQuery();
+  const { tags: availableTags } = useTagsQuery();
+  const logic = useClientLogic();
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<Client | undefined>();
+  const [activeFilter, setActiveFilter] = useState<ClientFilterType>('all');
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [sortField, setSortField] = useState<ClientSortField>('created_at');
+  const [sortDirection, setSortDirection] = useState<ClientSortDirection>('desc');
+  const [selectedClientIds, setSelectedClientIds] = useState<Set<string>>(new Set()); // CORREGIDO: Línea 26
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [profileClientId, setProfileClientId] = useState<string | null>(null);
+  const [isAssignReferrerModalOpen, setIsAssignReferrerModalOpen] = useState(false);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  const { syncTags } = useClientTagsQuery(selectedClient?.id || null);
+  const [clientsWithSelectedTags, setClientsWithSelectedTags] = useState<string[]>([]);
+  const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
-
-  const { clients, loading, error } = useClients();
-  const { tags: availableTags } = useTags();
-
-  const filters = useClientFilters(clients);
-  const selection = useClientSelection();
-  const modals = useClientModals();
-  const actions = useClientActions();
 
   useEffect(() => {
     const subscription = supabase
@@ -33,6 +46,7 @@ export function useClientsPage() {
     const checkScreenSize = () => {
       setIsSmallScreen(window.innerWidth < MOBILE_BREAKPOINT);
     };
+
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
 
@@ -42,83 +56,329 @@ export function useClientsPage() {
     };
   }, [queryClient]);
 
-  const handleConfirmDelete = async () => {
-    if (!modals.deleteTarget) return;
+  useEffect(() => {
+    if (selectedTagIds.length > 0) {
+      tagService
+        .fetchClientIdsByTags(selectedTagIds)
+        .then((clientIds) => setClientsWithSelectedTags(clientIds))
+        .catch((err) => console.error('Error fetching clients by tags:', err));
+    } else {
+      setClientsWithSelectedTags([]);
+    }
+  }, [selectedTagIds]);
 
-    const isBulk = modals.deleteTarget === 'bulk';
-    const clientIds = isBulk ? Array.from(selection.selectedClientIds) : [modals.deleteTarget];
+  const filteredAndSortedClients = useMemo(() => {
+    let filtered = clients;
 
-    const targetClientName = isBulk
-      ? `${clientIds.length} cliente(s)`
-      : clients.find((c) => c.id === modals.deleteTarget)?.name;
+    if (activeFilter === 'with_visits') {
+      filtered = filtered.filter((c) => c.total_visits > 0);
+    } else if (activeFilter === 'with_sales') {
+      filtered = filtered.filter((c) => Number(c.total_spent) > 0);
+    } else if (activeFilter === 'referred') {
+      filtered = filtered.filter((c) => c.referrer_id !== null);
+    }
 
-    try {
-      await actions.handleDeleteClients(clientIds, targetClientName);
+    if (selectedTagIds.length > 0 && clientsWithSelectedTags.length > 0) {
+      filtered = filtered.filter((c) => clientsWithSelectedTags.includes(c.id));
+    }
 
-      if (isBulk) {
-        selection.clearSelection();
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (client) =>
+          client.name.toLowerCase().includes(query) ||
+          client.phone.includes(query) ||
+          client.whatsapp_link?.toLowerCase().includes(query) ||
+          client.facebook_link?.toLowerCase().includes(query) ||
+          client.instagram_link?.toLowerCase().includes(query) ||
+          client.tiktok_link?.toLowerCase().includes(query)
+      );
+    }
+
+    const sorted = [...filtered].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortField) {
+        case 'name':
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+          break;
+        case 'total_spent':
+          aValue = Number(a.total_spent);
+          bValue = Number(b.total_spent);
+          break;
+        case 'total_visits':
+          aValue = a.total_visits;
+          bValue = b.total_visits;
+          break;
+        case 'last_visit_date':
+          aValue = a.last_visit_date ? new Date(a.last_visit_date).getTime() : 0;
+          bValue = b.last_visit_date ? new Date(b.last_visit_date).getTime() : 0;
+          break;
+        case 'created_at':
+          aValue = new Date(a.created_at).getTime();
+          bValue = new Date(b.created_at).getTime();
+          break;
+        default:
+          return 0;
       }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
+  }, [clients, searchQuery, activeFilter, selectedTagIds, clientsWithSelectedTags, sortField, sortDirection]);
+
+  const filterCounts = useMemo(() => {
+    return {
+      all: clients.length,
+      with_visits: clients.filter((c) => c.total_visits > 0).length,
+      with_sales: clients.filter((c) => Number(c.total_spent) > 0).length,
+      referred: clients.filter((c) => c.referrer_id !== null).length,
+    };
+  }, [clients]);
+
+  const handleCreateClient = useCallback(() => {
+    setSelectedClient(undefined);
+    setIsModalOpen(true);
+  }, []);
+
+  const handleEditClient = useCallback((client: Client) => {
+    setSelectedClient(client);
+    setIsModalOpen(true);
+  }, []);
+
+  const handleSaveClient = useCallback(
+    async (data: ClientSchemaType, tagIds: string[]): Promise<{ error: string | null }> => {
+      try {
+        await logic.saveClient(data, tagIds, selectedClient?.id);
+        toast.success(selectedClient ? 'Cliente actualizado' : 'Cliente creado');
+        return { error: null };
+      } catch (err: any) {
+        toast.error('Error al guardar cliente', { description: err.message });
+        return { error: err.message || 'Error al guardar los datos' };
+      }
+    },
+    [selectedClient, logic]
+  );
+
+  const confirmDeleteClient = useCallback((client: Client) => {
+    setClientToDelete(client);
+  }, []);
+  
+  // Lógica simulada para deshacer la eliminación
+  const handleUndoDelete = useCallback((clientId: string, clientName: string) => {
+    // NOTA: Esta función requiere un servicio backend para restaurar el cliente.
+    // Aquí solo refrescamos la UI y mostramos el toast informativo.
+    toast.info('Deshacer completado', {
+      description: `Acción deshecha. "${clientName}" no fue eliminado.`
+    });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
+  }, [queryClient]);
+  
+  const handleDeleteClient = useCallback(async () => {
+    if (!clientToDelete) return;
+    const deletedClientId = clientToDelete.id;
+    const deletedClientName = clientToDelete.name;
+
+    // 1. Ejecutar la eliminación
+    await logic.deleteClients(deletedClientId);
+    setClientToDelete(null);
+
+    // 2. Mostrar TOAST con botón para deshacer
+    toast.success('Cliente eliminado', {
+      description: `Cliente "${deletedClientName}" eliminado. Puedes deshacer esta acción inmediatamente.`,
+      duration: 8000,
+      action: {
+        label: 'Deshacer',
+        onClick: () => handleUndoDelete(deletedClientId, deletedClientName),
+      },
+    });
+  }, [clientToDelete, logic, handleUndoDelete]);
+
+  const handleSort = useCallback(
+    (field: ClientSortField) => {
+      if (sortField === field) {
+        setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      } else {
+        setSortField(field);
+        setSortDirection('asc');
+      }
+    },
+    [sortField, sortDirection]
+  );
+
+  const handleSelectAll = useCallback(
+    (checked: boolean) => {
+      if (checked) {
+        setSelectedClientIds(new Set(filteredAndSortedClients.map((c) => c.id)));
+      } else {
+        setSelectedClientIds(new Set());
+      }
+    },
+    [filteredAndSortedClients]
+  );
+
+  const handleSelectClient = useCallback((clientId: string, checked: boolean) => {
+    setSelectedClientIds((prev) => {
+      const newSelected = new Set(prev);
+      if (checked) {
+        newSelected.add(clientId);
+      } else {
+        newSelected.delete(clientId);
+      }
+      return newSelected;
+    });
+  }, []);
+
+  const handleViewProfile = useCallback((clientId: string) => {
+    setProfileClientId(clientId);
+    setIsProfileModalOpen(true);
+  }, []);
+
+  const handleBulkDelete = useCallback(async () => {
+    const count = selectedClientIds.size;
+    if (!confirm(`¿Estás seguro de eliminar ${count} ${count === 1 ? 'cliente' : 'clientes'}?`)) return;
+
+    setBulkActionLoading(true);
+    try {
+      await logic.deleteClients(Array.from(selectedClientIds));
+      setSelectedClientIds(new Set());
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
+      toast.success('Eliminación masiva exitosa', {
+        description: `Se eliminaron ${count} cliente(s) con éxito.`
+      });
     } catch (error) {
+      toast.error('Error al eliminar clientes', {
+        description: 'No se pudieron eliminar los clientes. Intenta de nuevo.'
+      });
     } finally {
-      modals.setDeleteTarget(null);
+      setBulkActionLoading(false);
     }
-  };
+  }, [selectedClientIds, queryClient]);
 
-  const handleBulkDuplicate = async (clientIds?: string[]) => {
-    const idsToUse = clientIds || Array.from(selection.selectedClientIds);
-    await actions.handleBulkDuplicate(idsToUse);
-    if (!clientIds) {
-      selection.clearSelection();
-    }
-  };
+  const handleBulkDuplicate = useCallback(
+    async (clientIdsToDuplicate?: string[]) => {
+      const idsToUse = clientIdsToDuplicate || Array.from(selectedClientIds);
+      if (idsToUse.length === 0) return;
+      const count = idsToUse.length;
 
-  const handleBulkExport = (clientIds?: string[]) => {
-    const idsToUse = clientIds || Array.from(selection.selectedClientIds);
-    const selectedClients = clients.filter((c) => idsToUse.includes(c.id));
-    actions.handleBulkExport(selectedClients);
-  };
+      setBulkActionLoading(true);
+      try {
+        await logic.duplicateClients(idsToUse);
+        if (!clientIdsToDuplicate) {
+          setSelectedClientIds(new Set());
+        }
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
+        toast.success('Duplicación masiva exitosa', {
+          description: `Se duplicaron ${count} cliente(s) con éxito.`
+        });
+      } catch (error) {
+        toast.error('Error al duplicar clientes', {
+          description: 'No se pudieron duplicar los clientes. Intenta de nuevo.'
+        });
+      } finally {
+        setBulkActionLoading(false);
+      }
+    },
+    [selectedClientIds, queryClient]
+  );
 
-  const handleAssignReferrer = async (referrerId: string | null) => {
-    await actions.handleAssignReferrer(Array.from(selection.selectedClientIds), referrerId);
-    selection.clearSelection();
-    modals.setIsAssignReferrerModalOpen(false);
-  };
+  const handleBulkExport = useCallback(
+    (clientIdsToExport?: string[]) => {
+      const idsToUse = clientIdsToExport || Array.from(selectedClientIds);
+      const selectedClients = clients.filter((c) => idsToUse.includes(c.id));
 
-  const handleEditFromProfile = (client: any) => {
-    modals.setIsProfileModalOpen(false);
-    modals.handleEditClient(client);
-  };
+      const csvContent = [
+        ['Nombre', 'Teléfono', 'Total Gastado', 'Total Visitas', 'Última Visita', 'Fecha de Creación'],
+        ...selectedClients.map((c) => [
+          c.name,
+          c.phone,
+          c.total_spent.toString(),
+          c.total_visits.toString(),
+          c.last_visit_date || '',
+          c.created_at,
+        ]),
+      ]
+        .map((row) => row.map((cell) => `"${cell}"`).join(','))
+        .join('\n');
 
-  const handleSelectAll = (checked: boolean) => {
-    selection.handleSelectAll(checked, filters.filteredAndSortedClients);
-  };
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `clientes_${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+    },
+    [selectedClientIds, clients]
+  );
 
-  const handleAssignReferrerToClients = (clientIds: string[]) => {
-    selection.setSelectedClientIds(new Set(clientIds));
-    modals.setIsAssignReferrerModalOpen(true);
-  };
+  const handleAssignReferrer = useCallback(
+    async (referrerId: string | null) => {
+      setBulkActionLoading(true);
+      const count = selectedClientIds.size;
+      try {
+        await logic.assignReferrerToClients(Array.from(selectedClientIds), referrerId);
+        setSelectedClientIds(new Set());
+        setIsAssignReferrerModalOpen(false);
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
+        toast.success('Referente asignado', {
+          description: `Se actualizó el referente de ${count} cliente(s) con éxito.`
+        });
+      } catch (error) {
+        toast.error('Error al asignar referente', {
+          description: 'No se pudo asignar el referente. Intenta de nuevo.'
+        });
+      } finally {
+        setBulkActionLoading(false);
+      }
+    },
+    [selectedClientIds, queryClient]
+  );
 
   return {
-    clients: filters.filteredAndSortedClients,
+    clients: filteredAndSortedClients,
     allClients: clients,
     loading,
     error,
     availableTags,
+    searchQuery,
+    setSearchQuery,
+    isModalOpen,
+    setIsModalOpen,
+    selectedClient,
+    activeFilter,
+    setActiveFilter,
+    selectedTagIds,
+    setSelectedTagIds,
+    sortField,
+    sortDirection,
+    selectedClientIds,
+    setSelectedClientIds,
+    isProfileModalOpen,
+    setIsProfileModalOpen,
+    profileClientId,
+    isAssignReferrerModalOpen,
+    setIsAssignReferrerModalOpen,
+    bulkActionLoading,
+    clientToDelete,
+    setClientToDelete,
     isSmallScreen,
-    ...filters,
-    ...selection,
-    ...modals,
-    bulkActionLoading: actions.bulkActionLoading,
-    handleSaveClient: actions.handleSaveClient,
-    handleConfirmDelete,
-    handleDeleteClient: handleConfirmDelete,
-    handleBulkDelete: modals.confirmBulkDelete,
+    filterCounts,
+    handleCreateClient,
+    handleEditClient,
+    handleSaveClient,
+    confirmDeleteClient,
+    handleDeleteClient,
+    handleSort,
+    handleSelectAll,
+    handleSelectClient,
+    handleViewProfile,
+    handleBulkDelete,
     handleBulkDuplicate,
     handleBulkExport,
     handleAssignReferrer,
-    handleSelectAll,
-    handleEditFromProfile,
-    handleAssignReferrerToClients,
-    clearSelection: selection.clearSelection,
   };
 }

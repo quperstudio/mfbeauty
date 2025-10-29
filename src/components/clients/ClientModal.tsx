@@ -15,8 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Client } from '../../types/database';
-import { ClientSchemaType } from '../../schemas/client.schema';
+import { Client, ClientSchemaType } from '../../types/database';
 import { formatPhoneRealTime } from '../../lib/formats';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -24,29 +23,27 @@ import { TagInput } from '@/components/ui/TagInput';
 import SocialMediaManager from '../shared/SocialMediaManager';
 import { useClientForm } from '../../hooks/clients/useClientForm';
 
-// PROPS
-// -----
 interface ClientModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // CAMBIO CLAVE: onSave ahora acepta un clientID opcional, permitiendo a la lógica
-  // (handleSaveClient en useClientActions.ts) decidir si es CREATE o UPDATE.
-  onSave: (data: ClientSchemaType, tagIds: string[], clientId?: string) => Promise<{ error: string | null }>;
+  onSave: (data: ClientSchemaType, tagIds: string[]) => Promise<{ error: string | null }>;
   client?: Client;
   clients: Client[];
 }
 
-// COMPONENTE PRINCIPAL
-// --------------------
 export default function ClientModal({ isOpen, onClose, onSave, client, clients }: ClientModalProps) {
-  // HOOK DE LÓGICA DEL FORMULARIO
-  // El hook useClientForm ya tiene acceso a 'client' (el cliente a editar).
-  // Se asume que useClientForm ha sido actualizado internamente para usar client.id 
-  // al llamar a la función onSave (la cual es handleSaveClient)
   const {
-    formData, errors, loading, selectedTags, socialMediaList, 
-    showUnsavedChangesDialog, phoneCheckLoading, availableTags,
-    referrerOptions, handlers, tagHandlers,
+    formData,
+    errors,
+    loading,
+    selectedTags,
+    socialMediaList,
+    showUnsavedChangesDialog,
+    phoneCheckLoading,
+    availableTags,
+    referrerOptions,
+    handlers,
+    tagHandlers,
   } = useClientForm({ client, isOpen, onSave, onClose, clients });
 
   return (
@@ -203,7 +200,6 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
         </DialogContent>
       </Dialog>
 
-      {/* ALERTA: Descartar Cambios */}
       <AlertDialog open={showUnsavedChangesDialog} onOpenChange={handlers.setShowUnsavedChangesDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

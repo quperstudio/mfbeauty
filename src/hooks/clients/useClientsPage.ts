@@ -276,8 +276,7 @@ export function useClientsPage() {
 
   // CAMBIO CLAVE 4: Función de entrada para eliminación MASIVA
   const handleBulkDelete = useCallback(() => {
-    // Ya no llama a window.confirm
-    setDeleteTarget('bulk'); // Establece el target a 'bulk'
+    setDeleteTarget('bulk');
   }, []); 
 
   const handleBulkDuplicate = useCallback(

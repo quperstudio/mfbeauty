@@ -14,7 +14,6 @@ import { NOTE_TRUNCATE_LENGTH } from '../../constants/clients.constants';
 import { formatCurrency, formatPhone, parseDate, buildSocialMediaUrl, getStatusBadgeVariant, getStatusLabel, getUserDisplayName } from '../../lib/formats';
 import { Client } from '../../types/database';
 
-// -----------------------------------------------------------------------------
 // INTERFACES Y CONSTANTES
 // -----------------------------------------------------------------------------
 
@@ -25,8 +24,6 @@ interface ClientProfileModalProps {
   onEdit: (client: Client) => void;
 }
 
-
-// -----------------------------------------------------------------------------
 // COMPONENTE: ClientProfileModal
 // -----------------------------------------------------------------------------
 
@@ -37,7 +34,6 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   // Hook de datos del cliente
   const { client, loading, futureAppointments, pastAppointments } = useClientDetailsQuery(clientId); 
 
-  // -----------------------------------------------------------------------------
   // ESTADO DE CARGA (Early Return)
   // -----------------------------------------------------------------------------
   if (loading) {
@@ -55,7 +51,6 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   	);
   }
 
-  // -----------------------------------------------------------------------------
   // ESTADO DE ERROR (Early Return)
   // -----------------------------------------------------------------------------
   // Maneja error de fetch o cliente no encontrado
@@ -372,8 +367,6 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   	</div>
   );
 
-
-  // -----------------------------------------------------------------------------
   // RENDER PRINCIPAL
   // -----------------------------------------------------------------------------
   return (

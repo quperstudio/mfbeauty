@@ -16,11 +16,9 @@ import { useClientLogic } from './useClientLogic'; // <-- CORREGIDO: Importació
 
 export function useClientsPage() {
   const queryClient = useQueryClient();
-  // Se asume que las mutaciones se eliminaron del hook de query y se inyectan en useClientLogic,
-  // pero mantendremos la estructura original de la refactorización para compatibilidad con el código proporcionado.
   const { clients, loading, error, createClient, updateClient, deleteClient } = useClientsQuery();
   const { tags: availableTags } = useTagsQuery();
-  const logic = useClientLogic(); // <-- USO DEL HOOK DE LÓGICA
+  const logic = useClientLogic();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,10 +34,11 @@ export function useClientsPage() {
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
   const { syncTags } = useClientTagsQuery(selectedClient?.id || null);
   const [clientsWithSelectedTags, setClientsWithSelectedTags] = useState<string[]>([]);
-  const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
+  
+  // CAMBIO CLAVE 1: Nuevo estado unificado para la eliminación
+  const [deleteTarget, setDeleteTarget] = useState<'bulk' | string | null>(null); // 'bulk' o client ID
 
-  // ... (useEffect y useMemo permanecen iguales)
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
 
   useEffect(() => {
     const subscription = supabase
@@ -175,43 +174,65 @@ export function useClientsPage() {
     [selectedClient, logic]
   );
 
+  // CAMBIO CLAVE 2: Función de entrada para eliminación INDIVIDUAL
   const confirmDeleteClient = useCallback((client: Client) => {
-    setClientToDelete(client);
+    setDeleteTarget(client.id); // Establece el ID del cliente
   }, []);
   
   // Lógica simulada para deshacer la eliminación
   const handleUndoDelete = useCallback((clientId: string, clientName: string) => {
-    // NOTA: Esta función requiere un servicio backend para restaurar el cliente.
-    // Aquí solo refrescamos la UI y mostramos el toast informativo.
     toast.info('Deshacer completado', {
       description: `Acción deshecha. "${clientName}" no fue eliminado.`
     });
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
   }, [queryClient]);
   
-  const handleDeleteClient = useCallback(async () => {
-    if (!clientToDelete) return;
-    const deletedClientId = clientToDelete.id;
-    const deletedClientName = clientToDelete.name;
+  // CAMBIO CLAVE 3: Función de confirmación UNIFICADA (llamada por el AlertDialog)
+  const handleConfirmDelete = useCallback(async () => {
+    if (!deleteTarget) return;
+
+    const isBulk = deleteTarget === 'bulk';
+    const clientIds = isBulk ? Array.from(selectedClientIds) : [deleteTarget];
+    const count = clientIds.length;
+    
+    // Obtener el nombre para el toast (solo si es individual)
+    const targetClientName = isBulk 
+      ? `${count} cliente(s)` 
+      : clients.find(c => c.id === deleteTarget)?.name || 'el cliente';
+
+    const deletePromise = logic.deleteClients(clientIds); // La capa de lógica debe aceptar un array de IDs
 
     try {
-        // 1. Ejecutar la eliminación (Delegar al hook de lógica)
-        await logic.deleteClients(deletedClientId);
-        setClientToDelete(null);
-
-        // 2. Mostrar TOAST con botón para deshacer
-        toast.success('Cliente eliminado', {
-          description: `Cliente "${deletedClientName}" eliminado. Puedes deshacer esta acción inmediatamente.`,
-          duration: 8000,
-          action: {
-            label: 'Deshacer',
-            onClick: () => handleUndoDelete(deletedClientId, deletedClientName),
-          },
+        // Usamos toast.promise para manejar el estado de carga y el error
+        await toast.promise(deletePromise, {
+            loading: isBulk ? `Eliminando ${count} clientes...` : 'Eliminando cliente...',
+            success: isBulk ? `Se eliminaron ${count} cliente(s) con éxito.` : `Cliente "${targetClientName}" eliminado.`,
+            error: (err) => `Error al eliminar: ${err.message || 'No se pudo completar la acción.'}`,
         });
+        
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
+        if (isBulk) {
+            setSelectedClientIds(new Set());
+        }
+
+        // Si es individual, mostramos el toast de deshacer (como en el código original)
+        if (!isBulk) {
+             toast.success('Cliente eliminado', {
+                description: `Cliente "${targetClientName}" eliminado. Puedes deshacer esta acción inmediatamente.`,
+                duration: 8000,
+                action: {
+                    label: 'Deshacer',
+                    onClick: () => handleUndoDelete(clientIds[0], targetClientName),
+                },
+            });
+        }
     } catch (error) {
-         toast.error('Error al eliminar cliente', { description: 'No se pudo completar la acción.' });
+        // Manejado por toast.promise
+    } finally {
+        setDeleteTarget(null); // Cerrar el diálogo
     }
-  }, [clientToDelete, logic, handleUndoDelete]);
+  }, [deleteTarget, selectedClientIds, clients, logic, queryClient, handleUndoDelete]);
+
 
   const handleSort = useCallback(
     (field: ClientSortField) => {
@@ -253,26 +274,11 @@ export function useClientsPage() {
     setIsProfileModalOpen(true);
   }, []);
 
-  const handleBulkDelete = useCallback(async () => {
-    const count = selectedClientIds.size;
-    if (!confirm(`¿Estás seguro de eliminar ${count} ${count === 1 ? 'cliente' : 'clientes'}?`)) return;
-
-    setBulkActionLoading(true);
-    try {
-      await logic.deleteClients(Array.from(selectedClientIds)); // <-- AJUSTE: Delegar a la Capa 3
-      setSelectedClientIds(new Set());
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
-      toast.success('Eliminación masiva exitosa', {
-        description: `Se eliminaron ${count} cliente(s) con éxito.`
-      });
-    } catch (error) {
-      toast.error('Error al eliminar clientes', {
-        description: 'No se pudieron eliminar los clientes. Intenta de nuevo.'
-      });
-    } finally {
-      setBulkActionLoading(false);
-    }
-  }, [selectedClientIds, queryClient, logic]); // <-- AGREGAR LÓGICA COMO DEPENDENCIA
+  // CAMBIO CLAVE 4: Función de entrada para eliminación MASIVA
+  const handleBulkDelete = useCallback(() => {
+    // Ya no llama a window.confirm
+    setDeleteTarget('bulk'); // Establece el target a 'bulk'
+  }, []); 
 
   const handleBulkDuplicate = useCallback(
     async (clientIdsToDuplicate?: string[]) => {
@@ -282,7 +288,7 @@ export function useClientsPage() {
 
       setBulkActionLoading(true);
       try {
-        await logic.duplicateClients(idsToUse); // <-- AJUSTE: Delegar a la Capa 3
+        await logic.duplicateClients(idsToUse);
         
         if (!clientIdsToDuplicate) {
           setSelectedClientIds(new Set());
@@ -299,7 +305,7 @@ export function useClientsPage() {
         setBulkActionLoading(false);
       }
     },
-    [selectedClientIds, queryClient, logic] // <-- AGREGAR LÓGICA COMO DEPENDENCIA
+    [selectedClientIds, queryClient, logic]
   );
 
   const handleBulkExport = useCallback(
@@ -307,7 +313,6 @@ export function useClientsPage() {
       const idsToUse = clientIdsToExport || Array.from(selectedClientIds);
       const selectedClients = clients.filter((c) => idsToUse.includes(c.id));
 
-      // AJUSTE CRÍTICO: Exportar todos los campos del cliente
       const csvContent = [
         [
           'ID', 
@@ -325,12 +330,11 @@ export function useClientsPage() {
           'TikTok', 
           'ID Referente',
           'Fecha Creación'
-        ], // <-- CABECERA CORREGIDA
+        ],
         ...selectedClients.map((c) => [
           c.id, 
           c.name, 
           c.phone,
-          // Se asume que 'email' no existe en la interfaz Client, se deja vacío.
           '', 
           c.birthday || '',
           c.notes || '',
@@ -362,7 +366,7 @@ export function useClientsPage() {
       setBulkActionLoading(true);
       const count = selectedClientIds.size;
       try {
-        await logic.assignReferrerToClients(Array.from(selectedClientIds), referrerId); // <-- AJUSTE: Delegar a la Capa 3
+        await logic.assignReferrerToClients(Array.from(selectedClientIds), referrerId);
         setSelectedClientIds(new Set());
         setIsAssignReferrerModalOpen(false);
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
@@ -377,7 +381,7 @@ export function useClientsPage() {
         setBulkActionLoading(false);
       }
     },
-    [selectedClientIds, queryClient, logic] // <-- AGREGAR LÓGICA COMO DEPENDENCIA
+    [selectedClientIds, queryClient, logic]
   );
 
   return {
@@ -405,15 +409,20 @@ export function useClientsPage() {
     isAssignReferrerModalOpen,
     setIsAssignReferrerModalOpen,
     bulkActionLoading,
-    clientToDelete,
-    setClientToDelete,
+    
+    // EXPOSICIÓN DE NUEVOS ESTADOS/MANEJADORES
+    deleteTarget,
+    setDeleteTarget, 
+    
     isSmallScreen,
     filterCounts,
     handleCreateClient,
     handleEditClient,
     handleSaveClient,
+    
     confirmDeleteClient,
-    handleDeleteClient,
+    handleConfirmDelete,
+    handleDeleteClient: handleConfirmDelete, 
     handleSort,
     handleSelectAll,
     handleSelectClient,

@@ -52,8 +52,9 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
   return (
     <>
       {/* DIÁLOGO PRINCIPAL (Formulario) */}
-      {/* FIX: Se añade modal={false} para evitar conflictos con el DatePicker (que usa Popover anidado) */}
-      <Dialog open={isOpen} onOpenChange={handlers.handleClose} modal={false}>
+      {/* CORRECCIÓN: Se añade modal={false} para evitar que capture el foco e impida
+          la interacción con el DatePicker (que usa un Popover anidado). */}
+      <Dialog open={isOpen} onOpenChange={handlers.handleClose} **modal={false}**>
         <DialogContent className="w-10/12 md:max-w-l h-[85vh] flex flex-col p-0 bg-card text-card-foreground border-border">
           <DialogHeader className="p-4 border-b border-border">
             <DialogTitle>{client ? 'Editar Cliente' : 'Nuevo Cliente'}</DialogTitle>
@@ -187,6 +188,5 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
   );
 }

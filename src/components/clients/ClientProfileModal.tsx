@@ -36,10 +36,9 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
 
   // ESTADO DE CARGA (Early Return)
   // -----------------------------------------------------------------------------
-  // CORRECCIÓN: Se añade modal={false}
   if (loading) {
   	return (
-    	<Dialog open={isOpen} onOpenChange={onClose} **modal={false}**>
+    	<Dialog open={isOpen} onOpenChange={onClose}>
       	<DialogContent className="sm:max-w-lg">
         	<DialogHeader>
           	<DialogTitle>Cargando perfil...</DialogTitle>
@@ -55,20 +54,19 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   // ESTADO DE ERROR (Early Return)
   // -----------------------------------------------------------------------------
   // Maneja error de fetch o cliente no encontrado
-  // CORRECCIÓN: Se añade modal={false}
   if (!client && !loading) {
   	return (
-    	<Dialog open={isOpen} onOpenChange={onClose} **modal={false}**>
+    	<Dialog open={isOpen} onOpenChange={onClose}>
       	<DialogContent className="sm:max-w-lg">
         	<DialogHeader>
           	<DialogTitle>Error</DialogTitle>
-          	</DialogHeader>
+        	</DialogHeader>
         	<div className="flex flex-col items-center justify-center py-12 text-center">
           	<AlertCircle className="w-12 h-12 text-destructive mx-auto mb-3" />
           	<p className="text-destructive-foreground font-medium">No se pudo cargar el perfil</p>
           	<p className="text-muted-foreground text-sm">El cliente no existe o hubo un error de conexión.</p>
         	</div>
-        	</DialogContent>
+      	</DialogContent>
     	</Dialog>
   	);
   }
@@ -371,9 +369,8 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
 
   // RENDER PRINCIPAL
   // -----------------------------------------------------------------------------
-  // CORRECCIÓN: Se añade modal={false}
   return (
-  	<Dialog open={isOpen} onOpenChange={onClose} **modal={false}**>
+  	<Dialog open={isOpen} onOpenChange={onClose}>
   		<TooltipProvider>
   			<DialogContent className="w-10/12 lg:max-w-5xl h-[75vh] flex flex-col p-0">
     				<DialogHeader className="p-4 border-b border-border">

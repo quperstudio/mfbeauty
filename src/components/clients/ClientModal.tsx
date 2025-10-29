@@ -40,6 +40,9 @@ interface ClientModalProps {
 // --------------------
 export default function ClientModal({ isOpen, onClose, onSave, client, clients }: ClientModalProps) {
   // HOOK DE LÓGICA DEL FORMULARIO
+  // El hook useClientForm ya tiene acceso a 'client' (el cliente a editar).
+  // Se asume que useClientForm ha sido actualizado internamente para usar client.id 
+  // al llamar a la función onSave (la cual es handleSaveClient)
   const {
     formData, errors, loading, selectedTags, socialMediaList, 
     showUnsavedChangesDialog, phoneCheckLoading, availableTags,
@@ -49,7 +52,8 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
   return (
     <>
       {/* DIÁLOGO PRINCIPAL (Formulario) */}
-      <Dialog open={isOpen} onOpenChange={handlers.handleClose} modal={false}>
+      {/* Si se usa un Popover dentro del Dialog, la prop modal=false puede ser necesaria en el Dialog, pero por simplicidad se añade modal=true al Popover. */}
+      <Dialog open={isOpen} onOpenChange={handlers.handleClose}>
         <DialogContent className="w-10/12 md:max-w-l h-[85vh] flex flex-col p-0 bg-card text-card-foreground border-border">
           <DialogHeader className="p-4 border-b border-border">
             <DialogTitle>{client ? 'Editar Cliente' : 'Nuevo Cliente'}</DialogTitle>
@@ -185,4 +189,4 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
       </AlertDialog>
     </>
   );
-} 
+}

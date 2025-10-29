@@ -262,12 +262,12 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   	{/* Sección: Clientes Referidos */}
   	{client!.referrals && client!.referrals.length > 0 && (
   		<div className="space-y-2">
-      <div className="flex items-center"> 
+      <div className="flex items-center"> 
   			<h2 className="text-lg text-foreground">
   				Detalle de referidos
   			</h2>
-         <Badge variant="outline" className="ml-2 font-semibold">{client!.referrals.length}</Badge>
-        </div>
+         <Badge variant="outline" className="ml-2 font-semibold">{client!.referrals.length}</Badge>
+        </div>
   			<div className="space-y-2">
   				{client!.referrals.map((referral) => (
   					<div key={referral.id} className="bg-card border border-border rounded-lg p-3">
@@ -371,15 +371,17 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   // -----------------------------------------------------------------------------
   return (
   	<Dialog open={isOpen} onOpenChange={onClose}>
-  		<TooltipProvider>
-  			<DialogContent className="w-10/12 lg:max-w-5xl h-[75vh] flex flex-col p-0">
-    				<DialogHeader className="p-4 border-b border-border">
-    					<DialogTitle>Perfil del Cliente</DialogTitle>
-    				</DialogHeader>
+  		<DialogContent className="w-10/12 lg:max-w-5xl h-[75vh] flex flex-col p-0">
+  			<DialogHeader className="p-4 border-b border-border">
+  				<DialogTitle>Perfil del Cliente</DialogTitle>
+  			</DialogHeader>
+  			{/*   			  El TooltipProvider debe ir DENTRO del DialogContent 
+  			  para que no sea deshabilitado por la capa modal del Dialog.
+  			*/}
+  			<TooltipProvider>
   				<div className="flex-grow overflow-hidden">
   			
   					{/* --- Layout Móvil --- */}
-  					{/* Apila LeftColumnContent y RightColumnContent */}
   					<ScrollArea className="h-full md:hidden">
   						<div className="p-6 space-y-6">
   							<LeftColumnContent />
@@ -399,8 +401,8 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   						</ScrollArea>
   					</div>
   				</div>
-  			</DialogContent>
-  		</TooltipProvider>
+  			</TooltipProvider>
+  		</DialogContent>
   	</Dialog>
   );
-}  
+}

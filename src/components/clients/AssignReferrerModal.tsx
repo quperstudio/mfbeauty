@@ -157,9 +157,7 @@ export default function AssignReferrerModal({
             disabled={isDisabled}
           >
             {isLoading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <UserPlus className="mr-2 h-4 w-4" /> 
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />             
             )}
             Guardar Cambios
           </Button>

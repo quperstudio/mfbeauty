@@ -183,7 +183,6 @@ export default function Clients() {
       {/* Vista de Clientes (Tabla o Lista) / Estado Vacío */}
       <div className="card">
         {clients.length === 0 ? (
-          {/* Muestra el estado vacío si no hay clientes */}
           <EmptyState
             icon={Users}
             title={

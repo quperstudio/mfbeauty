@@ -19,16 +19,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Client } from '@/types/database'; // Asegúrate de que la ruta sea correcta
+import { Client } from '@/types/database'; 
 
+// PROPIEDADES DEL COMPONENTE
+// --------------------------
 interface AssignReferrerModalProps {
   /** Estado de apertura del modal, controlado por useClientsPage */
   isOpen: boolean;
   /** Función para cerrar el modal, de useClientsPage */
   onClose: () => void;
-  /** * Función de submit que llama a la lógica de negocio (handleAssignReferrer).
-   * Proviene de useClientsPage.
-   */
   onSubmit: (referrerId: string | null) => void;
   /** Estado de carga, de useClientsPage */
   isLoading: boolean;
@@ -38,6 +37,8 @@ interface AssignReferrerModalProps {
   selectedClientIds: Set<string>;
 }
 
+// COMPONENTE PRINCIPAL
+// --------------------
 export default function AssignReferrerModal({
   isOpen,
   onClose,
@@ -47,58 +48,48 @@ export default function AssignReferrerModal({
   selectedClientIds,
 }: AssignReferrerModalProps) {
   
-  /** * Estado interno para manejar el valor del <Select>.
-   * Usamos valores especiales:
-   * - 'none': Representa un referrer_id nulo (Ninguno).
-   * - 'mixed': Estado especial si los clientes seleccionados tienen diferentes referentes.
-   * - 'client-id...': Un ID de cliente real.
-   */
+  // 'selectedId' puede ser un ID de cliente, 'none' (para null), o 'mixed' (referentes diferentes)
   const [selectedId, setSelectedId] = useState<string>('');
 
-  /**
-   * Lógica para determinar el estado inicial del <Select> (Requerimiento 2).
-   * Se ejecuta cada vez que se abre el modal.
-   */
+
+  // EFECTO PARA INICIALIZAR EL SELECT CON EL ESTADO ACTUAL DE LOS CLIENTES SELECCIONADOS
   useEffect(() => {
-    if (isOpen && selectedClientIds.size > 0) {
-      const selectedClients = allClients.filter(c => selectedClientIds.has(c.id));
-      if (selectedClients.length === 0) return;
-
-      // Usamos 'none' para representar 'null' y facilitar la comparación
-      const firstReferrerId = selectedClients[0].referrer_id || 'none';
-      
-      // Comprobar si todos los clientes seleccionados tienen el mismo referente
-      const allHaveSameReferrer = selectedClients.every(
-        c => (c.referrer_id || 'none') === firstReferrerId
-      );
-
-      // Si todos son iguales, establecer ese valor. Si son mixtos, establecer 'mixed'.
-      setSelectedId(allHaveSameReferrer ? firstReferrerId : 'mixed');
-    } else if (!isOpen) {
+    if (!isOpen) {
       // Resetear el estado cuando se cierra el modal
       setSelectedId('');
+      return;
     }
+    
+    if (selectedClientIds.size === 0) return;
+
+    const selectedClients = allClients.filter(c => selectedClientIds.has(c.id));
+    if (selectedClients.length === 0) return;
+
+    // Usamos 'none' para representar 'null' y facilitar la comparación
+    const firstReferrerId = selectedClients[0].referrer_id || 'none';
+    
+    // Comprobar si todos los clientes seleccionados tienen el mismo referente
+    const allHaveSameReferrer = selectedClients.every(
+      c => (c.referrer_id || 'none') === firstReferrerId
+    );
+
+    // Si todos son iguales, establecer ese valor. Si son mixtos, establecer 'mixed'.
+    setSelectedId(allHaveSameReferrer ? firstReferrerId : 'mixed');
+
   }, [isOpen, selectedClientIds, allClients]);
 
-  /**
-   * Filtra la lista de clientes para el dropdown.
-   * Un cliente no puede ser su propio referente, ni referente de un grupo
-   * al que pertenece.
-   */
+  // MEMO: Opciones de clientes para el dropdown (excluye a los clientes seleccionados)
   const referrerOptions = useMemo(() => {
     return allClients.filter(c => !selectedClientIds.has(c.id));
   }, [allClients, selectedClientIds]);
 
-  /**
-   * Maneja el envío del formulario.
-   * Convierte los valores especiales ('none') a 'null' para la base de datos.
-   */
+
   const handleSubmit = () => {
-    // Si el valor es 'none', enviamos 'null'.
-    // Si es un ID, enviamos el ID.
+    // Convierte el valor especial 'none' a null antes de enviar
     onSubmit(selectedId === 'none' ? null : selectedId);
   };
 
+  // VARIABLES DE UI
   const selectedCount = selectedClientIds.size;
   const isDisabled = isLoading || selectedId === 'mixed';
 
@@ -114,6 +105,7 @@ export default function AssignReferrerModal({
           </DialogDescription>
         </DialogHeader>
         
+        {/* CUERPO DEL MODAL (SELECTOR) */}
         <div className="py-4 space-y-2">
           <Label htmlFor="referrer-select">Cliente Referente</Label>
           <Select
@@ -125,12 +117,11 @@ export default function AssignReferrerModal({
               <SelectValue placeholder="Seleccionar un cliente..." />
             </SelectTrigger>
             <SelectContent>
-              {/* Opción para "Ninguno" */}
               <SelectItem value="none">
                 <span className="text-muted-foreground">(Ninguno)</span>
               </SelectItem>
               
-              {/* Opción especial si los valores son mixtos */}
+              {/* Opción especial para el caso mixto, siempre deshabilitada */}
               {selectedId === 'mixed' && (
                 <SelectItem value="mixed" disabled>
                   (Varios referentes seleccionados)
@@ -152,6 +143,7 @@ export default function AssignReferrerModal({
           )}
         </div>
         
+        {/* PIE DE PÁGINA (BOTONES) */}
         <DialogFooter>
           <Button 
             variant="ghost" 

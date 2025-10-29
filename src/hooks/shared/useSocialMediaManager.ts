@@ -4,9 +4,7 @@ import { SOCIAL_TYPE_OPTIONS, SOCIAL_MEDIA_LABELS } from '../../lib/constants';
 import { cleanSocialMediaInput } from '../../lib/formats';
 
 export interface UseSocialMediaManagerProps {
-  // Ahora toma la lista actual como 'list'
   list: SocialMedia[]; 
-  // Ahora requiere la función para actualizar el estado del padre
   onChange: (list: SocialMedia[]) => void; 
   phoneValue?: string;
   onSyncWhatsAppWithPhone?: boolean;
@@ -34,13 +32,11 @@ const getNextAvailableType = (list: SocialMedia[]): SocialMediaType => {
 };
 
 export function useSocialMediaManager({
-  list, // Lista controlada desde el padre
-  onChange, // Función de actualización del padre
+  list, 
+  onChange, 
   phoneValue = '',
   onSyncWhatsAppWithPhone = false,
 }: UseSocialMediaManagerProps): UseSocialMediaManagerReturn {
-
-  // ELIMINADO: const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>(initialList);
    
   // Inicializa el tipo disponible basado en la lista (prop)
   const [newSocialMediaType, setNewSocialMediaType] = useState<SocialMediaType>(() => 
@@ -54,18 +50,15 @@ export function useSocialMediaManager({
   useEffect(() => {
     setNewSocialMediaType(getInitialType(list));
     setNewSocialMediaLink('');
-    // ELIMINADO: No hay necesidad de llamar a setSocialMediaList, ya que 'list' es la fuente de verdad.
   }, [list]);
 
   const socialMediaOptions = useMemo(() => {
-    // Usa la prop 'list' directamente
     const existingTypes = new Set(list.map(sm => sm.type));
     return SOCIAL_TYPE_OPTIONS.filter(opt => !existingTypes.has(opt.value));
   }, [list]);
 
   useEffect(() => {
     if (onSyncWhatsAppWithPhone && phoneValue) {
-      // Usa la prop 'list' directamente
       const whatsappExists = list.some(sm => sm.type === 'whatsapp');
       if (newSocialMediaType === 'whatsapp' && !whatsappExists) {
         setNewSocialMediaLink(phoneValue);
@@ -88,7 +81,6 @@ export function useSocialMediaManager({
     const cleanedLink = cleanSocialMediaInput(newSocialMediaType, newSocialMediaLink.trim());
     const updatedList = [...list, { type: newSocialMediaType, link: cleanedLink }];
     
-    // CAMBIO CLAVE: Llama a onChange para actualizar el estado del padre
     onChange(updatedList);
     
     const nextDefaultType = getInitialType(updatedList);
@@ -102,7 +94,6 @@ export function useSocialMediaManager({
   const handleRemoveSocialMedia = useCallback((typeToRemove: SocialMediaType) => {
     const updatedList = list.filter(sm => sm.type !== typeToRemove);
     
-    // CAMBIO CLAVE: Llama a onChange para actualizar el estado del padre
     onChange(updatedList);
 
     const nextDefaultType = getInitialType(updatedList);
@@ -116,7 +107,6 @@ export function useSocialMediaManager({
   }, []);
 
   const resetList = useCallback((newList: SocialMedia[]) => {
-    // Llama a onChange para actualizar el estado del padre
     onChange(newList);
 
     const nextDefaultType = getInitialType(newList);
@@ -127,7 +117,7 @@ export function useSocialMediaManager({
   }, [onChange]);
 
   return {
-    socialMediaList: list, // Devuelve la prop 'list' como la lista actual
+    socialMediaList: list,
     newSocialMediaType,
     newSocialMediaLink,
     socialMediaInputError,

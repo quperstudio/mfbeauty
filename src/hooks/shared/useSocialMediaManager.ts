@@ -6,7 +6,7 @@ import { cleanSocialMediaInput } from '../../lib/formats';
 // TIPOS DE DATOS BASE
 // -------------------
 export interface UseSocialMediaManagerProps {
-  list: SocialMedia[];  // Lista de redes sociales activas
+  list: [];  // Lista de redes sociales activas
   onChange: (list: SocialMedia[]) => void;  // Callback al cambiar la lista
   phoneValue?: string;
   onSyncWhatsAppWithPhone?: boolean;

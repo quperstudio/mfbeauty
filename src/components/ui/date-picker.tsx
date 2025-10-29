@@ -32,7 +32,7 @@ export function DatePicker({ label, value, onChange, placeholder = "Selecciona u
                     {label}
                 </Label>
             )}
-            <Popover open={open} onOpenChange={setOpen}>
+            <Popover open={open} onOpenChange={setOpen} modal={true}> 
                 <PopoverTrigger asChild>
                     <Button
                         variant="outline"

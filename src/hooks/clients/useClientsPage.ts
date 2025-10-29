@@ -171,9 +171,8 @@ export function useClientsPage() {
     [selectedClient, logic]
   );
 
-  // CAMBIO CLAVE 2: Función de entrada para eliminación INDIVIDUAL
   const confirmDeleteClient = useCallback((client: Client) => {
-    setDeleteTarget(client.id); // Establece el ID del cliente
+    setDeleteTarget(client.id);
   }, []);
   
   // Lógica simulada para deshacer la eliminación
@@ -184,7 +183,6 @@ export function useClientsPage() {
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
   }, [queryClient]);
   
-  // CAMBIO CLAVE 3: Función de confirmación UNIFICADA (llamada por el AlertDialog)
   const handleConfirmDelete = useCallback(async () => {
     if (!deleteTarget) return;
 

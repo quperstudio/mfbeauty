@@ -52,7 +52,6 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
   return (
     <>
       {/* DIÁLOGO PRINCIPAL (Formulario) */}
-      {/* Si se usa un Popover dentro del Dialog, la prop modal=false puede ser necesaria en el Dialog, pero por simplicidad se añade modal=true al Popover. */}
       <Dialog open={isOpen} onOpenChange={handlers.handleClose}>
         <DialogContent className="w-10/12 md:max-w-l h-[85vh] flex flex-col p-0 bg-card text-card-foreground border-border">
           <DialogHeader className="p-4 border-b border-border">

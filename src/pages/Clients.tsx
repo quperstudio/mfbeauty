@@ -1,3 +1,5 @@
+// src/pages/Clients.tsx
+
 import { Plus, X, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
@@ -42,24 +44,44 @@ export default function Clients() {
     isAssignReferrerModalOpen,
     setIsAssignReferrerModalOpen,
     bulkActionLoading,
-    clientToDelete,
-    setClientToDelete,
-    isSmallScreen,
-    filterCounts,
-    handleCreateClient,
-    handleEditClient,
+    
+    // CAMBIOS CLAVE 1: Recibir los nuevos estados/manejadores
+    deleteTarget, 
+    setDeleteTarget,
+    handleConfirmDelete, 
+    
+    // Los manejadores de entrada se mantienen
+    confirmDeleteClient, 
+    handleBulkDelete,
+    
     handleSaveClient,
-    confirmDeleteClient,
-    handleDeleteClient,
+    handleEditClient,
+    handleCreateClient,
     handleSort,
     handleSelectAll,
     handleSelectClient,
     handleViewProfile,
-    handleBulkDelete,
     handleBulkDuplicate,
     handleBulkExport,
     handleAssignReferrer,
+    
+    isSmallScreen,
+    filterCounts,
   } = useClientsPage();
+  
+  // FUNCIÓN HELPER para mensaje dinámico
+  const getDeleteMessage = () => {
+    if (deleteTarget === 'bulk') {
+      return `¿Estás seguro de que deseas eliminar ${selectedClientIds.size} cliente(s) seleccionado(s)?`;
+    }
+    
+    if (deleteTarget) {
+      const client = allClients.find(c => c.id === deleteTarget);
+      const clientName = client ? `a "${client.name}"` : 'al cliente seleccionado';
+      return `¿Estás seguro de que deseas eliminar ${clientName}?`;
+    }
+    return '¿Estás seguro de continuar?';
+  };
 
   if (loading) {
     return (
@@ -134,7 +156,7 @@ export default function Clients() {
       {selectedClientIds.size > 0 && (
         <ClientBulkActionBar
           selectedCount={selectedClientIds.size}
-          onDelete={handleBulkDelete}
+          onDelete={handleBulkDelete} // Llama a la función que pone 'bulk' en deleteTarget
           onDuplicate={() => handleBulkDuplicate()}
           onExport={() => handleBulkExport()}
           onAssignReferrer={() => setIsAssignReferrerModalOpen(true)}
@@ -173,7 +195,7 @@ export default function Clients() {
               onSort={handleSort}
               onViewProfile={handleViewProfile}
               onEdit={handleEditClient}
-              onDelete={confirmDeleteClient}
+              onDelete={confirmDeleteClient} // Llama a la función que pone el ID en deleteTarget
               onExport={handleBulkExport}
               onDuplicate={handleBulkDuplicate}
               onAssignReferrer={(clientIds) => {
@@ -190,7 +212,7 @@ export default function Clients() {
               onSelectClient={handleSelectClient}
               onViewProfile={handleViewProfile}
               onEdit={handleEditClient}
-              onDelete={confirmDeleteClient}
+              onDelete={confirmDeleteClient} // Llama a la función que pone el ID en deleteTarget
               onExport={handleBulkExport}
               onDuplicate={handleBulkDuplicate}
               onAssignReferrer={(clientIds) => {
@@ -228,20 +250,28 @@ export default function Clients() {
         excludeIds={Array.from(selectedClientIds)}
       />
 
-      <AlertDialog open={!!clientToDelete} onOpenChange={() => setClientToDelete(null)}>
+      {/* CAMBIO CLAVE 2: Diálogo de eliminación UNIFICADO (individual y masivo) */}
+      <AlertDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTarget(null); // Reinicia el target al cerrar
+          }
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+            <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción eliminará permanentemente al cliente{' '}
-              <span className="font-semibold text-foreground">{clientToDelete?.name}</span> y todos sus datos
-              relacionados (visitas, historial, etc.) de nuestros servidores. Esta acción no se puede deshacer.
+              {getDeleteMessage()}
+              <br />
+              Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteClient} className="bg-destructive hover:bg-destructive/90">
-              Eliminar cliente
+            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive hover:bg-destructive/90">
+              Eliminar {deleteTarget === 'bulk' ? 'cliente(s)' : 'cliente'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

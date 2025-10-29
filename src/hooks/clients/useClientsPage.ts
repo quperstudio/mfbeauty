@@ -217,7 +217,7 @@ export function useClientsPage() {
 
         if (!isBulk) {
              toast.success('Cliente eliminado', {
-                description: `Cliente "${targetClientName}" eliminado. Puedes deshacer esta acción inmediatamente.`,
+                description: `Cliente "${targetClientName}" eliminado.`,
                 duration: 8000,
                 action: {
                     label: 'Deshacer',

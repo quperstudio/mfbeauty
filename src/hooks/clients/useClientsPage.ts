@@ -157,13 +157,11 @@ export function useClientsPage() {
   const handleSaveClient = useCallback(
     async (data: ClientSchemaType, tagIds: string[]): Promise<{ error: string | null }> => {
       try {
-        // Delegar la orquestación (guardar + tags + validación) al hook de lógica
         await logic.saveClient(data, tagIds, selectedClient?.id);
         toast.success(selectedClient ? 'Cliente actualizado' : 'Cliente creado');
         return { error: null };
       } catch (err: any) {
         console.error('Error al guardar el cliente o sus tags:', err);
-        // Mostrar el error generado por la capa de lógica (ej. 'El teléfono ya está registrado')
         toast.error('Error al guardar cliente', { description: err.message || 'Error al guardar los datos' });
         return { error: err.message || 'Error al guardar los datos' };
       }

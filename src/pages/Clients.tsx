@@ -21,7 +21,7 @@ import { CLIENT_FILTER_LABELS } from '../constants/clients.constants';
 export default function Clients() {
   // Obtiene la información del usuario autenticado
   const { user } = useAuth();
-  
+  
   // Hook que maneja toda la lógica, estado y datos de la página
   const {
     // Datos y Estados
@@ -50,12 +50,12 @@ export default function Clients() {
     bulkActionLoading, // Estado de carga para acciones masivas
     
     // Estado y manejadores de eliminación unificada
-    deleteTarget, // ID del cliente o 'bulk' si es eliminación masiva (null = cerrado)
+    deleteTarget, // ID del cliente o 'bulk' si es eliminación masiva (null = cerrado)
     setDeleteTarget, // Función para establecer el target de eliminación
-    handleConfirmDelete, // Manejador que ejecuta la eliminación (individual o masiva)
+    handleConfirmDelete, // Manejador que ejecuta la eliminación (individual o masiva)
     
     // Funciones de Manejo
-    confirmDeleteClient, // Pone el ID del cliente en 'deleteTarget' (abre el AlertDialog)
+    confirmDeleteClient, // Pone el ID del cliente en 'deleteTarget' (abre el AlertDialog)
     handleBulkDelete, // Pone 'bulk' en 'deleteTarget' (abre el AlertDialog)
     handleSaveClient, // Guarda los cambios de un cliente
     handleEditClient, // Abre ClientModal para editar
@@ -301,4 +301,4 @@ export default function Clients() {
       </AlertDialog>
     </div>
   );
-} 
+}

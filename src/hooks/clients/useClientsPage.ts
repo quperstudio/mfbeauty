@@ -1,5 +1,3 @@
-// src/hooks/clients/useClientsPage.ts
-
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
@@ -12,7 +10,7 @@ import * as clientService from '../../services/client.service';
 import * as tagService from '../../services/tag.service';
 import { MOBILE_BREAKPOINT } from '../../constants/clients.constants';
 import { toast } from 'sonner';
-import { useClientLogic } from './useClientLogic'; // <-- CORREGIDO: Importación del hook de lógica
+import { useClientLogic } from './useClientLogic'; 
 
 export function useClientsPage() {
   const queryClient = useQueryClient();

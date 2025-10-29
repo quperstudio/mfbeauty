@@ -230,7 +230,7 @@ export default function Clients() {
               onSelectClient={handleSelectClient}
               onViewProfile={handleViewProfile}
               onEdit={handleEditClient}
-              onDelete={confirmDeleteClient} // Abre el diálogo de eliminación individual
+              onDelete={confirmDeleteClient}
               onExport={handleBulkExport}
               onDuplicate={handleBulkDuplicate}
               onAssignReferrer={(clientIds) => {

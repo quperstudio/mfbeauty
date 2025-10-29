@@ -1,14 +1,3 @@
-/**
- * Tags Query Hook
- *
- * Custom React Query hook for managing client tags with CRUD operations.
- *
- * USAGE:
- *
- * const { tags, loading, createTag, deleteTag } = useTagsQuery();
- * const { clientTags, assignTag, removeTag } = useClientTagsQuery(clientId);
- */
-
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { TagSchemaType } from '../../schemas/client.schema';
 import * as tagService from '../../services/tag.service';

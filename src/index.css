@@ -2,8 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* CAPA BASE: Variables CSS y estilos generales de HTML */
-/* ----------------------------------------------------- */
+
 @layer base {
   :root {
     /* Colores Base (Modo Claro) */

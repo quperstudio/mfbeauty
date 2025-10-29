@@ -246,7 +246,7 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
 
   const handleClose = useCallback(() => {
     if (hasUnsavedChanges()) {
-      setShowUnsavedChangesDialog(true); // Muestra el diálogo de confirmación
+      setShowUnsavedChangesDialog(true); 
     } else {
       resetModalState();
       onClose();

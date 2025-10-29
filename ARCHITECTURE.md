@@ -1,388 +1,712 @@
-# Architecture Guide
+# Arquitectura del Sistema - Guía Completa
 
-This document describes the architecture patterns and conventions used in this project.
+Esta documentación describe la arquitectura, patrones y convenciones utilizadas en este proyecto CRM para salones de belleza.
 
-## Overview
+## Visión General
 
-This project uses a scalable, service-oriented architecture with React Query for state management and Supabase for the backend. The architecture is designed to be consistent, maintainable, and easy to extend with new entities.
+Este proyecto implementa una arquitectura basada en **Custom Hooks especializados** con React Query para gestión de estado y Supabase como backend. La arquitectura está diseñada para ser mantenible, escalable y seguir las mejores prácticas de React moderno.
 
-## Project Structure
+## Stack Tecnológico
+
+- **Frontend Framework:** React 18 con TypeScript
+- **Estado y Cache:** TanStack React Query v5
+- **Base de Datos:** Supabase (PostgreSQL con RLS)
+- **Validación:** Zod para esquemas y validación runtime
+- **Formularios:** React Hook Form con resolvers de Zod
+- **UI Components:** Radix UI primitives + TailwindCSS
+- **Build Tool:** Vite
+- **Routing:** React Router DOM v7
+
+## Estructura del Proyecto
 
 ```
 src/
-├── components/        # React components
-│   ├── clients/       # Client-specific components
-│   ├── layout/        # Layout components (Sidebar, Topbar, etc.)
-│   └── ui/            # Reusable UI components
-├── contexts/          # React contexts (Auth, Theme)
-├── hooks/
-│   └── queries/       # React Query hooks for data fetching
-├── lib/               # Utility libraries
-│   ├── calculations.ts
-│   ├── constants.ts
-│   ├── formats.ts
-│   ├── permissions.ts
-│   ├── queryClient.ts
-│   ├── queryKeys.ts   # Centralized React Query keys
-│   ├── supabase.ts    # Supabase client configuration
-│   ├── utils.ts
-│   └── validators.ts
-├── pages/             # Page components
-├── schemas/           # Zod validation schemas
-├── services/          # Data access layer
-│   ├── base.service.ts      # Generic CRUD operations
-│   └── client.service.ts    # Client-specific operations
-└── types/             # TypeScript type definitions
-    ├── api.ts         # API response types
-    ├── database.ts    # Database entity types
-    └── forms.ts       # Form data types
+├── components/           # Componentes React
+│   ├── clients/         # Componentes específicos del módulo de clientes
+│   │   ├── AssignReferrerModal.tsx
+│   │   ├── ClientBulkActionBar.tsx
+│   │   ├── ClientFilters.tsx
+│   │   ├── ClientModal.tsx
+│   │   ├── ClientProfileModal.tsx
+│   │   ├── ClientsListView.tsx
+│   │   └── ClientsTableView.tsx
+│   ├── layout/          # Componentes de layout (AppLayout, Sidebar, Topbar)
+│   ├── shared/          # Componentes compartidos (EmptyState, PageHeader, SearchBar)
+│   └── ui/              # Componentes UI reutilizables (Badge, Button, etc.)
+├── constants/           # Constantes de la aplicación
+│   └── clients.constants.ts
+├── contexts/            # Contextos de React
+│   ├── AuthContext.tsx  # Autenticación y gestión de sesión
+│   └── ThemeContext.tsx # Tema claro/oscuro
+├── hooks/               # Custom Hooks
+│   ├── clients/         # Hooks del módulo de clientes
+│   │   ├── useClients.ts           # Operaciones CRUD base
+│   │   ├── useClientActions.ts     # Acciones complejas (guardar, eliminar, duplicar)
+│   │   ├── useClientDetails.ts     # Detalles y datos relacionados
+│   │   ├── useClientFilters.ts     # Filtrado y ordenamiento
+│   │   ├── useClientForm.ts        # Lógica de formularios
+│   │   ├── useClientModals.ts      # Estado de modales
+│   │   ├── useClientSelection.ts   # Selección masiva
+│   │   └── useClientsPage.ts       # Hook compositor de la página
+│   ├── shared/          # Hooks compartidos
+│   └── tags/            # Hooks de etiquetas
+│       └── useTags.ts
+├── lib/                 # Utilidades y configuración
+│   ├── clients/         # Helpers específicos de clientes
+│   │   └── client-helpers.ts
+│   ├── calculations.ts  # Funciones de cálculo
+│   ├── constants.ts     # Constantes globales
+│   ├── formats.ts       # Formateadores (fechas, moneda, teléfono)
+│   ├── permissions.ts   # Lógica de permisos
+│   ├── queryClient.ts   # Configuración de React Query
+│   ├── queryKeys.ts     # Keys centralizadas para cache
+│   ├── supabase.ts      # Cliente de Supabase
+│   └── utils.ts         # Utilidades generales
+├── pages/               # Páginas de la aplicación
+│   ├── Clients.tsx      # Página de gestión de clientes
+│   ├── Dashboard.tsx    # Dashboard principal
+│   ├── Login.tsx        # Página de login
+│   ├── Register.tsx     # Página de registro
+│   └── ComingSoon.tsx   # Placeholder para páginas futuras
+├── schemas/             # Esquemas de validación Zod
+│   └── client.schema.ts
+└── types/               # Definiciones de tipos TypeScript
+    ├── api.ts           # Tipos para respuestas API
+    ├── database.ts      # Tipos de entidades de base de datos
+    └── forms.ts         # Tipos para formularios
 ```
 
-## Architecture Layers
+## Capas de la Arquitectura
 
-### 1. Service Layer (`src/services/`)
+### 1. Capa de Acceso a Datos (Hooks Base)
 
-The service layer handles all database operations using Supabase. Each entity has its own service file.
+Los hooks base manejan las operaciones CRUD directas con Supabase usando React Query.
 
-**Pattern:**
-
-```typescript
-// Import base service and types
-import * as baseService from './base.service';
-import { EntityType } from '../types/database';
-import { EntitySchemaType } from '../schemas/entity.schema';
-
-const TABLE_NAME = 'entity_table';
-
-// Fetch all records
-export async function fetchEntities(): Promise<EntityType[]> {
-  return baseService.fetchAll<EntityType>(TABLE_NAME, {
-    column: 'created_at',
-    ascending: false,
-  });
-}
-
-// Fetch by ID
-export async function fetchEntityById(id: string): Promise<EntityType | null> {
-  return baseService.fetchById<EntityType>(TABLE_NAME, id);
-}
-
-// Create
-export async function createEntity(data: EntitySchemaType): Promise<EntityType> {
-  return baseService.create<EntityType, EntitySchemaType>(TABLE_NAME, data);
-}
-
-// Update
-export async function updateEntity(id: string, data: EntitySchemaType): Promise<EntityType> {
-  return baseService.update<EntityType, EntitySchemaType>(TABLE_NAME, id, data);
-}
-
-// Delete
-export async function deleteEntity(id: string): Promise<void> {
-  return baseService.remove(TABLE_NAME, id);
-}
-```
-
-**Base Service Functions:**
-
-- `fetchAll<T>()` - Fetch all records with optional ordering
-- `fetchById<T>()` - Fetch single record by ID
-- `create<T, TInput>()` - Create new record
-- `update<T, TInput>()` - Update existing record
-- `remove()` - Delete record
-- `fetchWithFilter<T>()` - Fetch with custom filters
-- `count()` - Count records with optional filters
-
-### 2. React Query Hooks (`src/hooks/queries/`)
-
-Custom hooks that use React Query for data fetching, caching, and state management.
-
-**Pattern:**
+**Ejemplo: `src/hooks/clients/useClients.ts`**
 
 ```typescript
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import * as entityService from '../../services/entity.service';
-import { QUERY_KEYS } from '../../lib/queryKeys';
-
-export function useEntitiesQuery() {
+export function useClients() {
   const queryClient = useQueryClient();
 
-  // Fetch query
-  const { data: entities = [], isLoading, error } = useQuery({
-    queryKey: QUERY_KEYS.entities.all,
-    queryFn: entityService.fetchEntities,
+  // Query para obtener todos los clientes
+  const { data: clients = [], isLoading, error } = useQuery({
+    queryKey: QUERY_KEYS.clients.all,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return (data as Client[]) || [];
+    },
   });
 
-  // Create mutation
+  // Mutation para crear cliente
   const createMutation = useMutation({
-    mutationFn: entityService.createEntity,
+    mutationFn: async (clientData: ClientSchemaType) => {
+      const { data, error } = await supabase
+        .from('clients')
+        .insert([clientData])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as Client;
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.entities.all });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
     },
   });
-
-  // Update mutation
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => entityService.updateEntity(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.entities.all });
-    },
-  });
-
-  // Delete mutation
-  const deleteMutation = useMutation({
-    mutationFn: entityService.deleteEntity,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.entities.all });
-    },
-  });
-
-  // Wrapper functions with error handling
-  const createEntity = async (data) => {
-    try {
-      await createMutation.mutateAsync(data);
-      return { error: null };
-    } catch (err) {
-      return { error: err.message };
-    }
-  };
 
   return {
-    entities,
+    clients,
     loading: isLoading,
-    error: error?.message ?? null,
-    createEntity,
-    updateEntity,
-    deleteEntity,
-    refresh: () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.entities.all }),
+    error: error instanceof Error ? error.message : null,
+    createClient: createMutation.mutateAsync,
+    // ... más operaciones
   };
 }
 ```
 
-### 3. Realtime Subscriptions
+**Características:**
+- Acceso directo a Supabase
+- Uso de React Query para cache y estado
+- Invalidación automática de cache tras mutaciones
+- Manejo de errores centralizado
 
-Supabase realtime subscriptions are set up directly in components, not in hooks.
+### 2. Capa de Lógica de Negocio (Hooks Especializados)
 
-**Pattern:**
+Hooks que implementan lógica de negocio específica y orquestan múltiples operaciones.
+
+**Hooks Especializados del Módulo Clientes:**
+
+#### `useClientActions.ts`
+Maneja acciones complejas que involucran múltiples pasos:
+- `handleSaveClient` - Crear/actualizar cliente + sincronizar tags
+- `handleDeleteClients` - Eliminar con confirmación y toast
+- `handleBulkDuplicate` - Duplicar múltiples clientes
+- `handleBulkExport` - Exportar a CSV
+- `handleAssignReferrer` - Asignar referente a múltiples clientes
+
+#### `useClientModals.ts`
+Gestiona el estado de todos los modales:
+- Estado de apertura/cierre de modales
+- Cliente seleccionado para edición
+- Target de eliminación (individual o masivo)
+
+#### `useClientSelection.ts`
+Maneja la selección masiva de clientes:
+- IDs de clientes seleccionados (Set)
+- Seleccionar/deseleccionar individual
+- Seleccionar/deseleccionar todos
+- Limpiar selección
+
+#### `useClientFilters.ts`
+Gestiona filtrado, búsqueda y ordenamiento:
+- Query de búsqueda
+- Filtros por estado (con visitas, con ventas, referidos)
+- Filtros por tags
+- Ordenamiento multi-campo
+- Cálculo de contadores de filtros
+
+#### `useClientForm.ts`
+Lógica específica de formularios:
+- Integración con react-hook-form
+- Validación con Zod
+- Gestión de tags
+- Auto-generación de links de redes sociales
+
+### 3. Capa de Composición (Hook Compositor)
+
+El hook compositor combina todos los hooks especializados en una única interfaz coherente.
+
+**Ejemplo: `src/hooks/clients/useClientsPage.ts`**
 
 ```typescript
-import { useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
-import { QUERY_KEYS } from '../lib/queryKeys';
-
-export default function EntitiesPage() {
+export function useClientsPage() {
   const queryClient = useQueryClient();
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
 
+  // Componer hooks especializados
+  const { clients, loading, error } = useClients();
+  const { tags: availableTags } = useTags();
+  const filters = useClientFilters(clients);
+  const selection = useClientSelection();
+  const modals = useClientModals();
+  const actions = useClientActions();
+
+  // Suscripción a cambios en tiempo real
   useEffect(() => {
     const subscription = supabase
-      .channel('entities_changes')
+      .channel('clients_changes')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'entities'
+        table: 'clients'
       }, () => {
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.entities.all });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
       })
       .subscribe();
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, [queryClient]);
 
-  // ... rest of component
+  // Funciones de orquestación
+  const handleConfirmDelete = async () => {
+    if (!modals.deleteTarget) return;
+
+    const isBulk = modals.deleteTarget === 'bulk';
+    const clientIds = isBulk
+      ? Array.from(selection.selectedClientIds)
+      : [modals.deleteTarget];
+
+    await actions.handleDeleteClients(clientIds);
+
+    if (isBulk) selection.clearSelection();
+    modals.setDeleteTarget(null);
+  };
+
+  // Retornar interfaz unificada
+  return {
+    clients: filters.filteredAndSortedClients,
+    allClients: clients,
+    loading,
+    availableTags,
+    isSmallScreen,
+    ...filters,
+    ...selection,
+    ...modals,
+    bulkActionLoading: actions.bulkActionLoading,
+    handleSaveClient: actions.handleSaveClient,
+    handleConfirmDelete,
+    handleBulkDuplicate,
+    // ... más funciones
+  };
 }
 ```
 
-### 4. Query Keys (`src/lib/queryKeys.ts`)
+**Ventajas del Hook Compositor:**
+- Interfaz única y cohesiva para el componente
+- Orquesta múltiples hooks especializados
+- Maneja efectos secundarios complejos
+- Facilita testing al separar responsabilidades
 
-Centralized location for all React Query cache keys.
+### 4. Capa de Presentación (Componentes)
+
+Los componentes se enfocan exclusivamente en UI e interacción del usuario.
+
+**Ejemplo: `src/pages/Clients.tsx`**
+
+```typescript
+export default function Clients() {
+  const { user } = useAuth();
+
+  // Un solo hook proporciona toda la funcionalidad
+  const {
+    clients,
+    allClients,
+    loading,
+    availableTags,
+    searchQuery,
+    setSearchQuery,
+    isModalOpen,
+    setIsModalOpen,
+    selectedClient,
+    activeFilter,
+    setActiveFilter,
+    selectedClientIds,
+    handleSelectAll,
+    handleSelectClient,
+    handleSaveClient,
+    handleEditClient,
+    handleCreateClient,
+    handleViewProfile,
+    handleBulkDelete,
+    handleBulkDuplicate,
+    // ... más
+  } = useClientsPage();
+
+  if (loading) return <Spinner size="lg" />;
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Clientes"
+        description="Gestiona tu base de clientes"
+        actionLabel="Nuevo Cliente"
+        onAction={handleCreateClient}
+      />
+
+      <SearchBar value={searchQuery} onChange={setSearchQuery} />
+
+      <ClientFilters
+        activeFilter={activeFilter}
+        onFilterChange={setActiveFilter}
+        availableTags={availableTags}
+      />
+
+      {clients.length === 0 ? (
+        <EmptyState icon={Users} title="No hay clientes" />
+      ) : (
+        <>
+          <ClientsTableView
+            clients={clients}
+            selectedClientIds={selectedClientIds}
+            onSelectAll={handleSelectAll}
+            onSelectClient={handleSelectClient}
+            onEdit={handleEditClient}
+            onDelete={confirmDeleteClient}
+          />
+
+          <ClientsListView
+            clients={clients}
+            selectedClientIds={selectedClientIds}
+            onEdit={handleEditClient}
+          />
+        </>
+      )}
+
+      <ClientModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveClient}
+        client={selectedClient}
+      />
+    </div>
+  );
+}
+```
+
+## Patrones Clave
+
+### 1. Separación de Responsabilidades
+
+Cada capa tiene una responsabilidad clara:
+
+- **Hooks Base:** Comunicación con Supabase
+- **Hooks Especializados:** Lógica de negocio específica
+- **Hook Compositor:** Orquestación y coordinación
+- **Componentes:** UI y experiencia de usuario
+
+### 2. Gestión de Estado con React Query
+
+**Configuración Global (`src/lib/queryClient.ts`):**
+
+```typescript
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,    // 5 minutos
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
+```
+
+**Keys Centralizadas (`src/lib/queryKeys.ts`):**
 
 ```typescript
 export const QUERY_KEYS = {
-  entities: {
-    all: ['entities'] as const,
-    detail: (id: string) => ['entities', id] as const,
-    filtered: (filters: Record<string, any>) => ['entities', 'filtered', filters] as const,
+  clients: {
+    all: ['clients'] as const,
+    detail: (id: string) => ['clients', id] as const,
+    referrals: (id: string) => ['clients', 'referrals', id] as const,
   },
-};
+  tags: {
+    all: ['tags'] as const,
+    byClient: (clientId: string) => ['tags', 'client', clientId] as const,
+  },
+} as const;
 ```
 
-### 5. Validation Schemas (`src/schemas/`)
+**Beneficios:**
+- Cache automático de datos
+- Sincronización en segundo plano
+- Invalidación inteligente
+- Estados de loading/error consistentes
 
-Zod schemas for validating form inputs and API data.
+### 3. Validación con Zod
+
+**Esquemas Tipados (`src/schemas/client.schema.ts`):**
 
 ```typescript
-import { z } from 'zod';
+const emptyStringToNull = z
+  .string()
+  .transform(val => val?.trim() === '' ? null : val?.trim() || null)
+  .nullable()
+  .optional();
 
-export const entitySchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  email: z.string().email('Invalid email'),
-  // ... other fields
+export const clientSchema = z.object({
+  name: z.string().min(1, 'El nombre es requerido').trim(),
+  phone: z
+    .string()
+    .min(1, 'El teléfono es requerido')
+    .regex(/^\d{10}$/, 'El teléfono debe tener exactamente 10 dígitos'),
+  birthday: emptyStringToNull,
+  notes: emptyStringToNull,
+  referrer_id: emptyStringToNull,
+  whatsapp_link: emptyStringToNull,
+  facebook_link: emptyStringToNull,
+  instagram_link: emptyStringToNull,
+  tiktok_link: emptyStringToNull,
 });
 
-export type EntitySchemaType = z.infer<typeof entitySchema>;
+export type ClientSchemaType = z.infer<typeof clientSchema>;
 ```
 
-## Key Principles
+**Integración con React Hook Form:**
 
-### 1. Separation of Concerns
+```typescript
+const form = useForm<ClientSchemaType>({
+  resolver: zodResolver(clientSchema),
+  defaultValues: client || defaultValues,
+});
+```
 
-- **Services**: Handle data access and business logic
-- **Hooks**: Manage React Query state and mutations
-- **Components**: Handle UI and user interactions
-- **Schemas**: Define and validate data structures
+### 4. Real-time con Supabase
 
-### 2. Type Safety
+Las suscripciones en tiempo real se configuran en los hooks compositores:
 
-- All functions are fully typed with TypeScript
-- Use Zod schemas for runtime validation
-- Database types defined in `src/types/database.ts`
+```typescript
+useEffect(() => {
+  const subscription = supabase
+    .channel('clients_changes')
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'clients'
+    }, () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
+    })
+    .subscribe();
 
-### 3. Error Handling
+  return () => subscription.unsubscribe();
+}, [queryClient]);
+```
 
-- Services throw errors on failure
-- Hooks catch errors and return them in a standardized format
-- Components display errors to users
+### 5. Memorización de Funciones
 
-### 4. Consistency
+**IMPORTANTE:** Las funciones que se pasan como dependencias a `useEffect` deben memorizarse con `useCallback`:
 
-- All entities follow the same patterns
-- Standardized naming conventions
-- Centralized query keys and types
+```typescript
+// ❌ INCORRECTO - Causa bucles infinitos
+const fetchData = async () => { /* ... */ };
 
-### 5. Scalability
+useEffect(() => {
+  fetchData();
+}, [fetchData]); // fetchData cambia en cada render
 
-- Base service functions reduce code duplication
-- Easy to add new entities by following existing patterns
-- Clear separation makes testing easier
+// ✅ CORRECTO - Función memorizada
+const fetchData = useCallback(async () => { /* ... */ }, []);
 
-## Adding a New Entity
+useEffect(() => {
+  fetchData();
+}, [fetchData]); // fetchData mantiene la misma referencia
+```
 
-1. **Define types** in `src/types/database.ts`
-2. **Create schema** in `src/schemas/entity.schema.ts`
-3. **Create service** in `src/services/entity.service.ts` using base functions
-4. **Add query keys** to `src/lib/queryKeys.ts`
-5. **Create hook** in `src/hooks/queries/useEntity.query.ts`
-6. **Create page component** in `src/pages/Entity.tsx`
-7. **Add realtime subscription** in the component if needed
-8. **Create database migration** in `supabase/migrations/`
+### 6. Refs en Componentes
 
-## Best Practices
+Los componentes que se usan dentro de componentes compuestos de Radix UI deben soportar refs:
 
-### Services
+```typescript
+// ✅ CORRECTO - Con forwardRef
+const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
+  ({ className, variant, ...props }, ref) => {
+    return (
+      <div ref={ref} className={cn(badgeVariants({ variant }), className)} {...props} />
+    );
+  }
+);
 
-- Use base service functions for common operations
-- Add entity-specific logic only when needed
-- Always type function parameters and return values
-- Let errors bubble up to be handled by hooks
+Badge.displayName = "Badge";
+```
+
+## Flujo de Datos
+
+```
+Usuario Interactúa con UI
+        ↓
+Componente llama función del Hook Compositor
+        ↓
+Hook Compositor orquesta Hooks Especializados
+        ↓
+Hook Especializado usa Hook Base
+        ↓
+Hook Base ejecuta operación en Supabase
+        ↓
+React Query actualiza cache
+        ↓
+Componente re-renderiza con nuevos datos
+```
+
+## Seguridad
+
+### Row Level Security (RLS)
+
+Todas las tablas tienen RLS habilitado en Supabase:
+
+```sql
+-- Ejemplo de política RLS
+CREATE POLICY "Users can read own data"
+  ON clients FOR SELECT
+  TO authenticated
+  USING (created_by_user_id = auth.uid());
+
+CREATE POLICY "Users can update own data"
+  ON clients FOR UPDATE
+  TO authenticated
+  USING (created_by_user_id = auth.uid())
+  WITH CHECK (created_by_user_id = auth.uid());
+```
+
+### Autenticación
+
+Manejada por `AuthContext`:
+- Login/logout con Supabase Auth
+- Persistencia de sesión
+- Protección de rutas con `ProtectedRoute`
+- Gestión de permisos por rol
+
+## Problemas Comunes y Soluciones
+
+### Error: Maximum update depth exceeded
+
+**Causa:** Función no memorizada usada como dependencia de `useEffect`.
+
+**Solución:** Envolver la función con `useCallback`:
+
+```typescript
+// Antes
+const fetchData = async () => { /* ... */ };
+
+// Después
+const fetchData = useCallback(async () => { /* ... */ }, []);
+```
+
+### Error: Function components cannot be given refs
+
+**Causa:** Componente no soporta refs pero se usa en un contexto que las requiere (Radix UI).
+
+**Solución:** Usar `React.forwardRef`:
+
+```typescript
+const MyComponent = React.forwardRef<HTMLDivElement, Props>(
+  (props, ref) => <div ref={ref} {...props} />
+);
+```
+
+### Cache no se invalida
+
+**Causa:** Query key incorrecta o falta de invalidación.
+
+**Solución:**
+1. Usar keys de `QUERY_KEYS`
+2. Invalidar después de mutaciones:
+
+```typescript
+onSuccess: () => {
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
+}
+```
+
+## Mejores Prácticas
 
 ### Hooks
 
-- Always use query keys from `QUERY_KEYS`
-- Invalidate related queries after mutations
-- Wrap mutations in try-catch for error handling
-- Return consistent interface: `{ data, loading, error, ...operations }`
+1. **Siempre usa `useCallback` para funciones en dependencias de `useEffect`**
+2. **Usa `useMemo` para cálculos costosos**
+3. **Mantén los hooks pequeños y enfocados**
+4. **Retorna interfaces consistentes**
+5. **Documenta hooks complejos**
 
-### Components
+### Componentes
 
-- Use hooks for data access, not direct service calls
-- Set up realtime subscriptions in useEffect
-- Handle loading and error states appropriately
-- Keep business logic in services, not components
+1. **Componentes pequeños y reutilizables**
+2. **Props explícitas y bien tipadas**
+3. **Separar lógica en hooks**
+4. **Usar componentes de composición**
+5. **Implementar loading y error states**
 
-### Realtime
+### TypeScript
 
-- Set up subscriptions in components, not hooks
-- Always clean up subscriptions in useEffect return
-- Invalidate appropriate query keys on changes
-- Include queryClient in useEffect dependencies
+1. **Tipar todas las funciones**
+2. **Usar `as const` para constantes literales**
+3. **Inferir tipos de Zod con `z.infer`**
+4. **Evitar `any`, usar `unknown` si es necesario**
+5. **Definir interfaces para objetos complejos**
 
-## Common Patterns
+### React Query
 
-### Fetching Data
+1. **Keys centralizadas en `queryKeys.ts`**
+2. **Invalidar cache tras mutaciones**
+3. **Configurar `staleTime` apropiadamente**
+4. **Usar `enabled` para queries condicionales**
+5. **Manejar estados `isLoading` e `error`**
 
+## Escalabilidad
+
+### Para agregar un nuevo módulo (ej: Citas)
+
+1. **Crear tipos en `src/types/database.ts`:**
 ```typescript
-const { entities, loading, error } = useEntitiesQuery();
-
-if (loading) return <Spinner />;
-if (error) return <Error message={error} />;
-return <EntityList entities={entities} />;
+export interface Appointment {
+  id: string;
+  client_id: string;
+  date: string;
+  // ...
+}
 ```
 
-### Creating Records
-
+2. **Crear esquema en `src/schemas/appointment.schema.ts`:**
 ```typescript
-const { createEntity } = useEntitiesQuery();
-
-const handleCreate = async (data) => {
-  const result = await createEntity(data);
-  if (result.error) {
-    showError(result.error);
-  } else {
-    showSuccess('Created successfully');
-  }
-};
+export const appointmentSchema = z.object({
+  client_id: z.string().uuid(),
+  date: z.string(),
+  // ...
+});
 ```
 
-### Updating Records
-
+3. **Agregar query keys en `src/lib/queryKeys.ts`:**
 ```typescript
-const { updateEntity } = useEntitiesQuery();
-
-const handleUpdate = async (id, data) => {
-  const result = await updateEntity(id, data);
-  if (result.error) {
-    showError(result.error);
-  }
-};
+appointments: {
+  all: ['appointments'] as const,
+  detail: (id: string) => ['appointments', id] as const,
+}
 ```
 
-### Deleting Records
+4. **Crear hooks siguiendo el patrón:**
+   - `src/hooks/appointments/useAppointments.ts` (base)
+   - `src/hooks/appointments/useAppointmentActions.ts` (acciones)
+   - `src/hooks/appointments/useAppointmentsPage.ts` (compositor)
 
+5. **Crear componentes:**
+   - `src/components/appointments/` (componentes específicos)
+   - `src/pages/Appointments.tsx` (página principal)
+
+6. **Crear migración de base de datos:**
+   - `supabase/migrations/YYYYMMDDHHMMSS_create_appointments.sql`
+
+## Performance
+
+### Optimizaciones Implementadas
+
+1. **React Query Cache:** Datos en cache por 5 minutos
+2. **Memoización:** `useCallback` y `useMemo` en lugares críticos
+3. **Code Splitting:** Por rutas con React Router
+4. **Lazy Loading:** Componentes pesados cargados bajo demanda
+
+### Consideraciones Futuras
+
+Para escalar más allá de 5,000 registros:
+- Implementar paginación en listados
+- Virtualización de listas con `react-virtual`
+- Debounce en búsquedas
+- Optimistic updates en mutaciones críticas
+
+## Testing
+
+### Estrategia Recomendada
+
+**Hooks:**
 ```typescript
-const { deleteEntity } = useEntitiesQuery();
+import { renderHook, waitFor } from '@testing-library/react';
+import { useClients } from './useClients';
 
-const handleDelete = async (id) => {
-  if (!confirm('Are you sure?')) return;
-  await deleteEntity(id);
-};
+test('fetches clients', async () => {
+  const { result } = renderHook(() => useClients());
+
+  await waitFor(() => expect(result.current.loading).toBe(false));
+
+  expect(result.current.clients).toHaveLength(10);
+});
 ```
 
-## Testing Strategy
+**Componentes:**
+```typescript
+import { render, screen } from '@testing-library/react';
+import Clients from './Clients';
 
-### Services
+test('renders clients list', () => {
+  render(<Clients />);
 
-- Test CRUD operations
-- Test error handling
-- Mock Supabase client
+  expect(screen.getByText('Clientes')).toBeInTheDocument();
+});
+```
 
-### Hooks
+## Recursos Adicionales
 
-- Test query results
-- Test mutation behavior
-- Test error states
-- Test cache invalidation
+- [React Query Documentation](https://tanstack.com/query/latest)
+- [Supabase Documentation](https://supabase.com/docs)
+- [Zod Documentation](https://zod.dev)
+- [React Hook Form](https://react-hook-form.com)
+- [Radix UI](https://www.radix-ui.com)
 
-### Components
+---
 
-- Test rendering with different states
-- Test user interactions
-- Test realtime updates
-- Mock hooks
-
-## Performance Considerations
-
-- React Query handles caching automatically
-- Use `staleTime` to control refetch frequency
-- Implement pagination for large datasets
-- Use indexes in database for frequently queried fields
-- Optimize realtime subscriptions to only needed tables
-
-## Security
-
-- Row Level Security (RLS) enabled on all tables
-- Authentication checked at database level
-- Permissions verified in components when needed
-- Never expose sensitive data in client-side code
+**Última actualización:** 2025-10-29
+**Versión del proyecto:** 0.0.0 (MVP)

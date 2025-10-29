@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { QUERY_KEYS } from '../../lib/queryKeys';
@@ -163,7 +164,7 @@ export function useClientTags(clientId: string | null) {
     },
   });
 
-  const fetchClientIdsByTags = async (tagIds: string[]): Promise<string[]> => {
+  const fetchClientIdsByTags = useCallback(async (tagIds: string[]): Promise<string[]> => {
     if (tagIds.length === 0) return [];
 
     const { data, error } = await supabase
@@ -177,7 +178,7 @@ export function useClientTags(clientId: string | null) {
     data?.forEach((item) => clientIds.add(item.client_id));
 
     return Array.from(clientIds);
-  };
+  }, []);
 
   return {
     clientTags,

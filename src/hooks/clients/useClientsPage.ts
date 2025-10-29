@@ -33,8 +33,7 @@ export function useClientsPage() {
   const { syncTags } = useClientTagsQuery(selectedClient?.id || null);
   const [clientsWithSelectedTags, setClientsWithSelectedTags] = useState<string[]>([]);
   
-  // CAMBIO CLAVE 1: Nuevo estado unificado para la eliminación
-  const [deleteTarget, setDeleteTarget] = useState<'bulk' | string | null>(null); // 'bulk' o client ID
+  const [deleteTarget, setDeleteTarget] = useState<'bulk' | string | null>(null); 
 
   const [isSmallScreen, setIsSmallScreen] = useState(false);
 

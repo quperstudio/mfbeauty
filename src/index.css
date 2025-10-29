@@ -3,160 +3,153 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    /* Colores Base (Modo Claro) */
-    --background: 0 0% 100%; /* Color de fondo principal (Blanco) */
-    --foreground: 220 8.9% 10%; /* Color principal de texto (Azul grisáceo oscuro) */
-    --card: 0 0% 100%; /* Fondo de componentes tipo tarjeta (Blanco) */
-    --card-foreground: 220 8.9% 10%; /* Texto sobre la tarjeta */
-    --popover: 0 0% 100%; /* Fondo de popovers/menús (Blanco) */
-    --popover-foreground: 220 8.9% 10%; /* Texto sobre el popover */
-    --primary: 270 80% 55%; /* Color principal de la marca (Morado) */
-    --primary-foreground: 210 40% 98%; /* Texto sobre el color principal (Blanco azulado) */
-    --secondary: 220 14.3% 95.9%; /* Fondo de elementos secundarios (Gris claro azulado) */
-    --secondary-foreground: 220 8.9% 10%; /* Texto sobre el color secundario */
-    --muted: 220 14.3% 90%; /* Fondos sutiles (Gris claro azulado) */
-    --muted-foreground: 220 8.9% 45%; /* Texto de bajo contraste */
-    --accent: 220 14.3% 95.9%; /* Resaltado (ej: hover) */
-    --accent-foreground: 220 8.9% 10%; /* Texto sobre el color de acento */
-    --destructive: 0 84.2% 60.2%; /* Color para acciones peligrosas (Rojo) */
-    --destructive-foreground: 0 85% 50%; /* Texto sobre el color peligroso */
-    --border: 220 13% 85%; /* Color de bordes y separadores */
-    --input: 220 13% 85%; /* Color para campos de entrada */
-    --ring: 270 80% 55%; /* Color del anillo de enfoque (Morado) */
+  :root {
+    /* Colores Base (Modo Claro) */
+    --background: 0 0% 100%; /* Color de fondo principal (Blanco) */
+    --foreground: 220 8.9% 10%; /* Color principal de texto (Azul grisáceo oscuro) */
+    --card: 0 0% 100%; /* Fondo de componentes tipo tarjeta (Blanco) */
+    --card-foreground: 220 8.9% 10%; /* Texto sobre la tarjeta */
+    --popover: 0 0% 100%; /* Fondo de popovers/menús (Blanco) */
+    --popover-foreground: 220 8.9% 10%; /* Texto sobre el popover */
+    --primary: 270 80% 55%; /* Color principal de la marca (Morado) */
+    --primary-foreground: 210 40% 98%; /* Texto sobre el color principal (Blanco azulado) */
+    --secondary: 220 14.3% 95.9%; /* Fondo de elementos secundarios (Gris claro azulado) */
+    --secondary-foreground: 220 8.9% 10%; /* Texto sobre el color secundario */
+    --muted: 220 14.3% 90%; /* Fondos sutiles (Gris claro azulado) */
+    --muted-foreground: 220 8.9% 45%; /* Texto de bajo contraste */
+    --accent: 220 14.3% 95.9%; /* Resaltado (ej: hover) */
+    --accent-foreground: 220 8.9% 10%; /* Texto sobre el color de acento */
+    --destructive: 0 84.2% 60.2%; /* Color para acciones peligrosas (Rojo) */
+    --destructive-foreground: 0 85% 50%; /* Texto sobre el color peligroso */
+    --border: 220 13% 85%; /* Color de bordes y separadores */
+    --input: 220 13% 85%; /* Color para campos de entrada */
+    --ring: 270 80% 55%; /* Color del anillo de enfoque (Morado) */
 
-    /* Tonalidades de Alerta/Estado (Modo Claro) */
-    --success: 142 71% 40%; /* Color para estados positivos (Verde) */
-    --success-foreground: 210 40% 98%; /* Texto sobre el success (Blanco azulado) */
-    --error: 0 84% 60%; /* Color para errores críticos (Rojo) */
-    --error-foreground: 210 40% 98%; /* Texto sobre el error (Blanco azulado) */
-    --warning: 45 90% 50%; /* Color para advertencias (Ámbar) */
-    --warning-foreground: 220 8.9% 10%; /* Texto sobre el warning (Oscuro) */
-    --info: 270 80% 55%; /* Color para información neutral (Morado/Primary) */
-    --info-foreground: 210 40% 98%; /* Texto sobre el info (Blanco azulado) */
+    /* Tonalidades de Alerta/Estado (Modo Claro) */
+    --success: 142 71% 40%; /* Color para estados positivos (Verde) */
+    --success-foreground: 210 40% 98%; /* Texto sobre el success (Blanco azulado) */
+    --error: 0 84% 60%; /* Color para errores críticos (Rojo) */
+    --error-foreground: 210 40% 98%; /* Texto sobre el error (Blanco azulado) */
+    --warning: 45 90% 50%; /* Color para advertencias (Ámbar) */
+    --warning-foreground: 220 8.9% 10%; /* Texto sobre el warning (Oscuro) */
+    --info: 270 80% 55%; /* Color para información neutral (Morado/Primary) */
+    --info-foreground: 210 40% 98%; /* Texto sobre el info (Blanco azulado) */
 
-    --radius: 0.5rem; /* Radio de borde general */
-  }
+    --radius: 0.5rem; /* Radio de borde general */
+  }
 
-  .dark {
-    /* Colores Base (Modo Oscuro) */
-    --background: 220 8.9% 10%; /* Fondo principal oscuro (Azul grisáceo oscuro) */
-    --foreground: 210 40% 98%; /* Texto principal oscuro (Blanco azulado) */
-    --card: 220 8.9% 10%; /* Fondo de tarjetas oscuro */
-    --card-foreground: 210 40% 98%; /* Texto sobre la tarjeta oscuro */
-    --popover: 220 8.9% 10%; /* Fondo de popovers oscuro */
-    --popover-foreground: 210 40% 98%; /* Texto sobre el popover oscuro */
-    --primary: 270 70% 65%; /* Color principal de la marca oscuro (Morado) */
-    --primary-foreground: 220 8.9% 10%; /* Texto sobre el primary oscuro */
-    --secondary: 220 13% 18%; /* Fondo secundario oscuro */
-    --secondary-foreground: 210 40% 98%; /* Texto sobre el secondary oscuro */
-    --muted: 220 13% 25%; /* Fondos sutiles oscuros */
-    --muted-foreground: 220 13% 65%; /* Texto de bajo contraste oscuro */
-    --accent: 220 13% 18%; /* Resaltado oscuro */
-    --accent-foreground: 210 40% 98%; /* Texto sobre el acento oscuro */
-    --destructive: 0 80% 50%; /* Color peligroso oscuro */
-    --destructive-foreground: 0 85% 50%; /* Texto sobre el peligroso oscuro */
-    --border: 220 13% 18%; /* Borde oscuro */
-    --input: 220 13% 18%; /* Input oscuro */
-    --ring: 270 70% 65%; /* Anillo de enfoque oscuro */
+  .dark {
+    /* Colores Base (Modo Oscuro) */
+    --background: 220 8.9% 10%; /* Fondo principal oscuro (Azul grisáceo oscuro) */
+    --foreground: 210 40% 98%; /* Texto principal oscuro (Blanco azulado) */
+    --card: 220 8.9% 10%; /* Fondo de tarjetas oscuro */
+    --card-foreground: 210 40% 98%; /* Texto sobre la tarjeta oscuro */
+    --popover: 220 8.9% 10%; /* Fondo de popovers oscuro */
+    --popover-foreground: 210 40% 98%; /* Texto sobre el popover oscuro */
+    --primary: 270 70% 65%; /* Color principal de la marca oscuro (Morado) */
+    --primary-foreground: 220 8.9% 10%; /* Texto sobre el primary oscuro */
+    --secondary: 220 13% 18%; /* Fondo secundario oscuro */
+    --secondary-foreground: 210 40% 98%; /* Texto sobre el secondary oscuro */
+    --muted: 220 13% 25%; /* Fondos sutiles oscuros */
+    --muted-foreground: 220 13% 65%; /* Texto de bajo contraste oscuro */
+    --accent: 220 13% 18%; /* Resaltado oscuro */
+    --accent-foreground: 210 40% 98%; /* Texto sobre el acento oscuro */
+    --destructive: 0 80% 50%; /* Color peligroso oscuro */
+    --destructive-foreground: 0 85% 50%; /* Texto sobre el peligroso oscuro */
+    --border: 220 13% 18%; /* Borde oscuro */
+    --input: 220 13% 18%; /* Input oscuro */
+    --ring: 270 70% 65%; /* Anillo de enfoque oscuro */
 
-    /* Tonalidades de Alerta/Estado (Modo Oscuro) */
-    --success: 142 71% 25%; /* Color success oscuro (Verde) */
-    --success-foreground: 210 40% 98%; /* Texto sobre success oscuro (Oscuro) */
-    --error: 0 90% 20%; /* Color error oscuro (Rojo) */
-    --error-foreground: 210 70% 98%; /* Texto sobre error oscuro (Claro) */
-    --warning: 45 90% 40%; /* Color warning oscuro (Ámbar) */
-    --warning-foreground: 220 8.9% 10%; /* Texto sobre warning oscuro (Oscuro) */
-    --info: 270 50% 35%; /* Color info oscuro (Morado/Primary) */
-    --info-foreground: 210 40% 98%; /* Texto sobre info oscuro (Oscuro) */
-  }
-
-  /* Estilos base aplicados globalmente */
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground transition-colors duration-200 scroll-smooth;
-  }
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-serif;
-  }
-  /* Ocultar flechas en inputs de tipo number */
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  input[type="number"] {
-    -moz-appearance: textfield;
-  }
+    /* Tonalidades de Alerta/Estado (Modo Oscuro) */
+    --success: 142 71% 25%; /* Color success oscuro (Verde) */
+    --success-foreground: 210 40% 98%; /* Texto sobre success oscuro (Oscuro) */
+    --error: 0 90% 20%; /* Color error oscuro (Rojo) */
+    --error-foreground: 210 70% 98%; /* Texto sobre error oscuro (Claro) */
+    --warning: 45 90% 40%; /* Color warning oscuro (Ámbar) */
+    --warning-foreground: 220 8.9% 10%; /* Texto sobre warning oscuro (Oscuro) */
+    --info: 270 50% 35%; /* Color info oscuro (Morado/Primary) */
+    --info-foreground: 210 40% 98%; /* Texto sobre info oscuro (Oscuro) */
+  }
 }
 
-/* CAPA DE COMPONENTES: Clases reutilizables para UI */
-/* -------------------------------------------------- */
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground transition-colors duration-200 scroll-smooth;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif; 
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
 @layer components {
-  .container-custom {
-    @apply mx-auto max-w-7xl px-2;
-  }
+  .container-custom {
+    @apply mx-auto max-w-7xl px-2;
+  }
 
-  .card {
-    @apply bg-card text-card-foreground rounded-lg shadow-soft border border-border;
-  }
+  .card {
+    @apply bg-card text-card-foreground rounded-lg shadow-soft border border-border;
+  }
 
-  .input-field {
-    @apply w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200;
-  }
+  .input-field {
+    @apply w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200;
+  }
 
-  .btn-primary {
-    @apply px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
-  }
+  .btn-primary {
+    @apply px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
 
-  /* Estilos personalizados para scrollbar */
-  .scrollbar-thin {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
-  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
+  }
 
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
 
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
 
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: rgba(155, 155, 155, 0.5);
-    border-radius: 20px;
-  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgba(155, 155, 155, 0.5);
+    border-radius: 20px;
+  }
 
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(155, 155, 155, 0.7);
-  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(155, 155, 155, 0.7);
+  }
 }
 
-/* CAPA DE UTILIDADES: Clases de bajo nivel */
-/* ----------------------------------------- */
 @layer utilities {
-  /* Utilidad para balancear el texto en el encabezado */
-  .text-balance {
-    text-wrap: balance;
-  }
+  .text-balance {
+    text-wrap: balance;
+  }
 
-  /* Animación de Shimmer para estados de carga */
-  .animate-shimmer {
-    animation: shimmer 2s infinite;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    background-size: 200% 100%;
-  }
+  .animate-shimmer { 
+    animation: shimmer 2s infinite;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    background-size: 200% 100%;
+  }
 
-  @keyframes shimmer {
-    0% {
-      background-position: -200% 0;
-    }
-    100% {
-      background-position: 200% 0;
-    }
-  }
-}
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+} 

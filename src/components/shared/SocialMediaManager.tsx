@@ -11,9 +11,7 @@ import { useSocialMediaManager } from '../../hooks/shared/useSocialMediaManager'
 import { toast } from 'sonner'; 
 
 export interface SocialMediaManagerProps {
-  // CAMBIO: Usar 'value' en lugar de 'initialValues'
   value: SocialMedia[];
-  // CAMBIO: 'onChange' ya no es opcional
   onChange: (socialMediaList: SocialMedia[]) => void;
   phoneValue?: string;
   syncWhatsAppWithPhone?: boolean;
@@ -23,7 +21,6 @@ export interface SocialMediaManagerProps {
 }
 
 export default function SocialMediaManager({
-  // CAMBIO: Recibir 'value'
   value,
   onChange,
   phoneValue = '',
@@ -32,8 +29,6 @@ export default function SocialMediaManager({
   label = 'Redes sociales',
   className,
 }: SocialMediaManagerProps) {
-
-  // ELIMINADO: const isFirstRender = useRef(true);
 
   const {
     socialMediaList,
@@ -48,27 +43,11 @@ export default function SocialMediaManager({
     clearInputError,
     resetList,
   } = useSocialMediaManager({
-    // CAMBIO CLAVE: Pasar 'value' como 'list' y 'onChange' directamente
     list: value,
     onChange: onChange,
     phoneValue,
     onSyncWhatsAppWithPhone: syncWhatsAppWithPhone,
   });
-
-
-  // ELIMINADO: Se elimina este useEffect que intentaba sincronizar el estado del padre (lo que causaba el race condition)
-  /*
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-
-    if (onChange) {
-      onChange(socialMediaList);
-    }
-  }, [socialMediaList, onChange]); 
-  */
 
   const handleAdd = () => {
     const success = handleAddSocialMedia();
@@ -129,7 +108,6 @@ return (
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
-        {/* socialMediaList (la prop 'value') es usada para renderizar */}
         {socialMediaList.map((sm) => (
           <div
             key={sm.type}

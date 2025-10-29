@@ -80,39 +80,21 @@ export function useClientActions() {
 
   const handleBulkDuplicate = useCallback(
     async (clientIds: string[]) => {
-      if (clientIds.length === 0) {
-        toast.error('Error', { description: 'No hay clientes seleccionados para duplicar.' });
-        return;
-      }
+      if (clientIds.length === 0) return;
 
       setBulkActionLoading(true);
       try {
-        const results = await Promise.allSettled(
-          clientIds.map((id) => duplicateClient(id))
-        );
-
-        const successCount = results.filter(r => r.status === 'fulfilled').length;
-        const errorCount = results.filter(r => r.status === 'rejected').length;
+        await Promise.all(clientIds.map((id) => duplicateClient(id)));
 
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
-
-        if (errorCount === 0) {
-          toast.success('Duplicación exitosa', {
-            description: `Se duplicaron ${successCount} cliente(s) con éxito.`,
-          });
-        } else if (successCount > 0) {
-          toast.warning('Duplicación parcial', {
-            description: `Se duplicaron ${successCount} cliente(s), pero fallaron ${errorCount}.`,
-          });
-        } else {
-          toast.error('Error al duplicar clientes', {
-            description: 'No se pudieron duplicar los clientes. Intenta de nuevo.',
-          });
-        }
+        toast.success('Duplicación masiva exitosa', {
+          description: `Se duplicaron ${clientIds.length} cliente(s) con éxito.`,
+        });
       } catch (error) {
         toast.error('Error al duplicar clientes', {
           description: 'No se pudieron duplicar los clientes. Intenta de nuevo.',
         });
+        throw error;
       } finally {
         setBulkActionLoading(false);
       }

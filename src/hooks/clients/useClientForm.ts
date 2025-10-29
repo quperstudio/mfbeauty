@@ -23,7 +23,7 @@ type ClientFormDataBase = {
 interface UseClientFormParams {
   client?: Client;
   isOpen: boolean;
-  onSave: (data: ClientSchemaType, tagIds: string[], clientId?: string) => Promise<{ error: string | null }>;
+  onSave: (data: ClientSchemaType, tagIds: string[]) => Promise<{ error: string | null }>;
   onClose: () => void;
   clients: Client[];
 }
@@ -165,7 +165,7 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
 
     // Guardar
     setLoading(true);
-    const result = await onSave(sanitizedData, tagIds, client?.id);
+    const result = await onSave(sanitizedData, tagIds);
     setLoading(false);
 
     if (result.error) {

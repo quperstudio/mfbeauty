@@ -19,8 +19,8 @@ interface Action {
 // -----
 interface ClientBulkActionBarProps {
   selectedCount: number;
-  onDelete: () => void; // Llama a handleBulkDelete (inicia AlertDialog)
-  onDuplicate: () => void; // Llama a handleBulkDuplicate (ejecuta acción)
+  onDelete: () => void;
+  onDuplicate: () => void;
   onExport: () => void;
   onAssignReferrer: () => void;
   onClearSelection: () => void;
@@ -43,7 +43,7 @@ export default function ClientBulkActionBar({
 
   // Componente interno para renderizar un botón de acción con Tooltip
   const ActionButton = ({ action }: { action: Action }) => (
-    <Tooltip delayDuration={200} >
+    <Tooltip delayDuration={200} key={action.label}>
       <TooltipTrigger asChild>
         <Button
           variant="ghost"
@@ -59,7 +59,7 @@ export default function ClientBulkActionBar({
           )}
         </Button>
       </TooltipTrigger>
-      <TooltipContent side="bottom">{action.label}</TooltipContent>
+      <TooltipContent>{action.label}</TooltipContent>
     </Tooltip>
   );
 
@@ -78,7 +78,7 @@ export default function ClientBulkActionBar({
           <Tooltip delayDuration={200}>
             <TooltipTrigger asChild>
               <Button
-                onClick={onClearSelection} // Usa el prop onClearSelection
+                onClick={onClearSelection}
                 variant="ghost"
                 size="icon"
                 disabled={isLoading}
@@ -87,7 +87,7 @@ export default function ClientBulkActionBar({
                 <X className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Descartar selección</TooltipContent>
+            <TooltipContent>Descartar selección</TooltipContent>
           </Tooltip>
         </div>
 

@@ -263,21 +263,6 @@ export default function Clients() {
         clients={allClients}
       />
 
-      {/* ... (Otros Modales y AlertDialog) ... */}
-    </div>
-  );
-}
-
-      {/* MODALES */}
-      {/* Modal para crear o editar un cliente */}
-      <ClientModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveClient}
-        client={selectedClient}
-        clients={allClients}
-      />
-
       {/* Modal para ver el perfil completo del cliente */}
       <ClientProfileModal
         isOpen={isProfileModalOpen}

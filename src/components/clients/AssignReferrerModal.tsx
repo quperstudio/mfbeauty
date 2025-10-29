@@ -1,7 +1,7 @@
 // src/components/clients/AssignReferrerModal.tsx
 
 import { useState, useEffect, useMemo } from 'react';
-import { Loader2, UserPlus } from 'lucide-react';
+import { Loader2 } from 'lucide-react'; // Eliminado UserPlus
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -159,7 +159,7 @@ export default function AssignReferrerModal({
             {isLoading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              <UserPlus className="mr-2 h-4 w-4" />  
+              null 
             )}
             Guardar Cambios
           </Button>

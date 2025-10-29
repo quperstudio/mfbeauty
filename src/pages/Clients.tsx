@@ -1,5 +1,3 @@
-// src/pages/Clients.tsx
-
 import { Plus, X, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';

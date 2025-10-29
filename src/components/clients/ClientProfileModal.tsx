@@ -38,7 +38,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   // -----------------------------------------------------------------------------
   if (loading) {
   	return (
-    	<Dialog open={isOpen} onOpenChange={onClose}>
+    	<Dialog open={isOpen} onOpenChange={onClose} modal={false}> {/* FIX: Añadido modal={false} */}
       	<DialogContent className="sm:max-w-lg">
         	<DialogHeader>
           	<DialogTitle>Cargando perfil...</DialogTitle>
@@ -46,7 +46,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
         	<div className="flex items-center justify-center py-12">
           	<Spinner size="lg" />
         	</div>
-      	</DialogContent>
+        </DialogContent>
     	</Dialog>
   	);
   }
@@ -56,7 +56,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   // Maneja error de fetch o cliente no encontrado
   if (!client && !loading) {
   	return (
-    	<Dialog open={isOpen} onOpenChange={onClose}>
+    	<Dialog open={isOpen} onOpenChange={onClose} modal={false}> {/* FIX: Añadido modal={false} */}
       	<DialogContent className="sm:max-w-lg">
         	<DialogHeader>
           	<DialogTitle>Error</DialogTitle>
@@ -76,7 +76,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
     	{/* Sección: Info principal */}
     	<div>
     		<h2 className="text-2xl font-bold text-foreground mb-3">{client!.name}</h2>
-    		<Button variant="outline" onClick={() => onEdit(client)}>
+    		<Button variant="outline" onClick={() => onEdit(client!)}> {/* Fix: client! para evitar error de tipado con TS */}
     			<Edit className="w-4 h-4 mr-2" />
     			Editar
     		</Button>
@@ -103,7 +103,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   				<span className="line-clamp-2">
   					Creado el {format(parseDate(client!.created_at) || new Date(), 'dd/MM/yyyy', { locale: es })}
   					{client!.created_by && (
-  						<span> por {getUserDisplayName(client)}</span>
+  						<span> por {getUserDisplayName(client!)}</span>
   					)}
   					{!client!.created_by && client!.created_by_user_id && (
   						<span> por [Usuario ID: {client!.created_by_user_id}]</span>
@@ -370,7 +370,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   // RENDER PRINCIPAL
   // -----------------------------------------------------------------------------
   return (
-  	<Dialog open={isOpen} onOpenChange={onClose}>
+  	<Dialog open={isOpen} onOpenChange={onClose} modal={false}> {/* FIX: Añadido modal={false} */}
   		<TooltipProvider>
   			<DialogContent className="w-10/12 lg:max-w-5xl h-[75vh] flex flex-col p-0">
     				<DialogHeader className="p-4 border-b border-border">

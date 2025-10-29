@@ -37,7 +37,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
     errors,
     loading,
     selectedTags,
-    socialMediaList, // Este estado se carga con los datos del cliente
+    socialMediaList, 
     showUnsavedChangesDialog,
     phoneCheckLoading,
     availableTags,
@@ -94,7 +94,6 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
 
                 <SocialMediaManager
                   key={client?.id || 'new-client'}
-                  // CAMBIO CLAVE: Pasar 'socialMediaList' como 'value' (prop controlada)
                   value={socialMediaList}
                   phoneValue={formData.phone}
                   syncWhatsAppWithPhone={!client}

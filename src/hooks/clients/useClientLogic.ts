@@ -1,10 +1,8 @@
-// src/hooks/clients/useClientLogic.ts
-
 import { useCallback } from 'react';
 import { useClientsQuery } from './useClients.query';
 import { useClientTagsQuery } from '../tags/useTags.query';
 import * as clientService from '../../services/client.service';
-import * as tagService from '../../services/tag.service'; // <-- AÑADIDO: Necesario para leer/sincronizar tags
+import * as tagService from '../../services/tag.service'; 
 import { ClientSchemaType } from '../../schemas/client.schema';
 
 /**
@@ -83,12 +81,9 @@ export function useClientLogic() {
       }
     });
 
-    await Promise.all(duplicationPromises); // Ejecutar todas las duplicaciones concurrentemente
-  }, []); // Dependencias: clientService, tagService
+    await Promise.all(duplicationPromises); 
+  }, []); /
 
-  /**
-   * Asignar referente a múltiples clientes
-   */
   const assignReferrerToClients = useCallback(async (
     clientIds: string[],
     referrerId: string

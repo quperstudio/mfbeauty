@@ -4,9 +4,9 @@ import { format } from 'date-fns';
 import { Client, ClientTag, SocialMedia } from '../../types/database';
 import { clientSchema, ClientSchemaType } from '../../schemas/client.schema';
 import { parsePhoneInput, mapSocialMediaListToFields, mapEntityToSocialMediaList } from '../../lib/formats';
-import { useTagsQuery, useClientTagsQuery } from '../tags/useTags.query';
+import { useTags, useClientTags } from '../tags/useTags';
+import { useClients } from './useClients';
 import { useAuth } from '../../contexts/AuthContext';
-import * as clientService from '../../services/client.service';
 import { toast } from 'sonner';
 import { initialFormData as initialFormDataConstant } from '../../constants/clients.constants';
 
@@ -34,8 +34,9 @@ interface UseClientFormParams {
 export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseClientFormParams) {
   // Contextos y Hooks
   const { user } = useAuth();
-  const { tags: availableTags, createTag, deleteTag } = useTagsQuery();
-  const { clientTags } = useClientTagsQuery(client?.id || null);
+  const { tags: availableTags, createTag, deleteTag } = useTags();
+  const { clientTags } = useClientTags(client?.id || null);
+  const { checkDuplicatePhone } = useClients();
 
   // ESTADOS LOCALES DEL FORMULARIO
   // ------------------------------
@@ -133,7 +134,7 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
 
     // Verificación de teléfono duplicado
     setPhoneCheckLoading(true);
-    const duplicateClient = await clientService.checkDuplicatePhone(formData.phone, client?.id);
+    const duplicateClient = await checkDuplicatePhone({ phone: formData.phone, excludeClientId: client?.id });
     setPhoneCheckLoading(false);
 
     if (duplicateClient) {
@@ -285,12 +286,12 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
       tagToAdd = existingTag;
     } else {
       // Crea un nuevo tag si no existe
-      const { tag, error } = await createTag({ name: tagName });
-      if (error) {
-        toast.error('Error al crear la etiqueta', { description: error });
-        return;
-      }
-      tagToAdd = tag ?? undefined;
+      const newTag = await createTag({ name: tagName });
+      if (!newTag) {
+        toast.error("Error al crear la etiqueta");
+        return;
+      }
+      tagToAdd = newTag;
     }
 
     if (tagToAdd) {

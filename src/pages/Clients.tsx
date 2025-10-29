@@ -70,6 +70,10 @@ export default function Clients() {
     
     isSmallScreen, // Indica si la pantalla es pequeña (para cambiar de vista)
     filterCounts, // Conteo de clientes por cada filtro de estado
+    hasActiveFilters, // Indica si hay filtros activos
+    clearSelection, // Limpia la selección
+    handleEditFromProfile, // Edita un cliente desde el perfil
+    handleAssignReferrerToClients, // Asigna referente a clientes seleccionados
   } = useClientsPage();
   
   // FUNCIÓN HELPER
@@ -97,8 +101,6 @@ export default function Clients() {
       </div>
     );
   }
-
-  const hasActiveFilters = activeFilter !== 'all' || selectedTagIds.length > 0;
 
   // RENDERIZADO PRINCIPAL DE LA VISTA
   // ---------------------------------
@@ -175,7 +177,7 @@ export default function Clients() {
           onDuplicate={() => handleBulkDuplicate()}
           onExport={() => handleBulkExport()}
           onAssignReferrer={() => setIsAssignReferrerModalOpen(true)}
-          onClearSelection={() => setSelectedClientIds(new Set())}
+          onClearSelection={() => clearSelection()}
           isLoading={bulkActionLoading}
         />
       )}
@@ -215,10 +217,7 @@ export default function Clients() {
               onDelete={confirmDeleteClient} // Abre el diálogo de eliminación individual
               onExport={handleBulkExport}
               onDuplicate={handleBulkDuplicate}
-              onAssignReferrer={(clientIds) => {
-                setSelectedClientIds(new Set(clientIds));
-                setIsAssignReferrerModalOpen(true);
-              }}
+              onAssignReferrer={handleAssignReferrerToClients}
             />
 
             {/* Vista de Lista (para mobile) */}
@@ -233,10 +232,7 @@ export default function Clients() {
               onDelete={confirmDeleteClient}
               onExport={handleBulkExport}
               onDuplicate={handleBulkDuplicate}
-              onAssignReferrer={(clientIds) => {
-                setSelectedClientIds(new Set(clientIds));
-                setIsAssignReferrerModalOpen(true);
-              }}
+              onAssignReferrer={handleAssignReferrerToClients}
             />
           </>
         )}
@@ -257,10 +253,7 @@ export default function Clients() {
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
         clientId={profileClientId}
-        onEdit={(client) => {
-          setIsProfileModalOpen(false);
-          handleEditClient(client);
-        }}
+        onEdit={handleEditFromProfile}
       />
 
       {/* Modal para asignar un referente */}

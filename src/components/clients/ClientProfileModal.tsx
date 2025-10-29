@@ -1,20 +1,19 @@
 import { useState } from 'react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Cake, Phone, DollarSign, Edit, MessageCircle, Facebook, Instagram, Music2, CalendarOff, CalendarCheck, CalendarSearch, AlertCircle, User as UserIcon, Tag as TagIcon, Clock } from 'lucide-react';
+import { Cake, Phone, DollarSign, Edit, MessageCircle, Facebook, Instagram, Music2, CalendarOff, CalendarCheck, CalendarSearch, AlertCircle, User as UserIcon, Clock } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useClientDetailsQuery } from '../../hooks/clients/useClientDetails.query';
+import { useClientDetails } from '../../hooks/clients/useClientDetails';
 import { handleOpenLink } from '../../lib/utils';
 import { NOTE_TRUNCATE_LENGTH } from '../../constants/clients.constants';
 import { formatCurrency, formatPhone, parseDate, buildSocialMediaUrl, getStatusBadgeVariant, getStatusLabel, getUserDisplayName } from '../../lib/formats';
 import { Client } from '../../types/database';
 
-// -----------------------------------------------------------------------------
 // INTERFACES Y CONSTANTES
 // -----------------------------------------------------------------------------
 
@@ -25,8 +24,6 @@ interface ClientProfileModalProps {
   onEdit: (client: Client) => void;
 }
 
-
-// -----------------------------------------------------------------------------
 // COMPONENTE: ClientProfileModal
 // -----------------------------------------------------------------------------
 
@@ -35,9 +32,8 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   const [showAllNotes, setShowAllNotes] = useState(false);
 
   // Hook de datos del cliente
-  const { client, loading, futureAppointments, pastAppointments } = useClientDetailsQuery(clientId); 
+  const { client, loading, futureAppointments, pastAppointments } = useClientDetails(clientId); 
 
-  // -----------------------------------------------------------------------------
   // ESTADO DE CARGA (Early Return)
   // -----------------------------------------------------------------------------
   if (loading) {
@@ -55,7 +51,6 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   	);
   }
 
-  // -----------------------------------------------------------------------------
   // ESTADO DE ERROR (Early Return)
   // -----------------------------------------------------------------------------
   // Maneja error de fetch o cliente no encontrado
@@ -76,12 +71,11 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   	);
   }
 
-  // --- COLUMNA IZQUIERDA (30% en Desktop) ---
   const LeftColumnContent = () => (
   	<div className="space-y-6 pr-2">
     	{/* Sección: Info principal */}
     	<div>
-    		<h2 className="text-2xl font-bold text-foreground mb-3">{client.name}</h2>
+    		<h2 className="text-2xl font-bold text-foreground mb-3">{client!.name}</h2>
     		<Button variant="outline" onClick={() => onEdit(client)}>
     			<Edit className="w-4 h-4 mr-2" />
     			Editar
@@ -94,25 +88,25 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
     		<div className="space-y-2">
     			<div className="flex items-start text-muted-foreground text-sm">
   				<Phone className="w-4 h-4 mr-2 flex-shrink-0" />
-  				<span className="line-clamp-2">{formatPhone(client.phone)}</span>
+  				<span className="line-clamp-2">{formatPhone(client!.phone)}</span>
   			</div>
-    			{client.birthday && (
+    			{client!.birthday && (
     				<div className="flex items-start text-muted-foreground text-sm">
     					<Cake className="w-4 h-4 mr-2 flex-shrink-0" />
   					<span className="line-clamp-2">
-  						Cumpleaños: {format(parseDate(client.birthday) || new Date(), 'dd MMM', { locale: es })}
+  						Cumpleaños: {format(parseDate(client!.birthday) || new Date(), 'dd MMM', { locale: es })}
   					</span>
   				</div>
     			)}
   			<div className="flex items-start text-muted-foreground text-sm">
   				<Clock className="w-4 h-4 mr-2 flex-shrink-0" />
   				<span className="line-clamp-2">
-  					Creado el {format(parseDate(client.created_at) || new Date(), 'dd/MM/yyyy', { locale: es })}
-  					{client.created_by && (
+  					Creado el {format(parseDate(client!.created_at) || new Date(), 'dd/MM/yyyy', { locale: es })}
+  					{client!.created_by && (
   						<span> por {getUserDisplayName(client)}</span>
   					)}
-  					{!client.created_by && client.created_by_user_id && (
-  						<span> por [Usuario ID: {client.created_by_user_id}]</span>
+  					{!client!.created_by && client!.created_by_user_id && (
+  						<span> por [Usuario ID: {client!.created_by_user_id}]</span>
   					)}
   				</span>
   			</div>
@@ -120,64 +114,64 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
     	</div>
   
   	{/* Sección: Redes Sociales */}
-  	{client.whatsapp_link || client.facebook_link || client.instagram_link || client.tiktok_link ? (
+  	{client!.whatsapp_link || client!.facebook_link || client!.instagram_link || client!.tiktok_link ? (
   		<div>
   			<h2 className="text-lg text-foreground mb-3">Redes Sociales</h2>
   			<div className="flex flex-row flex-wrap gap-2">
-  				{client.whatsapp_link && (
+  				{client!.whatsapp_link && (
   					<Tooltip>
   						<TooltipTrigger asChild>
   							<Button
   								variant="outline"
   								size="icon"
-  								onClick={() => handleOpenLink(buildSocialMediaUrl('whatsapp', client.whatsapp_link))}
+  								onClick={() => handleOpenLink(buildSocialMediaUrl('whatsapp', client!.whatsapp_link))}
   							>
   								<MessageCircle className="w-4 h-4" />
   							</Button>
   						</TooltipTrigger>
-  						<TooltipContent><p>Abrir WhatsApp</p></TooltipContent>
+  						<TooltipContent side="top"><p>Abrir WhatsApp</p></TooltipContent>
   					</Tooltip>
   				)}
-  				{client.facebook_link && (
+  				{client!.facebook_link && (
   					<Tooltip>
   						<TooltipTrigger asChild>
   							<Button
   								variant="outline"
   								size="icon"
-  								onClick={() => handleOpenLink(buildSocialMediaUrl('facebook', client.facebook_link))}
+  								onClick={() => handleOpenLink(buildSocialMediaUrl('facebook', client!.facebook_link))}
   							>
   								<Facebook className="w-4 h-4" />
   							</Button>
   						</TooltipTrigger>
-  						<TooltipContent><p>Abrir Facebook</p></TooltipContent>
+  						<TooltipContent side="top"><p>Abrir Facebook</p></TooltipContent>
   					</Tooltip>
   				)}
-  				{client.instagram_link && (
+  				{client!.instagram_link && (
   					<Tooltip>
   						<TooltipTrigger asChild>
   							<Button
   								variant="outline"
   								size="icon"
-  								onClick={() => handleOpenLink(buildSocialMediaUrl('instagram', client.instagram_link))}
+  								onClick={() => handleOpenLink(buildSocialMediaUrl('instagram', client!.instagram_link))}
   							>
   								<Instagram className="w-4 h-4" />
   							</Button>
   						</TooltipTrigger>
-  						<TooltipContent><p>Abrir Instagram</p></TooltipContent>
+  						<TooltipContent side="top"><p>Abrir Instagram</p></TooltipContent>
   					</Tooltip>
   				)}
-  				{client.tiktok_link && (
+  				{client!.tiktok_link && (
   					<Tooltip>
   						<TooltipTrigger asChild>
   							<Button
   								variant="outline"
   								size="icon"
-  								onClick={() => handleOpenLink(buildSocialMediaUrl('tiktok', client.tiktok_link))}
+  								onClick={() => handleOpenLink(buildSocialMediaUrl('tiktok', client!.tiktok_link))}
   							>
   								<Music2 className="w-4 h-4" />
   							</Button>
   						</TooltipTrigger>
-  						<TooltipContent><p>Abrir TikTok</p></TooltipContent>
+  						<TooltipContent side="top"><p>Abrir TikTok</p></TooltipContent>
   					</Tooltip>
   				)}
   			</div>
@@ -186,14 +180,13 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
 
 
   	{/* Sección: Etiquetas */}
-  	{client.tags && client.tags.length > 0 && (
+  	{client!.tags && client!.tags.length > 0 && (
   		<div>
   			<h2 className="text-lg text-foreground mb-2 flex items-center gap-2">
-  				<TagIcon className="w-4 h-4" />
   				Etiquetas
   			</h2>
   			<div className="flex flex-wrap gap-2">
-  				{client.tags.map((tag) => (
+  				{client!.tags.map((tag) => (
   					<Badge key={tag.id} variant="outline">
   						{tag.name}
   					</Badge>
@@ -202,18 +195,18 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   		</div>
   	)}
   	{/* Sección: Notas */}
-  	{client.notes && (
+  	{client!.notes && (
   		<div>
   			<h2 className="text-lg text-foreground mb-2">Notas</h2>
   			<div className="text-muted-foreground rounded-lg p-3 border-2 border-border space-y-2">
   				<p className="whitespace-pre-wrap break-words text-sm">
   					{showAllNotes
-  						? client.notes
-  						: `${client.notes.substring(0, NOTE_TRUNCATE_LENGTH)}${
-  							client.notes.length > NOTE_TRUNCATE_LENGTH ? '...' : ''
+  						? client!.notes
+  						: `${client!.notes.substring(0, NOTE_TRUNCATE_LENGTH)}${
+  							client!.notes.length > NOTE_TRUNCATE_LENGTH ? '...' : ''
   						}`}
   				</p>
-  				{client.notes.length > NOTE_TRUNCATE_LENGTH && (
+  				{client!.notes.length > NOTE_TRUNCATE_LENGTH && (
   					<Button variant="link" onClick={() => setShowAllNotes(!showAllNotes)} className="p-0 h-auto text-xs">
   						{showAllNotes ? 'Ver menos' : 'Ver más'}
   					</Button>
@@ -234,7 +227,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   				<div>
   					<p className="text-xs text-primary mb-1">Ventas Totales</p>
   					<p className="text-xl font-bold text-foreground">
-  						{formatCurrency(Number(client.total_spent))}
+  						{formatCurrency(Number(client!.total_spent))}
   					</p>
   				</div>
   				<DollarSign className="w-6 h-6 text-primary" />
@@ -245,7 +238,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   			<div className="flex items-center justify-between">
   				<div>
   					<p className="text-xs text-primary mb-1">Total Visitas</p>
-  					<p className="text-xl font-bold text-foreground">{client.total_visits}</p>
+  					<p className="text-xl font-bold text-foreground">{client!.total_visits}</p>
   				</div>
   				<CalendarCheck className="w-6 h-6 text-primary" />
   			</div>
@@ -256,8 +249,8 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   				<div>
   					<p className="text-xs text-primary mb-1">Última Visita</p>
   					<p className="text-xl font-semibold text-foreground truncate">
-  						{client.last_visit_date
-  							? format(parseDate(client.last_visit_date) || new Date(), 'dd/MM/yyyy', { locale: es })
+  						{client!.last_visit_date
+  							? format(parseDate(client!.last_visit_date) || new Date(), 'dd/MM/yyyy', { locale: es })
   							: 'Sin visitas'}
   					</p>
   				</div>
@@ -267,16 +260,16 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   	</div>
   	
   	{/* Sección: Clientes Referidos */}
-  	{client.referrals && client.referrals.length > 0 && (
+  	{client!.referrals && client!.referrals.length > 0 && (
   		<div className="space-y-2">
       <div className="flex items-center"> 
   			<h2 className="text-lg text-foreground">
   				Detalle de referidos
   			</h2>
-         <Badge variant="outline" className="ml-2 font-semibold">{client.referrals.length}</Badge>
+         <Badge variant="outline" className="ml-2 font-semibold">{client!.referrals.length}</Badge>
         </div>
   			<div className="space-y-2">
-  				{client.referrals.map((referral) => (
+  				{client!.referrals.map((referral) => (
   					<div key={referral.id} className="bg-card border border-border rounded-lg p-3">
   						<div className="flex items-center justify-between">
   							<div>
@@ -364,7 +357,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   		)}
 
   		{/* Estado vacío (sin citas) */}
-  		{(!client.appointments || client.appointments.length === 0) && (
+  		{(!client!.appointments || client!.appointments.length === 0) && (
   			<div className="text-center py-8">
   				<CalendarOff className="w-12 h-12 text-muted mx-auto mb-3" />
   				<p className="text-muted-foreground/50">Este cliente no tiene citas registradas</p>
@@ -374,8 +367,6 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   	</div>
   );
 
-
-  // -----------------------------------------------------------------------------
   // RENDER PRINCIPAL
   // -----------------------------------------------------------------------------
   return (

@@ -52,7 +52,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
   return (
     <>
       {/* DIÁLOGO PRINCIPAL (Formulario) */}
-      <Dialog open={isOpen} onOpenChange={handlers.handleClose}>
+      <Dialog open={isOpen} onOpenChange={handlers.handleClose} modal={false}>
         <DialogContent className="w-10/12 md:max-w-l h-[85vh] flex flex-col p-0 bg-card text-card-foreground border-border">
           <DialogHeader className="p-4 border-b border-border">
             <DialogTitle>{client ? 'Editar Cliente' : 'Nuevo Cliente'}</DialogTitle>

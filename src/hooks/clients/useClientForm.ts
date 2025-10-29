@@ -281,17 +281,12 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
   // -------------------
   const onAddTag = async (tagName: string) => {
     const normalizedTagName = tagName.toLowerCase().trim();
-
     const alreadySelected = selectedTags.some((t) => t.name.toLowerCase() === normalizedTagName);
-
     if (alreadySelected) {
       return;
     }
-
     const existingTag = availableTags.find((t) => t.name.toLowerCase() === normalizedTagName);
-
     let tagToAdd: ClientTag | undefined;
-
     if (existingTag) {
       tagToAdd = existingTag;
     } else {
@@ -303,7 +298,6 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
       }
       tagToAdd = tag ?? undefined;
     }
-
     if (tagToAdd) {
       setSelectedTags((prev) => [...prev, tagToAdd!]);
     }

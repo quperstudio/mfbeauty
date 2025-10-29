@@ -176,7 +176,7 @@ export default function ClientsTableView({
                             Exportar
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => onDuplicate([client.id])} className="cursor-pointer">
-                            <Copy className="w-4 h-4 mr-2" />
+                            <Copy className="w-4 h-4 mr-2" /> 
                             Duplicar
                           </DropdownMenuItem>
                           <DropdownMenuItem

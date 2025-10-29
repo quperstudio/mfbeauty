@@ -8,6 +8,7 @@ import SearchBar from '../components/shared/SearchBar';
 import EmptyState from '../components/shared/EmptyState';
 import ClientModal from '../components/clients/ClientModal';
 import ClientFilters from '../components/clients/ClientFilters';
+import AssignReferrerModal from '@/components/clients/AssignReferrerModal';
 import ClientBulkActionBar from '../components/clients/ClientBulkActionBar';
 import ClientProfileModal from '../components/clients/ClientProfileModal';
 import AssignReferrerModal from '../components/clients/AssignReferrerModal';
@@ -264,13 +265,14 @@ export default function Clients() {
       />
 
       {/* Modal para asignar un referente */}
-      <AssignReferrerModal
-        isOpen={isAssignReferrerModalOpen}
-        onClose={() => setIsAssignReferrerModalOpen(false)}
-        onSave={handleAssignReferrer}
-        clients={allClients}
-        excludeIds={Array.from(selectedClientIds)}
-      />
+<AssignReferrerModal
+  isOpen={isAssignReferrerModalOpen}
+  onClose={() => setIsAssignReferrerModalOpen(false)}
+  onSubmit={handleAssignReferrer}
+  isLoading={bulkActionLoading}
+  allClients={allClients}
+  selectedClientIds={selectedClientIds}
+/>
 
       {/* DIÁLOGO DE CONFIRMACIÓN DE ELIMINACIÓN UNIFICADO */}
       <AlertDialog

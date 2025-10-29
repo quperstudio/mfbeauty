@@ -3,166 +3,139 @@ import { User } from '../types/database';
 import { supabase } from '../lib/supabase';
 import { Session } from '@supabase/supabase-js';
 
+// TIPOS Y CONTEXTO
+// -----------------
+
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, fullName: string, role: string) => Promise<{ error: Error | null }>;
-  signOut: () => Promise<void>;
+  user: User | null;
+  session: Session | null;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string, role: string) => Promise<{ error: Error | null }>;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// PROVEEDOR DE AUTENTICACIÓN
+// ----------------------------
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session?.user) {
-        loadUserData(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
+  /** Carga los datos del perfil de usuario desde la tabla 'users' */
+  const loadUserData = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (session?.user) {
-        loadUserData(session.user.id);
-      } else {
-        setUser(null);
-        setLoading(false);
-      }
-    });
+      if (error) throw error;
+      if (!data) throw new Error('Perfil de usuario no encontrado.');
 
-    return () => subscription.unsubscribe();
-  }, []);
+      setUser(data);
+    } catch (error) {
+      console.error('Fallo al cargar datos de usuario:', error);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const loadUserData = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
+  // Efecto para manejar el estado de autenticación inicial y cambios
+  useEffect(() => {
+    // 1. Obtener sesión inicial
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      setSession(initialSession);
+      if (initialSession?.user) {
+        loadUserData(initialSession.user.id);
+      } else {
+        setLoading(false);
+      }
+    });
 
-      if (error) {
-        console.error('Error loading user data from database:', error);
-        throw error;
-      }
+    // 2. Suscribirse a cambios de estado
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
+      if (newSession?.user) {
+        loadUserData(newSession.user.id);
+      } else {
+        setUser(null);
+        setLoading(false);
+      }
+    });
 
-      if (!data) {
-        console.error('User exists in auth but not in users table. User ID:', userId);
-        throw new Error('User profile not found. Please contact support.');
-      }
+    return () => subscription.unsubscribe();
+  }, []);
 
-      setUser(data);
-    } catch (error) {
-      console.error('Failed to load user data:', error);
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const signIn = async (email: string, password: string) => {
-    try {
-      console.log('Attempting to sign in with email:', email);
+  /** Iniciar sesión de usuario */
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      if (error) throw error;
+      if (data.user) await loadUserData(data.user.id);
 
-      if (error) {
-        console.error('Authentication error:', error);
-        throw error;
-      }
+      return { error: null };
+    } catch (error) {
+      console.error('Fallo al iniciar sesión:', error);
+      return { error: error as Error };
+    }
+  };
 
-      console.log('Authentication successful for user:', data.user?.id);
+  /** Registrar nuevo usuario */
+  const signUp = async (email: string, password: string, fullName: string, role: string) => {
+    try {
+      const { error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+          },
+        },
+      });
 
-      if (data.user) {
-        await loadUserData(data.user.id);
-      }
+      if (authError) throw authError;
 
-      console.log('Sign in completed successfully');
-      return { error: null };
-    } catch (error) {
-      console.error('Sign in failed:', error);
-      return { error: error as Error };
-    }
-  };
+      // Asumimos que la tabla 'users' se llenará con un trigger de Supabase
+      return { error: null };
+    } catch (error) {
+      console.error('Fallo al registrar usuario:', error);
+      return { error: error as Error };
+    }
+  };
 
-  const signUp = async (email: string, password: string, fullName: string, role: string) => {
-    try {
-      console.log('Attempting to sign up with email:', email);
+  /** Cerrar sesión */
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
+  };
 
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-          },
-        },
-      });
-
-      if (authError) {
-        console.error('Sign up authentication error:', authError);
-        throw authError;
-      }
-
-      console.log('User created in auth.users:', authData.user?.id);
-
-      if (authData.user) {
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', authData.user.id)
-          .maybeSingle();
-
-        if (userError) {
-          console.error('Error checking user table:', userError);
-        }
-
-        if (!userData) {
-          console.log('User not found in users table, trigger should have created it');
-        } else {
-          console.log('User successfully created in users table:', userData);
-        }
-      }
-
-      console.log('Sign up completed successfully');
-      return { error: null };
-    } catch (error) {
-      console.error('Sign up failed:', error);
-      return { error: error as Error };
-    }
-  };
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
-  };
-
-  return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return (
+    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
+// HOOK PERSONALIZADO
+// ------------------
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
+  }
+  return context;
 }

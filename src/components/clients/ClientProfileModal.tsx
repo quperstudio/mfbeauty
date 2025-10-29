@@ -56,7 +56,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   // Maneja error de fetch o cliente no encontrado
   if (!client && !loading) {
   	return (
-    	<Dialog open={isOpen} onOpenChange={onClose}>
+    	<Dialog open={isOpen} onOpenChange={onClose} modal={false}>
       	<DialogContent className="sm:max-w-lg">
         	<DialogHeader>
           	<DialogTitle>Error</DialogTitle>

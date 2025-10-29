@@ -36,9 +36,10 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
 
   // ESTADO DE CARGA (Early Return)
   // -----------------------------------------------------------------------------
+  // CORRECCIÓN: Se añade modal={false}
   if (loading) {
   	return (
-    	<Dialog open={isOpen} onOpenChange={onClose} modal={false}> {/* FIX: Añadido modal={false} */}
+    	<Dialog open={isOpen} onOpenChange={onClose} **modal={false}**>
       	<DialogContent className="sm:max-w-lg">
         	<DialogHeader>
           	<DialogTitle>Cargando perfil...</DialogTitle>
@@ -46,7 +47,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
         	<div className="flex items-center justify-center py-12">
           	<Spinner size="lg" />
         	</div>
-        </DialogContent>
+      	</DialogContent>
     	</Dialog>
   	);
   }
@@ -54,19 +55,20 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   // ESTADO DE ERROR (Early Return)
   // -----------------------------------------------------------------------------
   // Maneja error de fetch o cliente no encontrado
+  // CORRECCIÓN: Se añade modal={false}
   if (!client && !loading) {
   	return (
-    	<Dialog open={isOpen} onOpenChange={onClose} modal={false}> {/* FIX: Añadido modal={false} */}
+    	<Dialog open={isOpen} onOpenChange={onClose} **modal={false}**>
       	<DialogContent className="sm:max-w-lg">
         	<DialogHeader>
           	<DialogTitle>Error</DialogTitle>
-        	</DialogHeader>
+          	</DialogHeader>
         	<div className="flex flex-col items-center justify-center py-12 text-center">
           	<AlertCircle className="w-12 h-12 text-destructive mx-auto mb-3" />
           	<p className="text-destructive-foreground font-medium">No se pudo cargar el perfil</p>
           	<p className="text-muted-foreground text-sm">El cliente no existe o hubo un error de conexión.</p>
         	</div>
-      	</DialogContent>
+        	</DialogContent>
     	</Dialog>
   	);
   }
@@ -76,7 +78,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
     	{/* Sección: Info principal */}
     	<div>
     		<h2 className="text-2xl font-bold text-foreground mb-3">{client!.name}</h2>
-    		<Button variant="outline" onClick={() => onEdit(client!)}> {/* Fix: client! para evitar error de tipado con TS */}
+    		<Button variant="outline" onClick={() => onEdit(client)}>
     			<Edit className="w-4 h-4 mr-2" />
     			Editar
     		</Button>
@@ -103,7 +105,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   				<span className="line-clamp-2">
   					Creado el {format(parseDate(client!.created_at) || new Date(), 'dd/MM/yyyy', { locale: es })}
   					{client!.created_by && (
-  						<span> por {getUserDisplayName(client!)}</span>
+  						<span> por {getUserDisplayName(client)}</span>
   					)}
   					{!client!.created_by && client!.created_by_user_id && (
   						<span> por [Usuario ID: {client!.created_by_user_id}]</span>
@@ -369,8 +371,9 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
 
   // RENDER PRINCIPAL
   // -----------------------------------------------------------------------------
+  // CORRECCIÓN: Se añade modal={false}
   return (
-  	<Dialog open={isOpen} onOpenChange={onClose} modal={false}> {/* FIX: Añadido modal={false} */}
+  	<Dialog open={isOpen} onOpenChange={onClose} **modal={false}**>
   		<TooltipProvider>
   			<DialogContent className="w-10/12 lg:max-w-5xl h-[75vh] flex flex-col p-0">
     				<DialogHeader className="p-4 border-b border-border">

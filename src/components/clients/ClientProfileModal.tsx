@@ -38,7 +38,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   // -----------------------------------------------------------------------------
   if (loading) {
   	return (
-  		<Dialog open={isOpen} onOpenChange={onClose} modal={false}> {/* <--- CAMBIO CLAVE: modal={false} */}
+    	<Dialog open={isOpen} onOpenChange={onClose}>
       	<DialogContent className="sm:max-w-lg">
         	<DialogHeader>
           	<DialogTitle>Cargando perfil...</DialogTitle>
@@ -56,7 +56,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   // Maneja error de fetch o cliente no encontrado
   if (!client && !loading) {
   	return (
-  		<Dialog open={isOpen} onOpenChange={onClose} modal={false}> {/* <--- CAMBIO CLAVE: modal={false} */}
+    	<Dialog open={isOpen} onOpenChange={onClose}>
       	<DialogContent className="sm:max-w-lg">
         	<DialogHeader>
           	<DialogTitle>Error</DialogTitle>
@@ -262,12 +262,12 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   	{/* Sección: Clientes Referidos */}
   	{client!.referrals && client!.referrals.length > 0 && (
   		<div className="space-y-2">
-      <div className="flex items-center"> 
+      <div className="flex items-center"> 
   			<h2 className="text-lg text-foreground">
   				Detalle de referidos
   			</h2>
-         <Badge variant="outline" className="ml-2 font-semibold">{client!.referrals.length}</Badge>
-        </div>
+         <Badge variant="outline" className="ml-2 font-semibold">{client!.referrals.length}</Badge>
+        </div>
   			<div className="space-y-2">
   				{client!.referrals.map((referral) => (
   					<div key={referral.id} className="bg-card border border-border rounded-lg p-3">
@@ -314,7 +314,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   								<span className="text-muted-foreground">Total</span>
   								<span className="font-semibold text-foreground">
   									{formatCurrency(Number(appointment.total_price))}
-  								</p>
+  								</span>
   							</div>
   							{appointment.notes && (
   								<p className="mt-2 text-xs text-muted-foreground">{appointment.notes}</p>
@@ -348,7 +348,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   								<span className="text-muted-foreground">Total</span>
   								<span className="font-semibold text-foreground">
   									{formatCurrency(Number(appointment.total_price))}
-  								</p>
+  								</span>
   							</div>
   						</div>
   					))}
@@ -370,7 +370,7 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   // RENDER PRINCIPAL
   // -----------------------------------------------------------------------------
   return (
-  	<Dialog open={isOpen} onOpenChange={onClose} modal={false}> {/* <--- CAMBIO CLAVE: modal={false} */}
+  	<Dialog open={isOpen} onOpenChange={onClose}>
   		<TooltipProvider>
   			<DialogContent className="w-10/12 lg:max-w-5xl h-[75vh] flex flex-col p-0">
     				<DialogHeader className="p-4 border-b border-border">
@@ -403,4 +403,4 @@ export default function ClientProfileModal({ isOpen, onClose, clientId, onEdit }
   		</TooltipProvider>
   	</Dialog>
   );
-}
+} 

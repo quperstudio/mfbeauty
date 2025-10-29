@@ -1,0 +1,489 @@
+import React from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Client, ClientSchemaType } from '../../types/database';
+import { formatPhoneRealTime } from '../../lib/formats';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { DatePicker } from '@/components/ui/date-picker';
+import { TagInput } from '@/components/ui/TagInput';
+import SocialMediaManager from '../shared/SocialMediaManager';
+import { useClientForm } from '../../hooks/clients/useClientForm';
+
+interface ClientModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (data: ClientSchemaType, tagIds: string[]) => Promise<{ error: string | null }>;
+  client?: Client;
+  clients: Client[];
+}
+
+export default function ClientModal({ isOpen, onClose, onSave, client, clients }: ClientModalProps) {
+  const {
+    formData,
+    errors,
+    loading,
+    selectedTags,
+    socialMediaList,
+    showUnsavedChangesDialog,
+    phoneCheckLoading,
+    availableTags,
+    referrerOptions,
+    handlers,
+    tagHandlers,
+  } = useClientForm({ client, isOpen, onSave, onClose, clients });
+
+  return (
+        if (isOpen) {
+            if (client) {
+                setFormData({
+                    name: client.name,
+                    phone: client.phone,
+                    birthday: client.birthday || null,
+                    notes: client.notes || '',
+                    referrer_id: client.referrer_id || '',
+                });
+
+                const initialSocialMedia = mapEntityToSocialMediaList(client);
+                setSocialMediaList(initialSocialMedia);
+                setInitialSocialMediaList(initialSocialMedia);
+
+            } else {
+                setFormData(initialFormData);
+                setSocialMediaList([]);
+                setInitialSocialMediaList([]);
+                setSelectedTags([]);
+            }
+            setErrors({});
+        }
+    }, [client, isOpen]);
+
+    useEffect(() => {
+        if (isOpen && client) {
+            setSelectedTags(clientTags);
+        }
+    }, [client, clientTags, isOpen]);
+
+    // ===================================
+    // MANEJADORES DE CAMBIOS Y ACCIONES
+    // ===================================
+
+    // Función general para inputs de texto (Nombre, Notas, Redes Sociales)
+    const handleFormChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    }, []);
+
+    const handleBirthdayChange = useCallback((date: Date | null) => {
+        if (date) {
+            const dateString = format(date, 'yyyy-MM-dd');
+            setFormData(prev => ({ ...prev, birthday: dateString }));
+        } else {
+            setFormData(prev => ({ ...prev, birthday: null }));
+        }
+    }, []);
+
+    const validateForm = useCallback((): boolean => {
+        const newErrors: Record<string, string> = {};
+
+        try {
+            const socialMediaLinks = mapSocialMediaListToFields(socialMediaList);
+            const dataToValidate = {
+                ...formData,
+                ...socialMediaLinks,
+            };
+            clientSchema.parse(dataToValidate);
+            setErrors({});
+            return true;
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                error.issues.forEach((err) => {
+                    const field = err.path[0] as string;
+                    newErrors[field] = err.message;
+                });
+            }
+            setErrors(newErrors);
+            return false;
+        }
+    }, [formData, socialMediaList]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!validateForm()) {
+            toast.error('Teléfono duplicado', {
+                description: 'Por favor, revisa los campos marcados en rojo para corregir los errores.', 
+            });
+            return;
+        }
+
+        setPhoneCheckLoading(true);
+        const duplicateClient = await clientService.checkDuplicatePhone(formData.phone, client?.id);
+        setPhoneCheckLoading(false);
+
+        if (duplicateClient) {
+            toast.error(`Error: Teléfono duplicado.`, { 
+                description: `Este número ya está registrado para el cliente ${duplicateClient.name}.`,
+            });
+            return;
+        }
+
+        const socialMediaLinks = mapSocialMediaListToFields(socialMediaList);
+
+        const rawData = {
+            ...formData,
+            ...socialMediaLinks,
+        };
+
+        const sanitizedData: ClientSchemaType = {
+            name: rawData.name.trim(),
+            phone: rawData.phone,
+            birthday: rawData.birthday?.trim() || null,
+            notes: rawData.notes?.trim() || null,
+            referrer_id: rawData.referrer_id?.trim() || null,
+            whatsapp_link: socialMediaLinks.whatsapp_link?.trim() || null,
+            facebook_link: socialMediaLinks.facebook_link?.trim() || null,
+            instagram_link: socialMediaLinks.instagram_link?.trim() || null,
+            tiktok_link: socialMediaLinks.tiktok_link?.trim() || null,
+            created_by_user_id: client ? undefined : (user?.id || null),
+        };
+
+        const tagIds = selectedTags.map(tag => tag.id);
+
+        setLoading(true);
+        const result = await onSave(sanitizedData, tagIds);
+        setLoading(false);
+
+        if (result.error) {
+            toast.error('Error al guardar el cliente', { 
+                description: result.error,
+            });
+        } else {
+            resetModalState(); 
+            onClose();
+            toast.success('Operación exitosa', { 
+                description: `¡Cliente ${client ? 'actualizado' : 'creado'} con éxito!`,
+            });
+        }
+    };
+
+    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const rawValue = e.target.value;
+        const cleaned = parsePhoneInput(rawValue);
+
+        setFormData(prev => ({ ...prev, phone: cleaned }));
+
+        if (errors.phone) {
+            setErrors(prev => ({ ...prev, phone: '' }));
+        }
+    };
+
+    const handleSocialMediaChange = useCallback((updatedList: SocialMedia[]) => {
+        setSocialMediaList(updatedList);
+    }, []);
+
+    const hasUnsavedChanges = useCallback((): boolean => {
+        const normalizeFormData = (data: ClientFormDataBase) => ({
+            name: data.name.trim(),
+            phone: data.phone,
+            birthday: data.birthday || null,
+            notes: (data.notes || '').trim() || null,
+            referrer_id: (data.referrer_id || '').trim() || null,
+        });
+
+        const currentNormalized = normalizeFormData(formData);
+        const initialNormalized = client ? normalizeFormData({
+            name: client.name,
+            phone: client.phone,
+            birthday: client.birthday || null,
+            notes: client.notes || '',
+            referrer_id: client.referrer_id || '',
+        }) : normalizeFormData(initialFormData);
+
+        const formChanged = JSON.stringify(currentNormalized) !== JSON.stringify(initialNormalized);
+
+        const normalizeSocialMedia = (list: SocialMedia[]) =>
+            list.map(sm => ({ type: sm.type, link: sm.link.trim() })).sort((a, b) => a.type.localeCompare(b.type));
+
+        const socialMediaChanged = JSON.stringify(normalizeSocialMedia(socialMediaList)) !==
+                                  JSON.stringify(normalizeSocialMedia(initialSocialMediaList));
+
+        const currentTagIds = selectedTags.map(t => t.id).sort();
+        const initialTagIds = (client && clientTags.length > 0) ? clientTags.map(t => t.id).sort() : [];
+        const tagsChanged = JSON.stringify(currentTagIds) !== JSON.stringify(initialTagIds);
+
+        return formChanged || socialMediaChanged || tagsChanged;
+    }, [formData, socialMediaList, selectedTags, client, initialSocialMediaList, clientTags]);
+
+    const handleClose = useCallback(() => {
+        if (hasUnsavedChanges()) {
+            setShowUnsavedChangesDialog(true);
+        } else {
+            resetModalState();
+            onClose();
+        }
+    }, [hasUnsavedChanges, onClose]);
+
+    const resetModalState = useCallback(() => {
+        setFormData(initialFormData);
+        setSocialMediaList([]);
+        setInitialSocialMediaList([]);
+        setSelectedTags([]);
+        setErrors({});
+    }, []);
+
+    const confirmClose = useCallback(() => {
+        setShowUnsavedChangesDialog(false);
+        resetModalState();
+        onClose();
+    }, [onClose, resetModalState]);
+
+    const referrerOptions = useMemo(() => {
+        const options = [
+            { value: '__RESET__', label: 'Ninguno' }, 
+            ...clients
+                .filter((c) => c.id !== client?.id)
+                .map((c) => ({ value: c.id, label: c.name })),
+        ];
+        return options;
+    }, [clients, client?.id]);
+    
+
+    // ===================================
+    // RENDERIZADO
+    // ===================================
+    return (
+        <>
+        <Dialog open={isOpen} onOpenChange={handleClose}>
+            <DialogContent 
+                className="w-10/12 md:max-w-l h-[85vh] flex flex-col p-0 bg-card text-card-foreground border-border"
+            > 
+                <DialogHeader className="p-4 border-b border-border">
+                    <DialogTitle>{client ? 'Editar Cliente' : 'Nuevo Cliente'}</DialogTitle>
+                </DialogHeader>
+                
+                <form onSubmit={handleSubmit} id="client-form" className="flex flex-col flex-grow h-0 min-h-0">
+                    <ScrollArea className="flex-grow h-0 min-h-0">
+                        <div className="space-y-3 p-6 pt-0 sm:space-y-4"> 
+                            
+                            {/* CAMPOS: Nombre y Teléfono */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                                <div>
+                                    <label htmlFor="client-name" className="block text-sm font-medium text-muted-foreground mb-1.5">Nombre Completo *</label>
+                                    <Input
+                                        id="client-name"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleFormChange as (e: React.ChangeEvent<HTMLInputElement>) => void}
+                                        error={errors.name}
+                                        placeholder="Ej. Marisela Félix"
+                                        disabled={loading}
+                                    />
+                                    {errors.name && (
+                                        <p className="text-sm text-destructive mt-1.5">{errors.name}</p>
+                                    )}
+                                </div>
+                                
+                                <div>
+                                    <label htmlFor="client-phone" className="block text-sm font-medium text-muted-foreground mb-1.5">Teléfono *</label>
+                                    <Input
+                                        id="client-phone"
+                                        name="phone"
+                                        value={formatPhoneRealTime(formData.phone)}
+                                        onChange={handlePhoneChange} 
+                                        error={errors.phone}
+                                        placeholder="(667) 341 2404"
+                                        maxLength={15}
+                                        disabled={loading}
+                                    />
+                                    {errors.phone && (
+                                        <p className="text-sm text-destructive mt-1.5">{errors.phone}</p>
+                                    )}
+                                </div>
+                            </div>
+                            
+                          {/* CAMPOS: Redes sociales */}
+                            <SocialMediaManager
+                                key={client?.id || 'new-client'}
+                                initialValues={initialSocialMediaList}
+                                phoneValue={formData.phone}
+                                syncWhatsAppWithPhone={!client}
+                                onChange={handleSocialMediaChange}
+                                disabled={loading}
+                                label="Redes sociales"
+                            />
+
+                            {/* CAMPOS: Cumpleaños y Referido Por */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                                <DatePicker
+                                    label="Fecha de Cumpleaños"
+                                    value={formData.birthday}
+                                    onChange={handleBirthdayChange}
+                                    placeholder="Selecciona una fecha"
+                                    disabled={loading}
+                                />
+                                <div>
+                                    <Label htmlFor="referrer-select" className="block text-sm font-medium text-muted-foreground mb-1">Referido Por</Label>
+                                    <Select
+                                        value={formData.referrer_id || ''}
+                                        onValueChange={(value) => {
+                                            const finalValue = value === '__RESET__' ? '' : value;
+                                            setFormData(prev => ({ ...prev, referrer_id: finalValue }));
+                                        }}
+                                        disabled={loading}
+                                        name="referrer_id"
+                                    >
+                                        <SelectTrigger id="referrer-select" className={errors.referrer_id ? "border-destructive" : ""}>
+                                            <SelectValue placeholder="Ninguno" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {referrerOptions.map((option) => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.referrer_id && (
+                                        <p className="text-sm text-destructive mt-1.5">{errors.referrer_id}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* CAMPO: Etiquetas */}
+                            <TagInput
+                                label="Etiquetas"
+                                placeholder="Escribe y presiona Enter para agregar..."
+                                selectedTags={selectedTags}
+                                availableTags={availableTags}
+                                onAddTag={async (tagName) => {
+                                    const normalizedTagName = tagName.toLowerCase().trim();
+                                    
+                                    // 1. Verificar si ya está en las etiquetas seleccionadas (estado local)
+                                    const alreadySelected = selectedTags.some(
+                                        (t) => t.name.toLowerCase() === normalizedTagName
+                                    );
+
+                                    if (alreadySelected) {
+                                        return;
+                                    }
+
+                                    // 2. Buscar si ya existe la etiqueta globalmente (en availableTags)
+                                    const existingTag = availableTags.find(
+                                        (t) => t.name.toLowerCase() === normalizedTagName
+                                    );
+
+                                    let tagToAdd: ClientTag | undefined;
+
+                                    if (existingTag) {
+                                        tagToAdd = existingTag;
+                                    } else {
+                                        const { tag, error } = await createTag({ name: tagName });
+                                        if (error) {
+                                            // CORRECCIÓN 3: El título ahora es el primer argumento, el error es 'description'
+                                            toast.error('Error al crear la etiqueta', { description: error }); 
+                                            return;
+                                        }
+                                        tagToAdd = tag ?? undefined;
+                                    }
+
+                                    if (tagToAdd) {
+                                        setSelectedTags((prev) => [...prev, tagToAdd!]);
+                                    }
+                                }}
+                                onRemoveTag={(tagId) => {
+                                    setSelectedTags(prev => prev.filter(t => t.id !== tagId));
+                                }}
+                                onDeleteTagGlobally={async (tagId) => {
+                                    await deleteTag(tagId);
+                                    setSelectedTags(prev => prev.filter(t => t.id !== tagId));
+                                }}
+                                maxTags={5}
+                                disabled={loading}
+                                canDeleteGlobally={true}
+                            />
+
+                            {/* CAMPO: Notas */}
+                            <div>
+                                <label htmlFor="client-notes" className="block text-sm font-medium text-muted-foreground mb-1.5">Notas</label>
+                                <Textarea
+                                    id="client-notes"
+                                    name="notes"
+                                    value={formData.notes}
+                                    onChange={handleFormChange as (e: React.ChangeEvent<HTMLTextAreaElement>) => void} 
+                                    rows={3}
+                                    placeholder="Notas adicionales sobre el cliente..."
+                                    disabled={loading}
+                                />
+                            </div>
+
+                        </div>
+                    </ScrollArea>
+
+                    <DialogFooter 
+                        className="pb-4 pt-4 border-t border-border bg-background px-6 gap-2"
+                    >
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="default"
+                            onClick={handleClose}
+                            disabled={loading}
+                            className="w-full sm:w-auto"
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            type="submit"
+                            variant="default"
+                            size="default"
+                            disabled={loading || phoneCheckLoading}
+                            className="w-full sm:w-auto"
+                        >
+                            {loading || phoneCheckLoading ? (
+                                <div className="flex items-center gap-2">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-background border-t-transparent" />
+                                    {phoneCheckLoading ? 'Validando...' : 'Guardando...'}
+                                </div>
+                            ) : (
+                                <>{client ? 'Actualizar' : 'Crear'} Cliente</>
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+
+        <AlertDialog open={showUnsavedChangesDialog} onOpenChange={setShowUnsavedChangesDialog}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>¿Descartar cambios?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Tienes cambios sin guardar. Si cierras ahora, se perderán todos los cambios realizados.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setShowUnsavedChangesDialog(false)}>
+                        Continuar editando
+                    </AlertDialogCancel>
+                    <AlertDialogAction onClick={confirmClose} className="bg-destructive hover:bg-destructive/90">
+                        Descartar cambios
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+        </>
+    );
+}

@@ -48,16 +48,7 @@ export function DatePicker({ label, value, onChange, placeholder = "Selecciona u
                         <ChevronDownIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent
-                    className="w-auto overflow-hidden p-0"
-                    align="start"
-                    onInteractOutside={(e) => {
-                        const target = e.target as Element;
-                        if (target.closest('.rdp-dropdown')) {
-                            e.preventDefault();
-                        }
-                    }}
-                >
+                <PopoverContent className="w-auto overflow-hidden p-0" align="start">
                     <Calendar
                         mode="single"
                         selected={selectedDate}

@@ -30,7 +30,7 @@ interface UseClientFormParams {
 
 // HOOK PRINCIPAL: USECLIENTFORM
 // -----------------------------
-// Hook de formulario para ClientModal. Encapsula toda la lógica de estado y handlers del formulario de cliente.
+// Hook de formulario para ClientModal.
 export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseClientFormParams) {
   // Contextos y Hooks
   const { user } = useAuth();
@@ -41,16 +41,15 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
   // ------------------------------
   const [formData, setFormData] = useState<ClientFormDataBase>(initialFormDataConstant);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false); // Estado de carga al guardar
+  const [loading, setLoading] = useState(false);
   const [selectedTags, setSelectedTags] = useState<ClientTag[]>([]);
-  const [phoneCheckLoading, setPhoneCheckLoading] = useState(false); // Carga al verificar teléfono duplicado
+  const [phoneCheckLoading, setPhoneCheckLoading] = useState(false);
   const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>([]);
-  const [initialSocialMediaList, setInitialSocialMediaList] = useState<SocialMedia[]>([]); // Para chequear cambios
-  const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false); // Controla el diálogo de cambios sin guardar
+  const [initialSocialMediaList, setInitialSocialMediaList] = useState<SocialMedia[]>([]);
+  const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false);
 
   // EFECTO: INICIALIZAR FORMULARIO
   // ---------------------------------
-  // Reinicia o carga los datos del cliente cuando se abre el modal
   useEffect(() => {
     if (isOpen) {
       if (client) {
@@ -105,10 +104,7 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
 
     try {
       const socialMediaLinks = mapSocialMediaListToFields(socialMediaList);
-      const dataToValidate = {
-        ...formData,
-        ...socialMediaLinks,
-      };
+      const dataToValidate = { ...formData, ...socialMediaLinks };
       clientSchema.parse(dataToValidate);
       setErrors({});
       return true;
@@ -172,9 +168,7 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
     setLoading(false);
 
     if (result.error) {
-      toast.error('Error al guardar el cliente', {
-        description: result.error,
-      });
+      toast.error('Error al guardar el cliente', { description: result.error });
     } else {
       resetModalState();
       onClose();
@@ -242,15 +236,6 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
     return formChanged || socialMediaChanged || tagsChanged;
   }, [formData, socialMediaList, selectedTags, client, initialSocialMediaList, clientTags]);
 
-  const handleClose = useCallback(() => {
-    if (hasUnsavedChanges()) {
-      setShowUnsavedChangesDialog(true); // Muestra el diálogo de confirmación
-    } else {
-      resetModalState();
-      onClose();
-    }
-  }, [hasUnsavedChanges, onClose]);
-
   const resetModalState = useCallback(() => {
     setFormData(initialFormDataConstant);
     setSocialMediaList([]);
@@ -258,6 +243,15 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
     setSelectedTags([]);
     setErrors({});
   }, []);
+
+  const handleClose = useCallback(() => {
+    if (hasUnsavedChanges()) {
+      setShowUnsavedChangesDialog(true); // Muestra el diálogo de confirmación
+    } else {
+      resetModalState();
+      onClose();
+    }
+  }, [hasUnsavedChanges, onClose, resetModalState]);
 
   const confirmClose = useCallback(() => {
     setShowUnsavedChangesDialog(false);
@@ -271,7 +265,7 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
     const options = [
       { value: '__RESET__', label: 'Ninguno' },
       ...clients
-        .filter((c) => c.id !== client?.id) // Excluye al cliente actual de la lista de referrers
+        .filter((c) => c.id !== client?.id) // Excluye al cliente actual
         .map((c) => ({ value: c.id, label: c.name })),
     ];
     return options;
@@ -282,15 +276,14 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
   const onAddTag = async (tagName: string) => {
     const normalizedTagName = tagName.toLowerCase().trim();
     const alreadySelected = selectedTags.some((t) => t.name.toLowerCase() === normalizedTagName);
-    if (alreadySelected) {
-      return;
-    }
+    if (alreadySelected) return;
+
     const existingTag = availableTags.find((t) => t.name.toLowerCase() === normalizedTagName);
     let tagToAdd: ClientTag | undefined;
+
     if (existingTag) {
       tagToAdd = existingTag;
     } else {
-      
       // Crea un nuevo tag si no existe
       const { tag, error } = await createTag({ name: tagName });
       if (error) {
@@ -299,6 +292,7 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
       }
       tagToAdd = tag ?? undefined;
     }
+
     if (tagToAdd) {
       setSelectedTags((prev) => [...prev, tagToAdd!]);
     }

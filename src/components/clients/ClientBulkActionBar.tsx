@@ -64,7 +64,6 @@ export default function ClientBulkActionBar({
   );
 
   return (
-    {/* FIX: Se elimina TooltipProvider para evitar conflictos de eventos de puntero */}
       <div
         className="bg-primary/10 border border-primary rounded-xl p-3 sm:p-4 mb-4 shadow-soft flex items-center justify-between transition-opacity duration-200"
         style={{ opacity: isLoading ? 0.7 : 1 }}

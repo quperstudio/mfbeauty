@@ -51,8 +51,6 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
 
   return (
     <>
-  return (
-    <>
       <Dialog open={isOpen} onOpenChange={handlers.handleClose}>
         <DialogContent className="w-10/12 md:max-w-l h-[85vh] flex flex-col p-0 bg-card text-card-foreground border-border">
           <DialogHeader className="p-4 border-b border-border">
@@ -204,7 +202,6 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
           </form>
         </DialogContent>
       </Dialog>
-
 
       {/* ALERTA: Descartar Cambios */}
       <AlertDialog open={showUnsavedChangesDialog} onOpenChange={handlers.setShowUnsavedChangesDialog}>

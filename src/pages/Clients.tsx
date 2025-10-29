@@ -15,6 +15,7 @@ import ClientsTableView from '../components/clients/ClientsTableView';
 import ClientsListView from '../components/clients/ClientsListView';
 import { useClientsPage } from '../hooks/clients/useClientsPage';
 import { CLIENT_FILTER_LABELS } from '../constants/clients.constants';
+import { useClientSelection } from '../hooks/clients/useClientSelection'; // HOOK FRAGMENTADO
 
 // COMPONENTE PRINCIPAL: CLIENTES
 // ------------------------------
@@ -22,60 +23,73 @@ export default function Clients() {
   // Obtiene la información del usuario autenticado
   const { user } = useAuth();
   
+  // HOOK FRAGMENTADO: ESTADO DE SELECCIÓN MASIVA
+  const {
+    selectedClientIds: selectedIdsFromHook, // Renombrado para evitar conflicto con useClientsPage
+    handleSelectAll: handleSelectAllHook,
+    handleSelectClient,
+    clearSelection: clearSelectionHook,
+  } = useClientSelection();
+
   // Hook que maneja toda la lógica, estado y datos de la página
   const {
     // Datos y Estados
-    clients, // Lista de clientes a mostrar (filtrada/buscada/ordenada)
-    allClients, // Lista completa de todos los clientes
-    loading, // Estado de carga inicial
-    availableTags, // Tags disponibles para filtrar
-    searchQuery, // Valor actual del campo de búsqueda
-    setSearchQuery, // Función para actualizar la búsqueda
-    isModalOpen, // Estado del modal de crear/editar cliente
-    setIsModalOpen, // Función para abrir/cerrar el modal de cliente
-    selectedClient, // Cliente seleccionado para editar
-    activeFilter, // Filtro de estado
-    setActiveFilter, // Función para cambiar el filtro de estado
-    selectedTagIds, // IDs de tags seleccionados
-    setSelectedTagIds, // Función para actualizar la selección de tags
-    sortField, // Campo por el que se está ordenando
-    sortDirection, // Dirección de la ordenación
-    selectedClientIds, // Set de IDs de clientes seleccionados para acciones masivas
-    setSelectedClientIds, // Función para actualizar la selección masiva
-    isProfileModalOpen, // Estado del modal de perfil del cliente
-    setIsProfileModalOpen, // Función para abrir/cerrar el modal de perfil
-    profileClientId, // ID del cliente cuyo perfil se está visualizando
-    isAssignReferrerModalOpen, // Estado del modal para asignar referente
-    setIsAssignReferrerModalOpen, // Función para abrir/cerrar el modal de referente
-    bulkActionLoading, // Estado de carga para acciones masivas
+    clients,
+    allClients,
+    loading,
+    availableTags,
+    searchQuery,
+    setSearchQuery,
+    isModalOpen,
+    setIsModalOpen,
+    selectedClient,
+    activeFilter,
+    setActiveFilter,
+    selectedTagIds,
+    setSelectedTagIds,
+    sortField,
+    sortDirection,
+    // [IMPORTANTE]: Eliminados selectedClientIds, handleSelectAll, handleSelectClient para usar los del hook fragmentado.
+    isProfileModalOpen,
+    setIsProfileModalOpen,
+    profileClientId,
+    isAssignReferrerModalOpen,
+    setIsAssignReferrerModalOpen,
+    bulkActionLoading,
     
     // Estado y manejadores de eliminación unificada
-    deleteTarget, // ID del cliente o 'bulk' si es eliminación masiva (null = cerrado)
-    setDeleteTarget, // Función para establecer el target de eliminación
-    handleConfirmDelete, // Manejador que ejecuta la eliminación (individual o masiva)
+    deleteTarget,
+    setDeleteTarget,
+    handleConfirmDelete,
     
     // Funciones de Manejo
-    confirmDeleteClient, // Pone el ID del cliente en 'deleteTarget' (abre el AlertDialog)
-    handleBulkDelete, // Pone 'bulk' en 'deleteTarget' (abre el AlertDialog)
-    handleSaveClient, // Guarda los cambios de un cliente
-    handleEditClient, // Abre ClientModal para editar
-    handleCreateClient, // Abre ClientModal para crear
-    handleSort, // Maneja el cambio de ordenación de la tabla
-    handleSelectAll, // Selecciona/deselecciona todos
-    handleSelectClient, // Selecciona/deselecciona un cliente
-    handleViewProfile, // Abre el modal de perfil
-    handleBulkDuplicate, // Lógica para duplicar
-    handleBulkExport, // Lógica para exportar
-    handleAssignReferrer, // Lógica para asignar un referente
+    confirmDeleteClient,
+    handleBulkDelete,
+    handleSaveClient, // Guarda los cambios de un cliente (usado en ClientModal)
+    handleEditClient,
+    handleCreateClient,
+    handleSort,
+    handleViewProfile,
+    handleBulkDuplicate, // Lógica para duplicar (usado en BulkActionBar y Table)
+    handleBulkExport,
+    handleAssignReferrer,
     
-    isSmallScreen, // Indica si la pantalla es pequeña (para cambiar de vista)
-    filterCounts, // Conteo de clientes por cada filtro de estado
-    hasActiveFilters, // Indica si hay filtros activos
-    clearSelection, // Limpia la selección
-    handleEditFromProfile, // Edita un cliente desde el perfil
-    handleAssignReferrerToClients, // Asigna referente a clientes seleccionados
+    isSmallScreen,
+    filterCounts,
+    hasActiveFilters,
+    clearSelection, // Esta función probablemente limpia estados UI del hook principal
+    handleEditFromProfile,
+    handleAssignReferrerToClients,
   } = useClientsPage();
   
+  // Mapear el estado y los manejadores del hook fragmentado
+  const selectedClientIds = selectedIdsFromHook;
+  
+  // El manejador de 'Seleccionar Todos' necesita la lista actual de clientes
+  const handleSelectAll = (checked: boolean) => handleSelectAllHook(checked, clients); 
+  
+  const selectedCount = selectedClientIds.size; // Conteo para la barra de acciones
+
   // FUNCIÓN HELPER
   // --------------
   // Genera el mensaje dinámico para el diálogo de eliminación (individual o masiva)
@@ -170,14 +184,15 @@ export default function Clients() {
       )}
 
       {/* Barra de Acciones Masivas (sólo si hay clientes seleccionados) */}
-      {selectedClientIds.size > 0 && (
+      {/* CAMBIO CLAVE: Usa selectedCount (que viene de useClientSelection) */}
+      {selectedCount > 0 && (
         <ClientBulkActionBar
-          selectedCount={selectedClientIds.size}
+          selectedCount={selectedCount}
           onDelete={handleBulkDelete} // Inicia la eliminación masiva
-          onDuplicate={() => handleBulkDuplicate()}
-          onExport={() => handleBulkExport()}
+          onDuplicate={() => handleBulkDuplicate(Array.from(selectedClientIds))} // Pasa los IDs a la acción
+          onExport={() => handleBulkExport(clients.filter(c => selectedClientIds.has(c.id)))} // Exporta solo seleccionados
           onAssignReferrer={() => setIsAssignReferrerModalOpen(true)}
-          onClearSelection={() => clearSelection()}
+          onClearSelection={clearSelectionHook} // Usa el clearSelection del hook fragmentado
           isLoading={bulkActionLoading}
         />
       )}
@@ -209,14 +224,14 @@ export default function Clients() {
               sortField={sortField}
               sortDirection={sortDirection}
               userRole={user?.role}
-              onSelectAll={handleSelectAll}
-              onSelectClient={handleSelectClient}
+              onSelectAll={handleSelectAll} // Usa el manejador del hook fragmentado
+              onSelectClient={handleSelectClient} // Usa el manejador del hook fragmentado
               onSort={handleSort}
               onViewProfile={handleViewProfile}
               onEdit={handleEditClient}
               onDelete={confirmDeleteClient} // Abre el diálogo de eliminación individual
               onExport={handleBulkExport}
-              onDuplicate={handleBulkDuplicate}
+              onDuplicate={(ids) => handleBulkDuplicate(ids)} // Conecta el botón de la tabla a la acción
               onAssignReferrer={handleAssignReferrerToClients}
             />
 
@@ -231,12 +246,27 @@ export default function Clients() {
               onEdit={handleEditClient}
               onDelete={confirmDeleteClient}
               onExport={handleBulkExport}
-              onDuplicate={handleBulkDuplicate}
+              onDuplicate={(ids) => handleBulkDuplicate(ids)} // Conecta el botón de la lista a la acción
               onAssignReferrer={handleAssignReferrerToClients}
             />
           </>
         )}
       </div>
+
+      {/* MODALES */}
+      {/* Modal para crear o editar un cliente */}
+      <ClientModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveClient} // handleSaveClient debe ser la función que acepta el clientID opcional
+        client={selectedClient}
+        clients={allClients}
+      />
+
+      {/* ... (Otros Modales y AlertDialog) ... */}
+    </div>
+  );
+}
 
       {/* MODALES */}
       {/* Modal para crear o editar un cliente */}

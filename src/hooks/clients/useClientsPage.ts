@@ -200,7 +200,7 @@ export function useClientsPage() {
       ? `${count} cliente(s)` 
       : clients.find(c => c.id === deleteTarget)?.name || 'el cliente';
 
-    const deletePromise = logic.deleteClients(clientIds); // La capa de lógica debe aceptar un array de IDs
+    const deletePromise = logic.deleteClients(clientIds); 
 
     try {
         // Usamos toast.promise para manejar el estado de carga y el error

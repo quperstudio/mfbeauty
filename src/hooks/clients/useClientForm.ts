@@ -36,7 +36,6 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
   const { user } = useAuth();
   const { tags: availableTags, createTag, deleteTag } = useTags();
   const { clientTags } = useClientTags(client?.id || null);
-  const { checkDuplicatePhone } = useClients();
 
   // ESTADOS LOCALES DEL FORMULARIO
   // ------------------------------
@@ -128,18 +127,6 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
     if (!validateForm()) {
       toast.error('Errores de validación', {
         description: 'Por favor, revisa los campos marcados en rojo para corregir los errores.',
-      });
-      return;
-    }
-
-    // Verificación de teléfono duplicado
-    setPhoneCheckLoading(true);
-    const duplicateClient = await checkDuplicatePhone({ phone: formData.phone, excludeClientId: client?.id });
-    setPhoneCheckLoading(false);
-
-    if (duplicateClient) {
-      toast.error(`Error: Teléfono duplicado`, {
-        description: `Este número ya está registrado para el cliente ${duplicateClient.name}.`,
       });
       return;
     }

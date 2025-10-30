@@ -21,7 +21,6 @@ export const clientSchema = z.object({
   facebook_link: emptyStringToNull,
   instagram_link: emptyStringToNull,
   tiktok_link: emptyStringToNull,
-  created_by_user_id: emptyStringToNull,
 });
 
 export type ClientSchemaType = z.infer<typeof clientSchema>;

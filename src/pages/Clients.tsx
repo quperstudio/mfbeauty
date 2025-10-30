@@ -188,11 +188,12 @@ export default function Clients() {
       {selectedCount > 0 && (
         <ClientBulkActionBar
           selectedCount={selectedCount}
-          onDelete={handleBulkDelete} // Inicia la eliminación masiva
-          onDuplicate={() => handleBulkDuplicate(Array.from(selectedClientIds))} // Pasa los IDs a la acción
-          onExport={() => handleBulkExport(clients.filter(c => selectedClientIds.has(c.id)))} // Exporta solo seleccionados
+          userRole={user?.role}
+          onDelete={handleBulkDelete}
+          onDuplicate={() => handleBulkDuplicate(Array.from(selectedClientIds))}
+          onExport={() => handleBulkExport(clients.filter(c => selectedClientIds.has(c.id)))}
           onAssignReferrer={() => setIsAssignReferrerModalOpen(true)}
-          onClearSelection={clearSelectionHook} // Usa el clearSelection del hook fragmentado
+          onClearSelection={clearSelectionHook}
           isLoading={bulkActionLoading}
         />
       )}

@@ -18,7 +18,6 @@ export function useClientActions() {
     deleteClients,
     duplicateClient,
     assignReferrer,
-    checkDuplicatePhone,
   } = useClients();
 
   const { syncTags } = useClientTags(null);
@@ -30,13 +29,6 @@ export function useClientActions() {
       existingClientId?: string
     ): Promise<{ error: string | null }> => {
       try {
-        if (!existingClientId) {
-          const duplicate = await checkDuplicatePhone({ phone: data.phone });
-          if (duplicate) {
-            return { error: 'El teléfono ya está registrado' };
-          }
-        }
-
         const client = existingClientId
           ? await updateClient({ id: existingClientId, data })
           : await createClient(data);
@@ -47,12 +39,21 @@ export function useClientActions() {
         return { error: null };
       } catch (err: any) {
         console.error('Error al guardar el cliente:', err);
+
+        // Detect PostgreSQL unique constraint violation (error code 23505)
+        if (err.message && (err.message.includes('unique constraint') || err.message.includes('23505'))) {
+          const errorMsg = 'El teléfono ya está registrado con otro cliente.';
+          toast.error('Error al guardar', { description: errorMsg });
+          return { error: errorMsg };
+        }
+
+        // Generic error
         const errorMessage = err.message || 'Error al guardar los datos';
         toast.error('Error al guardar cliente', { description: errorMessage });
         return { error: errorMessage };
       }
     },
-    [createClient, updateClient, syncTags, checkDuplicatePhone]
+    [createClient, updateClient, syncTags]
   );
 
   const handleDeleteClients = useCallback(

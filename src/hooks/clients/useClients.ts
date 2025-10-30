@@ -94,21 +94,6 @@ export function useClients() {
     },
   });
 
-  const checkDuplicatePhoneMutation = useMutation({
-    mutationFn: async ({ phone, excludeClientId }: { phone: string; excludeClientId?: string }) => {
-      let query = supabase.from('clients').select('*').eq('phone', phone);
-
-      if (excludeClientId) {
-        query = query.neq('id', excludeClientId);
-      }
-
-      const { data, error } = await query.maybeSingle();
-
-      if (error) throw error;
-      return data as Client | null;
-    },
-  });
-
   return {
     clients,
     loading: isLoading,
@@ -118,7 +103,6 @@ export function useClients() {
     deleteClients: deleteMutation.mutateAsync,
     duplicateClient: duplicateMutation.mutateAsync,
     assignReferrer: assignReferrerMutation.mutateAsync,
-    checkDuplicatePhone: checkDuplicatePhoneMutation.mutateAsync,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,

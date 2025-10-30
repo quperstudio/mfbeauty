@@ -3,3 +3,5 @@ By default, this template supports JSX syntax with Tailwind CSS classes, React h
 Use icons from lucide-react for logos.
 
 Si hay alguna instrucción, función o agregado que no te haya quedado claro, realiza preguntas para entender completamente la idea y tenerla clara.
+
+Cualquier función o entidad nueva, añádela contemplando la arquitectura actual definida en 'ARCHITECTURE.md'

@@ -11,6 +11,7 @@ export function useClients() {
   const queryClient = useQueryClient();
 
   // CONSULTA 1: OBTENER TODOS LOS CLIENTES
+  // Nota: Los clientes eliminados (deleted_at IS NOT NULL) son filtrados automáticamente por RLS
   const { data: clients = [], isLoading, error } = useQuery({
     queryKey: QUERY_KEYS.clients.all,
     queryFn: async () => {
@@ -61,16 +62,24 @@ export function useClients() {
     },
   });
 
-  // MUTACIÓN 3: ELIMINAR CLIENTE(S)
+  // MUTACIÓN 3: SOFT DELETE CLIENTE(S)
+  // Nota: No eliminamos permanentemente, solo marcamos como eliminado
   const deleteMutation = useMutation({
     mutationFn: async (ids: string | string[]) => {
       const idsArray = Array.isArray(ids) ? ids : [ids];
-      // Permite eliminar uno o varios clientes
-      const { error } = await supabase.from('clients').delete().in('id', idsArray);
+
+      // Soft delete: actualizar deleted_at y deleted_by
+      const { error } = await supabase
+        .from('clients')
+        .update({
+          deleted_at: new Date().toISOString()
+          // deleted_by se asigna automáticamente via trigger
+        })
+        .in('id', idsArray);
 
       if (error) throw error;
     },
-    // Invalida la lista de clientes para reflejar la eliminación
+    // Invalida la lista de clientes para reflejar el cambio
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
     },

@@ -14,12 +14,22 @@ export type CashRegisterStatus = 'open' | 'closed';
 
 export type SocialMediaType = 'whatsapp' | 'facebook' | 'instagram' | 'tiktok';
 
+export interface Organization {
+  id: string;
+  name: string;
+  business_name: string;
+  slug: string;
+  active: boolean;
+  created_at: string;
+}
+
 export interface User {
   id: string;
   email: string;
   full_name: string;
   role: UserRole;
   active: boolean;
+  organization_id: string;
   created_at: string;
 }
 
@@ -38,6 +48,11 @@ export interface Client {
   total_visits: number;
   last_visit_date?: string;
   created_by_user_id?: string;
+  organization_id: string;
+  deleted_at?: string;
+  deleted_by?: string;
+  updated_at: string;
+  updated_by?: string;
   created_at: string;
 }
 
@@ -59,6 +74,11 @@ export interface ServiceCategory {
   name: string;
   description?: string;
   display_order: number;
+  organization_id: string;
+  deleted_at?: string;
+  deleted_by?: string;
+  updated_at: string;
+  updated_by?: string;
   created_at: string;
 }
 
@@ -71,6 +91,11 @@ export interface Service {
   price: number;
   cost: number;
   profit: number;
+  organization_id: string;
+  deleted_at?: string;
+  deleted_by?: string;
+  updated_at: string;
+  updated_by?: string;
   created_at: string;
 }
 
@@ -86,6 +111,11 @@ export interface CommissionAgent {
   facebook_link?: string;
   instagram_link?: string;
   tiktok_link?: string;
+  organization_id: string;
+  deleted_at?: string;
+  deleted_by?: string;
+  updated_at: string;
+  updated_by?: string;
   created_at: string;
 }
 
@@ -109,6 +139,11 @@ export interface Appointment {
   balance_pending: number;
   notes?: string;
   created_by_user_id?: string;
+  organization_id: string;
+  deleted_at?: string;
+  deleted_by?: string;
+  updated_at: string;
+  updated_by?: string;
   created_at: string;
 }
 
@@ -132,6 +167,11 @@ export interface TransactionCategory {
   name: string;
   type: TransactionType;
   is_system: boolean;
+  organization_id: string;
+  deleted_at?: string;
+  deleted_by?: string;
+  updated_at: string;
+  updated_by?: string;
   created_at: string;
 }
 
@@ -149,6 +189,12 @@ export interface Transaction {
   client_id?: string;
   appointment_id?: string;
   created_by_user_id?: string;
+  organization_id: string;
+  is_reversal: boolean;
+  reverses_transaction_id?: string;
+  reversed_by_transaction_id?: string;
+  updated_at: string;
+  updated_by?: string;
   created_at: string;
 }
 
@@ -166,6 +212,11 @@ export interface Commission {
   payment_method?: PaymentMethod;
   payment_reference?: string;
   payment_notes?: string;
+  organization_id: string;
+  deleted_at?: string;
+  deleted_by?: string;
+  updated_at: string;
+  updated_by?: string;
   created_at: string;
 }
 
@@ -182,6 +233,11 @@ export interface CashRegisterSession {
   opened_at: string;
   closed_at?: string;
   status: CashRegisterStatus;
+  organization_id: string;
+  deleted_at?: string;
+  deleted_by?: string;
+  updated_at: string;
+  updated_by?: string;
 }
 
 export interface AppointmentWithDetails extends Appointment {

@@ -92,7 +92,7 @@ export default function ClientBulkActionBar({
                 variant="ghost"
                 size="icon"
                 disabled={isLoading}
-                className={`hidden md:inline-flex ${ACTION_BUTTON_CLASSES} hover:bg-destructive/10 hover:text-destructive`}
+                className={`hidden md:inline-flex ${ACTION_BUTTON_CLASSES} bg-primary/10 border border-primary rounded-xl p-3 sm:p-4 mb-4 shadow-soft flex items-center justify-between transition-opacity duration-200`}
               >
                 <X className="w-4 h-4" />
               </Button>

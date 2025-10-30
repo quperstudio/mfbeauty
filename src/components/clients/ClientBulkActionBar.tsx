@@ -69,7 +69,7 @@ export default function ClientBulkActionBar({
           )}
         </Button>
       </TooltipTrigger>
-      <TooltipContent side="bottom">{action.label}</TooltipContent>
+      <TooltipContent side="top">{action.label}</TooltipContent>
     </Tooltip>
   );
 
@@ -97,7 +97,7 @@ export default function ClientBulkActionBar({
                 <X className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Descartar selección</TooltipContent>
+            <TooltipContent side="top">Descartar selección</TooltipContent>
           </Tooltip>
         </div>
 

@@ -43,7 +43,6 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [selectedTags, setSelectedTags] = useState<ClientTag[]>([]);
-  const [phoneCheckLoading, setPhoneCheckLoading] = useState(false);
   const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>([]);
   const [initialSocialMediaList, setInitialSocialMediaList] = useState<SocialMedia[]>([]);
   const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false);
@@ -304,7 +303,6 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
     selectedTags,
     socialMediaList,
     showUnsavedChangesDialog,
-    phoneCheckLoading,
     availableTags,
     referrerOptions,
     handlers: {

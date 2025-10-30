@@ -46,6 +46,9 @@ export function useClientActions() {
           toast.error('Error al guardar', { description: errorMsg });
           return { error: errorMsg };
         }
+
+
+      }
     },
     [createClient, updateClient, syncTags]
   );

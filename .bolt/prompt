@@ -2,8 +2,8 @@ By default, this template supports JSX syntax with Tailwind CSS classes, React h
 
 Use icons from lucide-react for logos.
 
-Si hay alguna instrucción, función o agregado que no te haya quedado claro, realiza preguntas para entender completamente la idea y tenerla clara.
+If there is any instruction, function, or addition that is not clear to you, please ask questions to fully understand the idea and ensure clarity.
 
-Cualquier función o entidad nueva, añádela contemplando la arquitectura actual definida en 'ARCHITECTURE.md'
+Any new function or entity should be added while considering the current architecture defined in 'ARCHITECTURE.md'.
 
-Presta mucha atención a la sintaxis e importaciones cuando realices ajustes, extracciones o migraciones en el código.
+Pay close attention to the syntax and imports when making adjustments, extractions, or migrations in the code.

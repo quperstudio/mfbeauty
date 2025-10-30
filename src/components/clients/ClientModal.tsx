@@ -43,11 +43,11 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
   // El hook useClientForm ya tiene acceso a 'client' (el cliente a editar).
   // Se asume que useClientForm ha sido actualizado internamente para usar client.id 
   // al llamar a la función onSave (la cual es handleSaveClient)
-  const {
-    formData, errors, loading, selectedTags, socialMediaList, 
-    showUnsavedChangesDialog, phoneCheckLoading, availableTags,
-    referrerOptions, handlers, tagHandlers,
-  } = useClientForm({ client, isOpen, onSave, onClose, clients });
+const {
+  formData, errors, loading, selectedTags, socialMediaList, 
+  showUnsavedChangesDialog, availableTags,
+  referrerOptions, handlers, tagHandlers,
+} = useClientForm({ client, isOpen, onSave, onClose, clients });
 
   return (
     <>
@@ -151,17 +151,17 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                 Cancelar
               </Button>
               <Button
-                type="submit" variant="default" size="default" disabled={loading || phoneCheckLoading}
-                className="w-full sm:w-auto"
-              >
-                {loading || phoneCheckLoading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-background border-t-transparent" />
-                    {phoneCheckLoading ? 'Validando...' : 'Guardando...'}
-                  </div>
-                ) : (
-                  <>{client ? 'Actualizar' : 'Crear'} Cliente</>
-                )}
+  type="submit" variant="default" size="default" disabled={loading}
+  className="w-full sm:w-auto"
+>
+                {loading ? (
+  <div className="flex items-center gap-2">
+    <div className="animate-spin rounded-full h-4 w-4 border-2 border-background border-t-transparent" />
+    Guardando...
+  </div>
+) : (
+  <>{client ? 'Actualizar' : 'Crear'} Cliente</>
+)}
               </Button>
             </DialogFooter>
           </form>

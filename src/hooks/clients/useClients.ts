@@ -65,19 +65,38 @@ export function useClients() {
   // MUTACIÓN 3: SOFT DELETE CLIENTE(S)
   // Nota: No eliminamos permanentemente, solo marcamos como eliminado
   const deleteMutation = useMutation({
-    mutationFn: async (ids: string | string[]) => {
+    mutationFn: async (ids: string | string[]): Promise<number> => {
       const idsArray = Array.isArray(ids) ? ids : [ids];
 
-      // Soft delete: actualizar deleted_at y deleted_by
-      const { error } = await supabase
+      console.log(`[useClients] Iniciando soft delete de ${idsArray.length} cliente(s):`, idsArray);
+
+      // Soft delete: actualizar deleted_at
+      // deleted_by se asigna automáticamente via trigger
+      const { data, error, count } = await supabase
         .from('clients')
         .update({
           deleted_at: new Date().toISOString()
-          // deleted_by se asigna automáticamente via trigger
         })
-        .in('id', idsArray);
+        .in('id', idsArray)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('[useClients] Error en soft delete:', error);
+        throw error;
+      }
+
+      // Obtener el conteo real de filas afectadas
+      const affectedCount = data?.length || count || 0;
+      console.log(`[useClients] Soft delete completado. Filas afectadas: ${affectedCount}`);
+
+      // Advertencia si no se afectaron todas las filas esperadas
+      if (affectedCount < idsArray.length) {
+        console.warn(
+          `[useClients] ADVERTENCIA: Se esperaba eliminar ${idsArray.length} cliente(s), pero solo se eliminaron ${affectedCount}.`
+        );
+      }
+
+      return affectedCount;
     },
     // Invalida la lista de clientes para reflejar el cambio
     onSuccess: () => {

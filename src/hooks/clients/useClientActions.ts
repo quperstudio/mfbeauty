@@ -72,18 +72,41 @@ export function useClientActions() {
   const handleDeleteClients = useCallback(
     async (clientIds: string[], clientName?: string) => {
       try {
-        await deleteClients(clientIds);
+        console.log(`[useClientActions] Eliminando ${clientIds.length} cliente(s)`);
+
+        // deleteClients ahora retorna el número de filas afectadas
+        const affectedCount = await deleteClients(clientIds);
+
         // Invalida la caché para actualizar la lista
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
 
+        console.log(`[useClientActions] Resultado: ${affectedCount} cliente(s) eliminado(s)`);
+
+        // Verificar si se eliminaron todos los clientes esperados
+        if (affectedCount === 0) {
+          toast.error('No se eliminaron clientes', {
+            description: 'No se pudo eliminar ningún cliente. Verifica tus permisos.',
+          });
+          return;
+        }
+
+        if (affectedCount < clientIds.length) {
+          toast.warning('Eliminación parcial', {
+            description: `Solo se eliminaron ${affectedCount} de ${clientIds.length} cliente(s) seleccionado(s).`,
+          });
+          return;
+        }
+
+        // Eliminación exitosa
         if (clientIds.length === 1 && clientName) {
           toast.success('Cliente eliminado', {
-            description: `Cliente "${clientName}" eliminado.`,
+            description: `Cliente "${clientName}" eliminado con éxito.`,
           });
         } else {
-          toast.success(`Se eliminaron ${clientIds.length} cliente(s) con éxito.`);
+          toast.success(`Se eliminaron ${affectedCount} cliente(s) con éxito.`);
         }
       } catch (error: any) {
+        console.error('[useClientActions] Error al eliminar:', error);
         toast.error('Error al eliminar', {
           description: error.message || 'No se pudo completar la acción.',
         });

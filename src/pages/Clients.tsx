@@ -70,7 +70,6 @@ export default function Clients() {
     handleCreateClient,
     handleSort,
     handleViewProfile,
-    handleBulkDuplicate, // Lógica para duplicar (usado en BulkActionBar y Table)
     handleBulkExport,
     handleAssignReferrer,
     
@@ -190,7 +189,6 @@ export default function Clients() {
           selectedCount={selectedCount}
           userRole={user?.role}
           onDelete={handleBulkDelete}
-          onDuplicate={() => handleBulkDuplicate(Array.from(selectedClientIds))}
           onExport={() => handleBulkExport(clients.filter(c => selectedClientIds.has(c.id)))}
           onAssignReferrer={() => setIsAssignReferrerModalOpen(true)}
           onClearSelection={clearSelectionHook}
@@ -232,7 +230,6 @@ export default function Clients() {
               onEdit={handleEditClient}
               onDelete={confirmDeleteClient} // Abre el diálogo de eliminación individual
               onExport={handleBulkExport}
-              onDuplicate={(ids) => handleBulkDuplicate(ids)} // Conecta el botón de la tabla a la acción
               onAssignReferrer={handleAssignReferrerToClients}
             />
 
@@ -247,7 +244,6 @@ export default function Clients() {
               onEdit={handleEditClient}
               onDelete={confirmDeleteClient}
               onExport={handleBulkExport}
-              onDuplicate={(ids) => handleBulkDuplicate(ids)} // Conecta el botón de la lista a la acción
               onAssignReferrer={handleAssignReferrerToClients}
             />
           </>

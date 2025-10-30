@@ -1,4 +1,4 @@
-import { Trash2, Copy, Download, UserPlus, X, Loader2, MoreVertical } from 'lucide-react';
+import { Trash2, Download, UserPlus, X, Loader2, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -24,7 +24,6 @@ interface ClientBulkActionBarProps {
   selectedCount: number;
   userRole?: UserRole;
   onDelete: () => void;
-  onDuplicate: () => void;
   onExport: () => void;
   onAssignReferrer: () => void;
   onClearSelection: () => void;
@@ -34,13 +33,12 @@ interface ClientBulkActionBarProps {
 // COMPONENTE PRINCIPAL
 // --------------------
 export default function ClientBulkActionBar({
-  selectedCount, userRole, onDelete, onDuplicate, onExport, onAssignReferrer, onClearSelection, isLoading = false,
+  selectedCount, userRole, onDelete, onExport, onAssignReferrer, onClearSelection, isLoading = false,
 }: ClientBulkActionBarProps) {
 
   // Definición de todas las acciones
   const actions: Action[] = [
     { label: 'Exportar', icon: Download, onClick: onExport },
-    { label: 'Duplicar', icon: Copy, onClick: onDuplicate },
     { label: 'Relacionar cliente', icon: UserPlus, onClick: onAssignReferrer },
     { label: 'Eliminar', icon: Trash2, onClick: onDelete, destructive: true, requiresPermission: canDeleteClients },
   ];

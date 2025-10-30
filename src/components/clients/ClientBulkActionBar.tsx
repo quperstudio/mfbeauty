@@ -60,7 +60,7 @@ export default function ClientBulkActionBar({
           size="icon"
           onClick={action.onClick}
           disabled={isLoading}
-          className={`hidden md:inline-flex ${ACTION_BUTTON_CLASSES} ${action.destructive ? 'text-destructive hover:bg-destructive/10 focus:bg-destructive/10' : ''}`}
+          className={`hidden md:inline-flex ${ACTION_BUTTON_CLASSES} ${action.destructive ? 'hover:bg-destructive/10 hover:text-destructive' : ''}`}
         >
           {action.label === 'Eliminar' && isLoading ? (
             <Loader2 className="w-4 h-4 animate-spin" />

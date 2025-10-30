@@ -46,12 +46,6 @@ export function useClientActions() {
           toast.error('Error al guardar', { description: errorMsg });
           return { error: errorMsg };
         }
-
-        // Generic error
-        const errorMessage = err.message || 'Error al guardar los datos';
-        toast.error('Error al guardar cliente', { description: errorMessage });
-        return { error: errorMessage };
-      }
     },
     [createClient, updateClient, syncTags]
   );

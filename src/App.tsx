@@ -52,6 +52,76 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/servicios"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <ComingSoon pageName="Servicios" />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/agentes"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <ComingSoon pageName="Agentes" />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/finanzas"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <ComingSoon pageName="Finanzas" />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/caja"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <ComingSoon pageName="Caja" />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/comisiones"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <ComingSoon pageName="Comisiones" />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/reportes"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <ComingSoon pageName="Reportes" />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/usuarios"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <ComingSoon pageName="Usuarios" />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
           </BrowserRouter>
           <Toaster /> 

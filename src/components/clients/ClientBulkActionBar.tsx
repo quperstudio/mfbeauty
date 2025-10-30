@@ -143,7 +143,7 @@ export default function ClientBulkActionBar({
                 className={`${DROPDOWN_ITEM_CLASSES} text-muted-foreground`}
               >
                 <X className="w-4 h-4 mr-2" />
-                Descartar selección
+                Descartar
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

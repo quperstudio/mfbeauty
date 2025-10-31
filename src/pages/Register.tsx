@@ -9,6 +9,7 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [businessName, setBusinessName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -21,7 +22,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const { error: signUpError } = await signUp(email, password, fullName, 'administrator');
+      const { error: signUpError } = await signUp(email, password, fullName, 'administrator', businessName);
 
       if (signUpError) {
         setError(signUpError.message);
@@ -82,6 +83,15 @@ export default function Register() {
               />
 
               <Input
+                label="Nombre del Negocio (Opcional)"
+                type="text"
+                placeholder="Salón de Belleza María"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+                disabled={loading}
+              />
+
+              <Input
                 label="Email"
                 type="email"
                 placeholder="admin@salon.com"
@@ -130,7 +140,7 @@ export default function Register() {
         </div>
 
         <p className="text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-6 sm:mt-8">
-          Nota: Esta página es solo para crear el primer usuario administrador
+          Tu negocio será creado automáticamente al registrarte
         </p>
       </div>
     </div>

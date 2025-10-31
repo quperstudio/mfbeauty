@@ -532,6 +532,425 @@ Manejada por `AuthContext`:
 - Protección de rutas con `ProtectedRoute`
 - Gestión de permisos por rol
 
+## Estrategia de Soft Delete
+
+### Filosofía y Propósito
+
+Este sistema implementa **soft delete** (eliminación lógica) en lugar de hard delete (eliminación física) para entidades críticas del negocio. El soft delete marca registros como eliminados sin borrarlos permanentemente, permitiendo:
+
+1. **Recuperación de Datos**: Protección contra eliminaciones accidentales
+2. **Integridad Histórica**: Preservación de registros para auditoría y reportes
+3. **Trazabilidad**: Mantener histórico completo de transacciones y relaciones
+4. **Cumplimiento Legal**: Retención de datos para regulaciones y auditorías
+
+### Entidades con Soft Delete
+
+Las siguientes tablas implementan soft delete con las columnas `deleted_at` y `deleted_by`:
+
+| Tabla | Soft Delete | Razón |
+|-------|-------------|-------|
+| `clients` | ✅ Sí | Preservar histórico de citas y transacciones |
+| `appointments` | ✅ Sí | Mantener registro de servicios prestados |
+| `services` | ✅ Sí | Referencias en citas históricas |
+| `service_categories` | ✅ Sí | Clasificación de servicios históricos |
+| `commission_agents` | ✅ Sí | Histórico de comisiones y rendimiento |
+| `commissions` | ✅ Sí | Auditoría de pagos |
+| `cash_register_sessions` | ✅ Sí | Conciliación financiera |
+| `transaction_categories` | ✅ Sí | Clasificación de transacciones históricas |
+| `transactions` | ❌ No | **INMUTABLE** - Nunca se elimina |
+| `appointment_services` | ❌ No | Depende de appointments (CASCADE) |
+| `appointment_agents` | ❌ No | Depende de appointments (CASCADE) |
+
+**Nota Importante sobre Transactions:**
+- La tabla `transactions` **NO tiene soft delete** porque es inmutable por diseño
+- Las transacciones financieras nunca deben modificarse ni eliminarse por regulaciones contables
+- Ver migración `20251030053445_add_immutability_to_transactions.sql` para detalles
+
+### Funcionamiento Técnico
+
+#### 1. Columnas de Soft Delete
+
+Cada tabla con soft delete tiene estas columnas:
+
+```sql
+deleted_at timestamptz,           -- NULL = activo, NOT NULL = eliminado
+deleted_by uuid REFERENCES users(id),  -- Usuario que eliminó el registro
+updated_at timestamptz NOT NULL DEFAULT now(),
+updated_by uuid REFERENCES users(id)
+```
+
+#### 2. Políticas RLS Automáticas
+
+Las políticas RLS de SELECT filtran automáticamente registros eliminados:
+
+```sql
+CREATE POLICY "Users can view clients in own organization"
+  ON clients FOR SELECT
+  TO authenticated
+  USING (
+    organization_id = get_user_organization_id() AND
+    deleted_at IS NULL  -- Filtra automáticamente registros eliminados
+  );
+```
+
+**Implicación**: Los queries normales desde el frontend NO necesitan agregar `WHERE deleted_at IS NULL` explícitamente.
+
+#### 3. Operación de Soft Delete
+
+En el hook `useClients.ts`:
+
+```typescript
+const deleteMutation = useMutation({
+  mutationFn: async (ids: string | string[]) => {
+    const idsArray = Array.isArray(ids) ? ids : [ids];
+
+    // Soft delete: actualizar deleted_at
+    // deleted_by se asigna automáticamente via trigger
+    const { error } = await supabase
+      .from('clients')
+      .update({ deleted_at: new Date().toISOString() })
+      .in('id', idsArray);
+
+    if (error) throw error;
+  },
+});
+```
+
+### Manejo de Números Telefónicos Únicos
+
+#### Problema
+
+Los clientes tienen un número de teléfono único (`phone`), pero con soft delete surge un conflicto:
+- Si un cliente se archiva (soft delete), su teléfono queda "bloqueado"
+- No se puede crear un nuevo cliente con ese mismo teléfono
+- La restricción UNIQUE tradicional impide la reutilización
+
+#### Solución: Índice Único Parcial
+
+Implementamos un **partial unique index** que solo aplica a registros activos:
+
+```sql
+-- Índice único parcial en clientes activos solamente
+CREATE UNIQUE INDEX clients_phone_active_unique
+ON clients(organization_id, phone)
+WHERE deleted_at IS NULL;
+```
+
+**Ventajas:**
+- ✅ Permite reutilizar números telefónicos de clientes archivados
+- ✅ Mantiene unicidad estricta entre clientes activos
+- ✅ Mejor rendimiento que constraint global
+- ✅ Soporte para multi-tenancy (incluye `organization_id`)
+
+**Comportamiento:**
+- Un cliente activo con teléfono "5551234567" → **Único** ✅
+- Se archiva ese cliente → El teléfono queda disponible
+- Nuevo cliente con "5551234567" → **Permitido** ✅
+- Múltiples clientes archivados pueden tener el mismo teléfono
+- Solo UN cliente activo por organización puede tener un teléfono específico
+
+Ver migración: `20251030071512_fix_phone_unique_constraint_with_partial_index.sql`
+
+### Relaciones de Claves Foráneas
+
+#### Política: ON DELETE SET NULL para Datos Históricos
+
+Las entidades que referencian `clients` usan `ON DELETE SET NULL` en lugar de `CASCADE` para **preservar datos históricos**:
+
+```sql
+-- ✅ CORRECTO: Preserva citas cuando se elimina el cliente
+ALTER TABLE appointments
+ADD CONSTRAINT appointments_client_id_fkey
+FOREIGN KEY (client_id)
+REFERENCES clients(id)
+ON DELETE SET NULL;
+
+-- ✅ CORRECTO: Preserva transacciones cuando se elimina el cliente
+ALTER TABLE transactions
+ADD CONSTRAINT transactions_client_id_fkey
+FOREIGN KEY (client_id)
+REFERENCES clients(id)
+ON DELETE SET NULL;
+```
+
+**Implicación:**
+- Cuando un cliente se elimina (soft o hard delete), las citas y transacciones **NO se borran**
+- El campo `client_id` se establece en `NULL`
+- Los datos históricos permanecen intactos (fecha, monto, servicios, etc.)
+- Los reportes pueden seguir mostrando agregaciones sin pérdida de información
+
+#### Entidades Dependientes con CASCADE
+
+Algunas tablas junction usan `ON DELETE CASCADE` porque dependen completamente de su entidad padre:
+
+```sql
+-- appointment_services depende de appointments
+CREATE TABLE appointment_services (
+  appointment_id uuid REFERENCES appointments(id) ON DELETE CASCADE,
+  service_id uuid REFERENCES services(id) ON DELETE CASCADE,
+  -- ...
+);
+```
+
+### Patrones de Consulta
+
+#### Queries de Registros Activos (Por Defecto)
+
+La mayoría de queries en la aplicación solo necesitan datos activos. Las políticas RLS filtran automáticamente:
+
+```typescript
+// ✅ AUTOMÁTICO: Solo devuelve clientes activos (deleted_at IS NULL)
+const { data: clients } = await supabase
+  .from('clients')
+  .select('*')
+  .order('created_at', { ascending: false });
+```
+
+**No necesitas agregar** `.is('deleted_at', null)` porque RLS lo hace automáticamente.
+
+#### Queries Históricos (Incluyen Archivados)
+
+Para reportes, auditorías o vistas administrativas que necesitan incluir registros archivados:
+
+```typescript
+// Queries históricos requieren bypass de RLS o políticas especiales
+// Ejemplo: Reporte de todas las citas (incluyendo clientes archivados)
+const { data: appointments } = await supabase
+  .from('appointments')
+  .select(`
+    *,
+    clients!left (
+      id,
+      name,
+      phone
+    )
+  `)
+  .order('appointment_date', { ascending: false });
+
+// El LEFT JOIN incluirá clients incluso si están archivados
+// Si client_id es NULL (cliente eliminado permanentemente), la relación será null
+```
+
+#### Queries de Referrals
+
+Los referidos (clientes que refirieron a otros) deben filtrarse para excluir archivados:
+
+```typescript
+// ✅ Hook useClientReferrals filtra automáticamente vía RLS
+export function useClientReferrals(clientId: string | null) {
+  return useQuery({
+    queryKey: QUERY_KEYS.clients.referrals(clientId || ''),
+    queryFn: async () => {
+      if (!clientId) return [];
+
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('referrer_id', clientId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return (data as Client[]) || [];
+    },
+    enabled: !!clientId,
+  });
+}
+// RLS filtra automáticamente deleted_at IS NULL
+```
+
+### Visualización de Datos Históricos
+
+#### Principio: Mostrar Siempre el Nombre Original
+
+En reportes, citas pasadas y transacciones históricas, **SIEMPRE** se debe mostrar el nombre original del cliente, incluso si está archivado.
+
+**❌ INCORRECTO: Ocultar o reemplazar el nombre**
+```typescript
+// NO HACER ESTO
+const clientName = client?.deleted_at
+  ? 'Cliente Archivado'
+  : client.name;
+```
+
+**✅ CORRECTO: Mostrar el nombre original**
+```typescript
+// Siempre mostrar el nombre real
+const clientName = client?.name || 'Cliente Eliminado';
+
+// Opcionalmente, agregar indicador visual
+{client?.deleted_at && (
+  <Badge variant="secondary">Archivado</Badge>
+)}
+```
+
+#### Ejemplo: Vista de Citas Históricas
+
+```typescript
+// Componente de historial de citas
+function AppointmentHistory() {
+  const { data: appointments } = useQuery({
+    queryKey: ['appointments', 'history'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('appointments')
+        .select(`
+          *,
+          clients (id, name, phone, deleted_at)
+        `)
+        .order('appointment_date', { ascending: false });
+
+      return data;
+    },
+  });
+
+  return (
+    <div>
+      {appointments?.map(apt => (
+        <div key={apt.id}>
+          <p>Cliente: {apt.clients?.name || 'Sin información'}</p>
+          {apt.clients?.deleted_at && (
+            <Badge variant="outline">Archivado</Badge>
+          )}
+          <p>Fecha: {apt.appointment_date}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+### Experiencia de Usuario
+
+#### Comportamiento Esperado al Eliminar un Cliente
+
+1. **Vista Principal (Clients.tsx):**
+   - El cliente desaparece instantáneamente de la lista
+   - RLS filtra automáticamente `deleted_at IS NULL`
+   - No se requiere refresh manual
+
+2. **Búsqueda y Filtros:**
+   - Los clientes archivados NO aparecen en búsquedas
+   - NO aparecen en dropdowns de selección (ej: crear cita)
+   - NO aparecen en el selector de referentes
+
+3. **Histórico de Citas:**
+   - Las citas pasadas del cliente archivado **siguen visibles**
+   - Se muestra el nombre original del cliente
+   - Opcionalmente, se puede agregar un badge "Archivado"
+
+4. **Reportes y Transacciones:**
+   - Los montos y estadísticas incluyen clientes archivados
+   - Los reportes financieros no pierden información
+   - Se pueden generar reportes históricos completos
+
+#### Validación de Teléfonos Duplicados
+
+Al crear un nuevo cliente, la validación de teléfono duplicado solo verifica clientes **activos**:
+
+```typescript
+// El índice parcial maneja esto automáticamente
+// Supabase arrojará error solo si existe un cliente activo con el teléfono
+const { data, error } = await supabase
+  .from('clients')
+  .insert([{ name: 'Juan', phone: '5551234567' }]);
+
+// Si error?.code === '23505' → Teléfono duplicado en clientes activos
+// Si no hay error → El teléfono estaba disponible (nunca usado o de cliente archivado)
+```
+
+### Directrices para Desarrollo Futuro
+
+#### Al Crear Nuevas Entidades
+
+Si una nueva entidad requiere soft delete:
+
+1. **Agregar columnas en la migración:**
+```sql
+ALTER TABLE nueva_tabla ADD COLUMN deleted_at timestamptz;
+ALTER TABLE nueva_tabla ADD COLUMN deleted_by uuid REFERENCES users(id) ON DELETE SET NULL;
+ALTER TABLE nueva_tabla ADD COLUMN updated_at timestamptz DEFAULT now() NOT NULL;
+ALTER TABLE nueva_tabla ADD COLUMN updated_by uuid REFERENCES users(id) ON DELETE SET NULL;
+```
+
+2. **Actualizar política RLS de SELECT:**
+```sql
+CREATE POLICY "Users can view active records"
+  ON nueva_tabla FOR SELECT
+  TO authenticated
+  USING (
+    organization_id = get_user_organization_id() AND
+    deleted_at IS NULL
+  );
+```
+
+3. **Crear índice para performance:**
+```sql
+CREATE INDEX idx_nueva_tabla_deleted_at
+ON nueva_tabla(organization_id, deleted_at);
+```
+
+#### Al Referenciar Clientes
+
+Si una nueva tabla necesita referenciar `clients`:
+
+```sql
+-- ✅ Usar ON DELETE SET NULL para preservar histórico
+CREATE TABLE nueva_tabla (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id uuid REFERENCES clients(id) ON DELETE SET NULL,
+  -- ...
+);
+```
+
+#### Al Implementar Módulo de Citas
+
+Cuando se desarrolle la funcionalidad de citas:
+
+1. **Selector de Clientes:**
+   - Usar query estándar (RLS filtra automáticamente)
+   - Los clientes archivados NO aparecerán en el dropdown
+
+2. **Vista de Historial:**
+   - Usar LEFT JOIN para incluir clientes archivados
+   - Mostrar siempre el nombre original del cliente
+   - Agregar badge "Archivado" si `deleted_at IS NOT NULL`
+
+3. **Reportes de Ingresos:**
+   - Incluir todas las citas sin filtrar por `deleted_at` del cliente
+   - Los ingresos históricos deben mantenerse completos
+
+### Tabla de Referencia Rápida
+
+| Escenario | Filtrar `deleted_at IS NULL`? | Método |
+|-----------|-------------------------------|--------|
+| Lista de clientes activos | ✅ Sí | Automático (RLS) |
+| Crear nueva cita → seleccionar cliente | ✅ Sí | Automático (RLS) |
+| Asignar referente | ✅ Sí | Automático (RLS) |
+| Historial de citas de un cliente | ❌ No | LEFT JOIN con clientes |
+| Reporte de ingresos mensuales | ❌ No | Incluir todas las transacciones |
+| Búsqueda de cliente | ✅ Sí | Automático (RLS) |
+| Dashboard de estadísticas | ❌ No | Incluir datos históricos completos |
+| Auditoría administrativa | ❌ No | Query especial o bypass RLS |
+
+### Recursos y Migraciones Relacionadas
+
+Migraciones clave para soft delete:
+
+1. `20251030053420_add_soft_delete_and_audit_columns.sql`
+   - Agrega columnas deleted_at, deleted_by, updated_at, updated_by
+
+2. `20251030053536_update_rls_to_exclude_soft_deleted.sql`
+   - Actualiza políticas RLS para filtrar registros eliminados
+
+3. `20251030053513_create_audit_triggers.sql`
+   - Triggers automáticos para updated_by y deleted_by
+
+4. `20251030071512_fix_phone_unique_constraint_with_partial_index.sql`
+   - Índice único parcial para reutilización de teléfonos
+
+5. `20251030071548_fix_appointments_client_fk_for_data_preservation.sql`
+   - Cambia foreign key a ON DELETE SET NULL
+
 ## Problemas Comunes y Soluciones
 
 ### Error: Maximum update depth exceeded

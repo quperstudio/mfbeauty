@@ -15,7 +15,7 @@ import ClientsTableView from '../components/clients/ClientsTableView';
 import ClientsListView from '../components/clients/ClientsListView';
 import { useClientsPage } from '../hooks/clients/useClientsPage';
 import { CLIENT_FILTER_LABELS } from '../constants/clients.constants';
-import { useClientSelection } from '../hooks/clients/useClientSelection'; // HOOK FRAGMENTADO
+import { useClientSelection } from '../hooks/clients/useClientSelection';
 
 // COMPONENTE PRINCIPAL: CLIENTES
 // ------------------------------
@@ -25,7 +25,7 @@ export default function Clients() {
   
   // HOOK FRAGMENTADO: ESTADO DE SELECCIÓN MASIVA
   const {
-    selectedClientIds: selectedIdsFromHook, // Renombrado para evitar conflicto con useClientsPage
+    selectedClientIds: selectedIdsFromHook,
     handleSelectAll: handleSelectAllHook,
     handleSelectClient,
     clearSelection: clearSelectionHook,
@@ -49,7 +49,6 @@ export default function Clients() {
     setSelectedTagIds,
     sortField,
     sortDirection,
-    // [IMPORTANTE]: Eliminados selectedClientIds, handleSelectAll, handleSelectClient para usar los del hook fragmentado.
     isProfileModalOpen,
     setIsProfileModalOpen,
     profileClientId,
@@ -70,10 +69,8 @@ export default function Clients() {
     handleCreateClient,
     handleSort,
     handleViewProfile,
-    handleBulkDuplicate, // Lógica para duplicar (usado en BulkActionBar y Table)
     handleBulkExport,
     handleAssignReferrer,
-    
     isSmallScreen,
     filterCounts,
     hasActiveFilters,
@@ -183,16 +180,15 @@ export default function Clients() {
         </div>
       )}
 
-      {/* Barra de Acciones Masivas (sólo si hay clientes seleccionados) */}
-      {/* CAMBIO CLAVE: Usa selectedCount (que viene de useClientSelection) */}
+      {/* Barra de Acciones Masivas */}
       {selectedCount > 0 && (
         <ClientBulkActionBar
           selectedCount={selectedCount}
-          onDelete={handleBulkDelete} // Inicia la eliminación masiva
-          onDuplicate={() => handleBulkDuplicate(Array.from(selectedClientIds))} // Pasa los IDs a la acción
-          onExport={() => handleBulkExport(clients.filter(c => selectedClientIds.has(c.id)))} // Exporta solo seleccionados
+          userRole={user?.role}
+          onDelete={handleBulkDelete}
+          onExport={() => handleBulkExport(clients.filter(c => selectedClientIds.has(c.id)))}
           onAssignReferrer={() => setIsAssignReferrerModalOpen(true)}
-          onClearSelection={clearSelectionHook} // Usa el clearSelection del hook fragmentado
+          onClearSelection={clearSelectionHook}
           isLoading={bulkActionLoading}
         />
       )}
@@ -231,7 +227,6 @@ export default function Clients() {
               onEdit={handleEditClient}
               onDelete={confirmDeleteClient} // Abre el diálogo de eliminación individual
               onExport={handleBulkExport}
-              onDuplicate={(ids) => handleBulkDuplicate(ids)} // Conecta el botón de la tabla a la acción
               onAssignReferrer={handleAssignReferrerToClients}
             />
 
@@ -246,7 +241,6 @@ export default function Clients() {
               onEdit={handleEditClient}
               onDelete={confirmDeleteClient}
               onExport={handleBulkExport}
-              onDuplicate={(ids) => handleBulkDuplicate(ids)} // Conecta el botón de la lista a la acción
               onAssignReferrer={handleAssignReferrerToClients}
             />
           </>
@@ -258,7 +252,7 @@ export default function Clients() {
       <ClientModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveClient} // handleSaveClient debe ser la función que acepta el clientID opcional
+        onSave={handleSaveClient}
         client={selectedClient}
         clients={allClients}
       />

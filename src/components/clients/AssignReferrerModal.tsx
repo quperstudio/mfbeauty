@@ -1,7 +1,5 @@
-// src/components/clients/AssignReferrerModal.tsx
-
 import { useState, useEffect, useMemo } from 'react';
-import { Loader2 } from 'lucide-react'; // Eliminado UserPlus
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,

@@ -10,9 +10,9 @@ import {
   TrendingUp,
   FileText,
   Settings,
-  Sparkles,
   X,
 } from 'lucide-react';
+import { Logo } from '../shared/Logo';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../contexts/AuthContext';
 import { useEffect } from 'react';
@@ -27,13 +27,18 @@ interface NavItem {
 const navItems: NavItem[] = [
   {
     name: 'Dashboard',
-    path: '/dashboard',
+    path: '/',
     icon: <LayoutDashboard className="w-5 h-5" />,
   },
   {
     name: 'Clientes',
     path: '/clientes',
     icon: <Users className="w-5 h-5" />,
+  },
+  {
+    name: 'Calendario',
+    path: '/calendario',
+    icon: <Calendar className="w-5 h-5" />,
   },
   {
     name: 'Servicios',
@@ -44,11 +49,6 @@ const navItems: NavItem[] = [
     name: 'Agentes',
     path: '/agentes',
     icon: <UserCog className="w-5 h-5" />,
-  },
-  {
-    name: 'Citas',
-    path: '/citas',
-    icon: <Calendar className="w-5 h-5" />,
   },
   {
     name: 'Finanzas',
@@ -133,18 +133,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         )}
       >
         <div className="p-6 flex items-center justify-between">
-          <Link to="/dashboard" className="flex items-center space-x-3" onClick={onClose}>
-            <div className="flex items-center justify-center w-10 h-10 bg-primary rounded-lg">
-              <Sparkles className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">
-                Beauty Salon
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                Sistema de Gestión
-              </p>
-            </div>
+          <Link to="/" className="flex items-center" onClick={onClose}>
+            <Logo className="h-10 w-auto" />
           </Link>
           <button
             onClick={onClose}

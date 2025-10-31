@@ -36,7 +36,6 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
   const { user } = useAuth();
   const { tags: availableTags, createTag, deleteTag } = useTags();
   const { clientTags } = useClientTags(client?.id || null);
-  const { checkDuplicatePhone } = useClients();
 
   // ESTADOS LOCALES DEL FORMULARIO
   // ------------------------------
@@ -44,7 +43,6 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [selectedTags, setSelectedTags] = useState<ClientTag[]>([]);
-  const [phoneCheckLoading, setPhoneCheckLoading] = useState(false);
   const [socialMediaList, setSocialMediaList] = useState<SocialMedia[]>([]);
   const [initialSocialMediaList, setInitialSocialMediaList] = useState<SocialMedia[]>([]);
   const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false);
@@ -123,23 +121,11 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
 
   // MANEJADOR DE ENVÍO
   // --------------------
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
       toast.error('Errores de validación', {
         description: 'Por favor, revisa los campos marcados en rojo para corregir los errores.',
-      });
-      return;
-    }
-
-    // Verificación de teléfono duplicado
-    setPhoneCheckLoading(true);
-    const duplicateClient = await checkDuplicatePhone({ phone: formData.phone, excludeClientId: client?.id });
-    setPhoneCheckLoading(false);
-
-    if (duplicateClient) {
-      toast.error(`Error: Teléfono duplicado`, {
-        description: `Este número ya está registrado para el cliente ${duplicateClient.name}.`,
       });
       return;
     }
@@ -169,13 +155,9 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
     setLoading(false);
 
     if (result.error) {
-      toast.error('Error al guardar el cliente', { description: result.error });
     } else {
       resetModalState();
       onClose();
-      toast.success('Operación exitosa', {
-        description: `¡Cliente ${client ? 'actualizado' : 'creado'} con éxito!`,
-      });
     }
   };
 
@@ -317,7 +299,6 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
     selectedTags,
     socialMediaList,
     showUnsavedChangesDialog,
-    phoneCheckLoading,
     availableTags,
     referrerOptions,
     handlers: {

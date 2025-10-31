@@ -29,8 +29,6 @@ import { useClientForm } from '../../hooks/clients/useClientForm';
 interface ClientModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // CAMBIO CLAVE: onSave ahora acepta un clientID opcional, permitiendo a la lógica
-  // (handleSaveClient en useClientActions.ts) decidir si es CREATE o UPDATE.
   onSave: (data: ClientSchemaType, tagIds: string[], clientId?: string) => Promise<{ error: string | null }>;
   client?: Client;
   clients: Client[];
@@ -40,19 +38,15 @@ interface ClientModalProps {
 // --------------------
 export default function ClientModal({ isOpen, onClose, onSave, client, clients }: ClientModalProps) {
   // HOOK DE LÓGICA DEL FORMULARIO
-  // El hook useClientForm ya tiene acceso a 'client' (el cliente a editar).
-  // Se asume que useClientForm ha sido actualizado internamente para usar client.id 
-  // al llamar a la función onSave (la cual es handleSaveClient)
-  const {
-    formData, errors, loading, selectedTags, socialMediaList, 
-    showUnsavedChangesDialog, phoneCheckLoading, availableTags,
-    referrerOptions, handlers, tagHandlers,
-  } = useClientForm({ client, isOpen, onSave, onClose, clients });
+const {
+  formData, errors, loading, selectedTags, socialMediaList, 
+  showUnsavedChangesDialog, availableTags,
+  referrerOptions, handlers, tagHandlers,
+} = useClientForm({ client, isOpen, onSave, onClose, clients });
 
   return (
     <>
       {/* DIÁLOGO PRINCIPAL (Formulario) */}
-      {/* Si se usa un Popover dentro del Dialog, la prop modal=false puede ser necesaria en el Dialog, pero por simplicidad se añade modal=true al Popover. */}
       <Dialog open={isOpen} onOpenChange={handlers.handleClose}>
         <DialogContent className="w-10/12 md:max-w-l h-[85vh] flex flex-col p-0 bg-card text-card-foreground border-border">
           <DialogHeader className="p-4 border-b border-border">
@@ -60,7 +54,7 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
           </DialogHeader>
 
           <form onSubmit={handlers.handleSubmit} id="client-form" className="flex flex-col flex-grow h-0 min-h-0">
-            {/* SECCIÓN 1: CAMPOS DEL FORMULARIO (con Scroll) */}
+            {/* SECCIÓN 1: CAMPOS DEL FORMULARIO */}
             <ScrollArea className="flex-grow h-0 min-h-0">
               <div className="space-y-3 p-6 pt-0 sm:space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
@@ -151,17 +145,17 @@ export default function ClientModal({ isOpen, onClose, onSave, client, clients }
                 Cancelar
               </Button>
               <Button
-                type="submit" variant="default" size="default" disabled={loading || phoneCheckLoading}
-                className="w-full sm:w-auto"
-              >
-                {loading || phoneCheckLoading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-background border-t-transparent" />
-                    {phoneCheckLoading ? 'Validando...' : 'Guardando...'}
-                  </div>
-                ) : (
-                  <>{client ? 'Actualizar' : 'Crear'} Cliente</>
-                )}
+  type="submit" variant="default" size="default" disabled={loading}
+  className="w-full sm:w-auto"
+>
+                {loading ? (
+  <div className="flex items-center gap-2">
+    <div className="animate-spin rounded-full h-4 w-4 border-2 border-background border-t-transparent" />
+    Guardando...
+  </div>
+) : (
+  <>{client ? 'Actualizar' : 'Crear'} Cliente</>
+)}
               </Button>
             </DialogFooter>
           </form>

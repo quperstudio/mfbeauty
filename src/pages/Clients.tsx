@@ -15,7 +15,7 @@ import ClientsTableView from '../components/clients/ClientsTableView';
 import ClientsListView from '../components/clients/ClientsListView';
 import { useClientsPage } from '../hooks/clients/useClientsPage';
 import { CLIENT_FILTER_LABELS } from '../constants/clients.constants';
-import { useClientSelection } from '../hooks/clients/useClientSelection'; // HOOK FRAGMENTADO
+import { useClientSelection } from '../hooks/clients/useClientSelection';
 
 // COMPONENTE PRINCIPAL: CLIENTES
 // ------------------------------

@@ -1,22 +1,22 @@
 import { useState, FormEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Loader2, AlertTriangle } from 'lucide-react'; // Añadido Loader2 para el botón
+import { Loader2, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-// Importaciones de shadcn/ui
+import { Logo } from '@/components/shared/Logo'; 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label'; // Agregado para mejor estructura del formulario
-import { Alert, AlertDescription } from '@/components/ui/alert'; // Usaremos Alert para los errores
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); 
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
 
-  // Redireccionar si el usuario ya está logueado
   useEffect(() => {
     if (user) {
       navigate('/', { replace: true });
@@ -32,7 +32,6 @@ export default function Login() {
       const { error: signInError } = await signIn(email, password);
 
       if (signInError) {
-        // Usar un mensaje más amigable o la descripción del error si está disponible
         setError('Email o contraseña incorrectos. Por favor, verifica tus datos.');
         return;
       }
@@ -46,23 +45,12 @@ export default function Login() {
   };
 
   return (
-    // CAMBIO DE ESTILOS: Fondo del cuerpo usando los colores definidos
-    // El fondo completo usará el color 'background' del <body> (definido en index.css)
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-6 sm:mb-8">
-          {/* CAMBIO DE ESTILOS: Icono usando bg-primary y texto-primary-foreground */}
-          <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-primary rounded-xl mb-3 sm:mb-4">
-            <Sparkles className="w-7 h-7 sm:w-8 sm:h-8 text-primary-foreground" />
+          <div className="inline-flex items-center justify-center mb-3 sm:mb-4">
+            <Logo className="h-10 sm:h-12 w-auto" />
           </div>
-          {/* CAMBIO DE ESTILOS: Usando text-foreground y font-serif por la clase base */}
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
-            Salón de Belleza
-          </h1>
-          {/* CAMBIO DE ESTILOS: Usando text-muted-foreground */}
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Ingresa para gestionar tu negocio
-          </p>
         </div>
 
         <div className="card shadow-strong p-6 sm:p-8">
@@ -82,15 +70,34 @@ export default function Login() {
 
             <div className="space-y-2">
               <Label htmlFor="password-input">Contraseña</Label>
-              <Input
-                id="password-input"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-              />
+              <div className="relative">
+                <Input
+                  id="password-input"
+                  type={showPassword ? 'text' : 'password'} 
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+
+                  className="pr-10" 
+                />
+                {/* BOTÓN/TOGGLE: Para ver la contraseña */}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                  disabled={loading}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
             </div>
 
             {error && (
@@ -123,9 +130,6 @@ export default function Login() {
           </div>
         </div>
 
-        <p className="text-center text-xs sm:text-sm text-muted-foreground mt-6 sm:mt-8">
-          Sistema de Gestión Profesional
-        </p>
       </div>
     </div>
   );

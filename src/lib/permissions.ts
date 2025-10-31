@@ -9,7 +9,7 @@ export function isEmployee(role: UserRole): boolean {
 }
 
 export function canDeleteClients(role: UserRole): boolean {
-  return isAdministrator(role);
+  return true;
 }
 
 export function canDeleteServices(role: UserRole): boolean {

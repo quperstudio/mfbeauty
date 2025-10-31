@@ -121,7 +121,7 @@ export function useClientForm({ client, isOpen, onSave, onClose, clients }: UseC
 
   // MANEJADOR DE ENVÍO
   // --------------------
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
       toast.error('Errores de validación', {

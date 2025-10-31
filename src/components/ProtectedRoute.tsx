@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Spinner } from '@/components/ui/spinner';
+import Spinner from './ui/Spinner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -16,7 +16,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
           <Spinner size="lg" />
           <p className="mt-4 text-gray-600 dark:text-gray-400">Cargando...</p>
         </div>
-      </div> 
+      </div>
     );
   }
 

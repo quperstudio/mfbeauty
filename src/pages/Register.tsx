@@ -2,14 +2,13 @@ import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import Input from '../components/ui/Input';
+import Button from '../components/ui/Button';
 
 export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [businessName, setBusinessName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -22,7 +21,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const { error: signUpError } = await signUp(email, password, fullName, 'administrator', businessName);
+      const { error: signUpError } = await signUp(email, password, fullName, 'administrator');
 
       if (signUpError) {
         setError(signUpError.message);
@@ -83,15 +82,6 @@ export default function Register() {
               />
 
               <Input
-                label="Nombre del Negocio (Opcional)"
-                type="text"
-                placeholder="Salón de Belleza María"
-                value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
-                disabled={loading}
-              />
-
-              <Input
                 label="Email"
                 type="email"
                 placeholder="admin@salon.com"
@@ -140,7 +130,7 @@ export default function Register() {
         </div>
 
         <p className="text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-6 sm:mt-8">
-          Tu negocio será creado automáticamente al registrarte
+          Nota: Esta página es solo para crear el primer usuario administrador
         </p>
       </div>
     </div>

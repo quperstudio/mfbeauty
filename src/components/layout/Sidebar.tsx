@@ -10,9 +10,9 @@ import {
   TrendingUp,
   FileText,
   Settings,
+  Sparkles,
   X,
 } from 'lucide-react';
-import { Logo } from '../shared/Logo';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../contexts/AuthContext';
 import { useEffect } from 'react';
@@ -27,18 +27,13 @@ interface NavItem {
 const navItems: NavItem[] = [
   {
     name: 'Dashboard',
-    path: '/',
+    path: '/dashboard',
     icon: <LayoutDashboard className="w-5 h-5" />,
   },
   {
     name: 'Clientes',
     path: '/clientes',
     icon: <Users className="w-5 h-5" />,
-  },
-  {
-    name: 'Calendario',
-    path: '/calendario',
-    icon: <Calendar className="w-5 h-5" />,
   },
   {
     name: 'Servicios',
@@ -49,6 +44,11 @@ const navItems: NavItem[] = [
     name: 'Agentes',
     path: '/agentes',
     icon: <UserCog className="w-5 h-5" />,
+  },
+  {
+    name: 'Citas',
+    path: '/citas',
+    icon: <Calendar className="w-5 h-5" />,
   },
   {
     name: 'Finanzas',
@@ -127,18 +127,28 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       )}
       <aside
         className={cn(
-          'fixed left-0 top-0 h-screen w-64 bg-background border-r border-border overflow-y-auto scrollbar-thin transition-transform duration-300 z-50',
+          'fixed left-0 top-0 h-screen w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto scrollbar-thin transition-transform duration-300 z-50',
           'lg:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="p-6 flex items-center justify-between">
-          <Link to="/" className="flex items-center" onClick={onClose}>
-            <Logo className="h-10 w-auto" />
+          <Link to="/dashboard" className="flex items-center space-x-3" onClick={onClose}>
+            <div className="flex items-center justify-center w-10 h-10 bg-primary-600 rounded-lg">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                Beauty Salon
+              </h1>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Sistema de Gestión
+              </p>
+            </div>
           </Link>
           <button
             onClick={onClose}
-            className="lg:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors"
+            className="lg:hidden p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -154,15 +164,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   className={cn(
                     'flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors duration-200',
                     isActive(item.path)
-                      ? 'bg-primary/10 text-primary font-medium'
-                      : 'text-foreground hover:bg-accent hover:text-foreground'
+                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 font-medium'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   )}
                 >
                 <span
                   className={cn(
                     isActive(item.path)
-                      ? 'text-primary'
-                      : 'text-muted-foreground'
+                      ? 'text-primary-600 dark:text-primary-400'
+                      : 'text-gray-400 dark:text-gray-500'
                   )}
                 >
                   {item.icon}

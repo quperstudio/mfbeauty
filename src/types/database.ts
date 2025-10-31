@@ -12,24 +12,12 @@ export type CommissionStatus = 'pending' | 'paid';
 
 export type CashRegisterStatus = 'open' | 'closed';
 
-export type SocialMediaType = 'whatsapp' | 'facebook' | 'instagram' | 'tiktok';
-
-export interface Organization {
-  id: string;
-  name: string;
-  business_name: string;
-  slug: string;
-  active: boolean;
-  created_at: string;
-}
-
 export interface User {
   id: string;
   email: string;
   full_name: string;
   role: UserRole;
   active: boolean;
-  organization_id: string;
   created_at: string;
 }
 
@@ -47,25 +35,6 @@ export interface Client {
   total_spent: number;
   total_visits: number;
   last_visit_date?: string;
-  created_by_user_id?: string;
-  organization_id: string;
-  deleted_at?: string;
-  deleted_by?: string;
-  updated_at: string;
-  updated_by?: string;
-  created_at: string;
-}
-
-export interface ClientTag {
-  id: string;
-  name: string;
-  created_at: string;
-}
-
-export interface ClientTagAssignment {
-  id: string;
-  client_id: string;
-  tag_id: string;
   created_at: string;
 }
 
@@ -74,11 +43,6 @@ export interface ServiceCategory {
   name: string;
   description?: string;
   display_order: number;
-  organization_id: string;
-  deleted_at?: string;
-  deleted_by?: string;
-  updated_at: string;
-  updated_by?: string;
   created_at: string;
 }
 
@@ -91,11 +55,6 @@ export interface Service {
   price: number;
   cost: number;
   profit: number;
-  organization_id: string;
-  deleted_at?: string;
-  deleted_by?: string;
-  updated_at: string;
-  updated_by?: string;
   created_at: string;
 }
 
@@ -111,11 +70,6 @@ export interface CommissionAgent {
   facebook_link?: string;
   instagram_link?: string;
   tiktok_link?: string;
-  organization_id: string;
-  deleted_at?: string;
-  deleted_by?: string;
-  updated_at: string;
-  updated_by?: string;
   created_at: string;
 }
 
@@ -139,11 +93,6 @@ export interface Appointment {
   balance_pending: number;
   notes?: string;
   created_by_user_id?: string;
-  organization_id: string;
-  deleted_at?: string;
-  deleted_by?: string;
-  updated_at: string;
-  updated_by?: string;
   created_at: string;
 }
 
@@ -167,11 +116,6 @@ export interface TransactionCategory {
   name: string;
   type: TransactionType;
   is_system: boolean;
-  organization_id: string;
-  deleted_at?: string;
-  deleted_by?: string;
-  updated_at: string;
-  updated_by?: string;
   created_at: string;
 }
 
@@ -189,12 +133,6 @@ export interface Transaction {
   client_id?: string;
   appointment_id?: string;
   created_by_user_id?: string;
-  organization_id: string;
-  is_reversal: boolean;
-  reverses_transaction_id?: string;
-  reversed_by_transaction_id?: string;
-  updated_at: string;
-  updated_by?: string;
   created_at: string;
 }
 
@@ -212,11 +150,6 @@ export interface Commission {
   payment_method?: PaymentMethod;
   payment_reference?: string;
   payment_notes?: string;
-  organization_id: string;
-  deleted_at?: string;
-  deleted_by?: string;
-  updated_at: string;
-  updated_by?: string;
   created_at: string;
 }
 
@@ -233,11 +166,6 @@ export interface CashRegisterSession {
   opened_at: string;
   closed_at?: string;
   status: CashRegisterStatus;
-  organization_id: string;
-  deleted_at?: string;
-  deleted_by?: string;
-  updated_at: string;
-  updated_by?: string;
 }
 
 export interface AppointmentWithDetails extends Appointment {
@@ -266,46 +194,4 @@ export interface ServiceWithCategory extends Service {
 
 export interface ClientWithReferrer extends Client {
   referrer?: Client;
-}
-
-export type ClientFilterType = 'all' | 'with_visits' | 'with_sales' | 'referred';
-
-export type ClientSortField = 'name' | 'total_spent' | 'total_visits' | 'last_visit_date' | 'created_at';
-
-export type ClientSortDirection = 'asc' | 'desc';
-
-export interface ClientSortOptions {
-  field: ClientSortField;
-  direction: ClientSortDirection;
-}
-
-export interface ClientWithDetails extends Client {
-  referrer?: Client;
-  appointments?: Appointment[];
-  referrals?: Client[];
-  tags?: ClientTag[];
-  created_by?: User;
-}
-
-export interface ClientWithTags extends Client {
-  tags: ClientTag[];
-}
-
-export interface SocialMedia {
-  type: SocialMediaType;
-  link: string;
-}
-
-export interface SocialMediaFields {
-  whatsapp_link?: string | null;
-  facebook_link?: string | null;
-  instagram_link?: string | null;
-  tiktok_link?: string | null;
-}
-
-export interface EntityWithSocialMedia {
-  whatsapp_link?: string;
-  facebook_link?: string;
-  instagram_link?: string;
-  tiktok_link?: string;
 }

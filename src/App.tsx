@@ -39,19 +39,13 @@ function App() {
           }
         >
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
-          {/* --- SOLUCIÓN: Rutas en español (como en Sidebar.tsx) --- */}
-
-          {/* Regla 1 y 2: Dashboard y Clientes a sus páginas */}
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/clientes" element={<Clients />} /> {/* <-- CAMBIO: "clients" a "clientes" */}
-
-          {/* Regla 3: El resto de páginas a ComingSoon */}
+          <Route path="/clientes" element={<Clients />} /> 
           <Route path="/agenda" element={<ComingSoon />} />
-          <Route path="/servicios" element={<ComingSoon />} /> {/* <-- CAMBIO */}
-          <Route path="/inventario" element={<ComingSoon />} /> {/* <-- CAMBIO */}
-          <Route path="/finanzas" element={<ComingSoon />} /> {/* <-- CAMBIO */}
-          <Route path="/mercadotecnia" element={<ComingSoon />} /> {/* <-- CAMBIO */}
+          <Route path="/servicios" element={<ComingSoon />} /> 
+          <Route path="/inventario" element={<ComingSoon />} /> 
+          <Route path="/finanzas" element={<ComingSoon />} /> 
+          <Route path="/mercadotecnia" element={<ComingSoon />} /> 
         </Route>
       </Routes>
     </main>

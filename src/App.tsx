@@ -1,15 +1,13 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
-
 import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Spinner } from './components/ui/spinner';
-
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
-import ComingSoon from './pages/ComingSoon';
+import ComingSoon from './pages/ComingSoon'; 
 
 function App() {
   const { isLoading } = useAuth();
@@ -43,7 +41,7 @@ function App() {
           <Route path="/agenda" element={<ComingSoon />} />
           <Route path="/marketing" element={<ComingSoon />} />
           <Route path="/inventory" element={<ComingSoon />} />
-        </Route> 
+        </Route>
       </Routes>
     </main>
   );

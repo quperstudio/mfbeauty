@@ -252,7 +252,7 @@ export default function Clients() {
       <ClientModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveClient} // handleSaveClient debe ser la función que acepta el clientID opcional
+        onSave={handleSaveClient}
         client={selectedClient}
         clients={allClients}
       />

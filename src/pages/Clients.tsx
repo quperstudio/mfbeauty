@@ -180,8 +180,7 @@ export default function Clients() {
         </div>
       )}
 
-      {/* Barra de Acciones Masivas (sólo si hay clientes seleccionados) */}
-      {/* CAMBIO CLAVE: Usa selectedCount (que viene de useClientSelection) */}
+      {/* Barra de Acciones Masivas */}
       {selectedCount > 0 && (
         <ClientBulkActionBar
           selectedCount={selectedCount}

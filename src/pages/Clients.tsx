@@ -25,7 +25,7 @@ export default function Clients() {
   
   // HOOK FRAGMENTADO: ESTADO DE SELECCIÓN MASIVA
   const {
-    selectedClientIds: selectedIdsFromHook, // Renombrado para evitar conflicto con useClientsPage
+    selectedClientIds: selectedIdsFromHook,
     handleSelectAll: handleSelectAllHook,
     handleSelectClient,
     clearSelection: clearSelectionHook,

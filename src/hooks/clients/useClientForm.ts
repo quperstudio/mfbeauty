@@ -154,10 +154,24 @@ const handleSubmit = async (e: React.FormEvent) => {
     const result = await onSave(sanitizedData, tagIds, client?.id);
     setLoading(false);
 
-    if (result.error) {
+if (result.error) {
+      // ¡ELIMINA ESTE TOAST!
+      // toast.error('Error al guardar el cliente', { description: result.error });
+      
+      // No hacemos nada. El formulario se queda abierto
+      // y 'useClientActions' ya mostró el toast específico del error.
+
     } else {
+      // ¡ELIMINA ESTE TOAST TAMBIÉN!
+      // toast.success('Operación exitosa', {
+      //   description: `¡Cliente ${client ? 'actualizado' : 'creado'} con éxito!`,
+      // });
+
+      // Como no hubo error, solo reseteamos y cerramos.
+      // 'useClientActions' ya mostró el toast de éxito.
       resetModalState();
       onClose();
+    }
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {

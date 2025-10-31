@@ -15,7 +15,7 @@ import ClientsTableView from '../components/clients/ClientsTableView';
 import ClientsListView from '../components/clients/ClientsListView';
 import { useClientsPage } from '../hooks/clients/useClientsPage';
 import { CLIENT_FILTER_LABELS } from '../constants/clients.constants';
-import { useClientSelection } from '../hooks/clients/useClientSelection';
+import { useClientSelection } from '../hooks/clients/useClientSelection'; // HOOK FRAGMENTADO
 
 // COMPONENTE PRINCIPAL: CLIENTES
 // ------------------------------
@@ -25,7 +25,7 @@ export default function Clients() {
   
   // HOOK FRAGMENTADO: ESTADO DE SELECCIÓN MASIVA
   const {
-    selectedClientIds: selectedIdsFromHook,
+    selectedClientIds: selectedIdsFromHook, // Renombrado para evitar conflicto con useClientsPage
     handleSelectAll: handleSelectAllHook,
     handleSelectClient,
     clearSelection: clearSelectionHook,
@@ -49,6 +49,7 @@ export default function Clients() {
     setSelectedTagIds,
     sortField,
     sortDirection,
+    // [IMPORTANTE]: Eliminados selectedClientIds, handleSelectAll, handleSelectClient para usar los del hook fragmentado.
     isProfileModalOpen,
     setIsProfileModalOpen,
     profileClientId,
@@ -71,6 +72,7 @@ export default function Clients() {
     handleViewProfile,
     handleBulkExport,
     handleAssignReferrer,
+    
     isSmallScreen,
     filterCounts,
     hasActiveFilters,
@@ -180,7 +182,8 @@ export default function Clients() {
         </div>
       )}
 
-      {/* Barra de Acciones Masivas */}
+      {/* Barra de Acciones Masivas (sólo si hay clientes seleccionados) */}
+      {/* CAMBIO CLAVE: Usa selectedCount (que viene de useClientSelection) */}
       {selectedCount > 0 && (
         <ClientBulkActionBar
           selectedCount={selectedCount}
@@ -252,7 +255,7 @@ export default function Clients() {
       <ClientModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveClient}
+        onSave={handleSaveClient} // handleSaveClient debe ser la función que acepta el clientID opcional
         client={selectedClient}
         clients={allClients}
       />

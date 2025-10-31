@@ -16,7 +16,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
           <Spinner size="lg" />
           <p className="mt-4 text-gray-600 dark:text-gray-400">Cargando...</p>
         </div>
-      </div> 
+      </div>
     );
   }
 

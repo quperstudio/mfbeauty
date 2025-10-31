@@ -1,22 +1,31 @@
-// src/components/layout/AppLayout.tsx
-
-import { Outlet } from 'react-router-dom'; // 1. Importar Outlet
+import { ReactNode, useState } from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 
-const AppLayout = () => {
-  return (
-    <div className="flex h-screen w-full">
-      <Sidebar />
-      <div className="flex flex-1 flex-col overflow-y-auto">
-        <Topbar />
-        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-background p-4 md:p-6">
-          <Outlet />
+interface AppLayoutProps {
+  children: ReactNode;
+}
 
-        </main>
-      </div>
+export default function AppLayout({ children }: AppLayoutProps) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-background dark:bg-background">
+      <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
+      <Topbar onMenuClick={toggleSidebar} />
+      <main className="lg:ml-64 mt-16 p-4 sm:p-6 transition-all duration-300">
+        <div className="container-custom">
+          {children}
+        </div>
+      </main>
     </div>
   );
-};
-
-export default AppLayout;
+}

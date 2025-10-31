@@ -113,24 +113,49 @@ export function useClientActions() {
         }
       } catch (error: any) {
         console.error('[useClientActions] Error al eliminar:', error);
+        console.error('[useClientActions] Error details:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint,
+          stack: error.stack
+        });
 
         // Mejorar el mensaje de error según el tipo
         let errorMessage = 'No se pudo completar la eliminación.';
+        let errorTitle = 'Error al eliminar';
 
-        // Error de permisos RLS
-        if (error.message?.includes('permission') || error.message?.includes('policy') || error.code === '42501') {
-          errorMessage = 'No tienes permisos para eliminar clientes. Contacta a un administrador.';
+        // Error de permisos RLS de PostgreSQL
+        if (error.code === '42501') {
+          errorTitle = 'Sin permisos';
+          errorMessage = 'No tienes permisos suficientes para eliminar clientes. Contacta a un administrador.';
+          console.warn('[useClientActions] PostgreSQL permission denied error (42501)');
+        }
+        // Error de política RLS de Supabase
+        else if (error.code === 'PGRST116' || error.message?.includes('policy')) {
+          errorTitle = 'Política de seguridad';
+          errorMessage = 'La política de seguridad de la base de datos impidió esta operación. Verifica tus permisos con un administrador.';
+          console.warn('[useClientActions] Supabase RLS policy error:', error.code);
+        }
+        // Error de permisos genérico
+        else if (error.message?.toLowerCase().includes('permission')) {
+          errorTitle = 'Sin permisos';
+          errorMessage = 'No tienes permisos para realizar esta operación. Contacta a un administrador.';
+          console.warn('[useClientActions] Generic permission error detected');
         }
         // Error de red o conexión
-        else if (error.message?.includes('fetch') || error.message?.includes('network')) {
-          errorMessage = 'Error de conexión. Verifica tu conexión a internet e intenta de nuevo.';
+        else if (error.message?.includes('fetch') || error.message?.includes('network') || error.message?.includes('Failed to fetch')) {
+          errorTitle = 'Error de conexión';
+          errorMessage = 'Error de conexión con la base de datos. Verifica tu conexión a internet e intenta de nuevo.';
+          console.warn('[useClientActions] Network error detected');
         }
-        // Usar mensaje del error si está disponible
+        // Error con mensaje específico del servidor
         else if (error.message) {
           errorMessage = error.message;
+          console.warn('[useClientActions] Server error message:', error.message);
         }
 
-        toast.error('Error al eliminar', {
+        toast.error(errorTitle, {
           description: errorMessage,
         });
         throw error;

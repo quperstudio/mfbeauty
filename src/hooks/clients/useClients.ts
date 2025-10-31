@@ -83,6 +83,12 @@ export function useClients() {
 
       if (error) {
         console.error('[useClients] Error en soft delete:', error);
+        console.error('[useClients] Error details:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        });
         throw error;
       }
 

@@ -49,7 +49,6 @@ export default function Clients() {
     setSelectedTagIds,
     sortField,
     sortDirection,
-    // [IMPORTANTE]: Eliminados selectedClientIds, handleSelectAll, handleSelectClient para usar los del hook fragmentado.
     isProfileModalOpen,
     setIsProfileModalOpen,
     profileClientId,

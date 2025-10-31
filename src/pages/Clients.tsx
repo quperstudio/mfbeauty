@@ -71,7 +71,6 @@ export default function Clients() {
     handleViewProfile,
     handleBulkExport,
     handleAssignReferrer,
-    
     isSmallScreen,
     filterCounts,
     hasActiveFilters,

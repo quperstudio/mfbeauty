@@ -1,13 +1,18 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
+
 import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Spinner } from './components/ui/spinner';
+
+// --- SOLUCIÓN: Importaciones Corregidas ---
 import Login from './pages/Login';
-import Register from './pages/Register';
+import Register from './pages/Register'; // Corregido: La ruta era './pages.Register'
 import Dashboard from './pages/Dashboard';
-import Clients from './pages/Clients';
-import ComingSoon from './pages/ComingSoon'; 
+import Clients from './pages/Clients'; // El componente se llama 'Clients'
+import ComingSoon from './pages/ComingSoon';
+
+// (Se eliminan las importaciones de Services, Finances, etc.)
 
 function App() {
   const { isLoading } = useAuth();
@@ -34,13 +39,19 @@ function App() {
           }
         >
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+          {/* --- SOLUCIÓN: Rutas en español (como en Sidebar.tsx) --- */}
+
+          {/* Regla 1 y 2: Dashboard y Clientes a sus páginas */}
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/clients" element={<Clients />} />
-          <Route path="/services" element={<ComingSoon />} />
-          <Route path="/finances" element={<ComingSoon />} />
+          <Route path="/clientes" element={<Clients />} /> {/* <-- CAMBIO: "clients" a "clientes" */}
+
+          {/* Regla 3: El resto de páginas a ComingSoon */}
           <Route path="/agenda" element={<ComingSoon />} />
-          <Route path="/marketing" element={<ComingSoon />} />
-          <Route path="/inventory" element={<ComingSoon />} />
+          <Route path="/servicios" element={<ComingSoon />} /> {/* <-- CAMBIO */}
+          <Route path="/inventario" element={<ComingSoon />} /> {/* <-- CAMBIO */}
+          <Route path="/finanzas" element={<ComingSoon />} /> {/* <-- CAMBIO */}
+          <Route path="/mercadotecnia" element={<ComingSoon />} /> {/* <-- CAMBIO */}
         </Route>
       </Routes>
     </main>

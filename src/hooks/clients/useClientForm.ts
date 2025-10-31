@@ -155,14 +155,9 @@ const handleSubmit = async (e: React.FormEvent) => {
     setLoading(false);
 
     if (result.error) {
-      toast.error('Error al guardar el cliente', { description: result.error });
     } else {
       resetModalState();
       onClose();
-      toast.success('Operación exitosa', {
-        description: `¡Cliente ${client ? 'actualizado' : 'creado'} con éxito!`,
-      });
-    }
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {

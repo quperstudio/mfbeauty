@@ -12,6 +12,8 @@ export type CommissionStatus = 'pending' | 'paid';
 
 export type CashRegisterStatus = 'open' | 'closed';
 
+export type SocialMediaType = 'whatsapp' | 'facebook' | 'instagram' | 'tiktok';
+
 export interface User {
   id: string;
   email: string;
@@ -35,6 +37,20 @@ export interface Client {
   total_spent: number;
   total_visits: number;
   last_visit_date?: string;
+  created_by_user_id?: string;
+  created_at: string;
+}
+
+export interface ClientTag {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+export interface ClientTagAssignment {
+  id: string;
+  client_id: string;
+  tag_id: string;
   created_at: string;
 }
 
@@ -194,4 +210,46 @@ export interface ServiceWithCategory extends Service {
 
 export interface ClientWithReferrer extends Client {
   referrer?: Client;
+}
+
+export type ClientFilterType = 'all' | 'with_visits' | 'with_sales' | 'referred';
+
+export type ClientSortField = 'name' | 'total_spent' | 'total_visits' | 'last_visit_date' | 'created_at';
+
+export type ClientSortDirection = 'asc' | 'desc';
+
+export interface ClientSortOptions {
+  field: ClientSortField;
+  direction: ClientSortDirection;
+}
+
+export interface ClientWithDetails extends Client {
+  referrer?: Client;
+  appointments?: Appointment[];
+  referrals?: Client[];
+  tags?: ClientTag[];
+  created_by?: User;
+}
+
+export interface ClientWithTags extends Client {
+  tags: ClientTag[];
+}
+
+export interface SocialMedia {
+  type: SocialMediaType;
+  link: string;
+}
+
+export interface SocialMediaFields {
+  whatsapp_link?: string | null;
+  facebook_link?: string | null;
+  instagram_link?: string | null;
+  tiktok_link?: string | null;
+}
+
+export interface EntityWithSocialMedia {
+  whatsapp_link?: string;
+  facebook_link?: string;
+  instagram_link?: string;
+  tiktok_link?: string;
 }

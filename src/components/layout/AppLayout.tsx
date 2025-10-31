@@ -18,7 +18,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background dark:bg-background">
       <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
       <Topbar onMenuClick={toggleSidebar} />
       <main className="lg:ml-64 mt-16 p-4 sm:p-6 transition-all duration-300">

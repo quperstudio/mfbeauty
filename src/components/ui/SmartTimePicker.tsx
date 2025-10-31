@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import Input from '../ui/Input';
-import { cn } from '../../lib/utils';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 interface SmartTimeInputProps {
   value: string;

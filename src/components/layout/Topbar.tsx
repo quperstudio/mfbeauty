@@ -3,7 +3,7 @@ import { Moon, Sun, User, LogOut, ChevronDown, Menu } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
-import Badge from '../ui/Badge';
+import { Badge } from '@/components/ui/badge';
 import { USER_ROLE_LABELS } from '../../lib/constants';
 
 interface TopbarProps {
@@ -22,20 +22,20 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
   };
 
   return (
-    <header className="fixed top-0 right-0 left-0 lg:left-64 h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-30">
+    <header className="fixed top-0 right-0 left-0 lg:left-64 h-16 bg-background border-b border-border z-30">
       <div className="h-full px-4 sm:px-6 flex items-center justify-between">
         <button
           onClick={onMenuClick}
-          className="lg:hidden p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          className="lg:hidden p-2 text-muted-foreground hover:bg-accent rounded-lg transition-colors"
           aria-label="Toggle menu"
         >
           <Menu className="w-6 h-6" />
         </button>
         <div className="hidden md:block">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h2 className="text-lg font-semibold text-foreground">
             Bienvenido, {user?.full_name}
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground">
             {new Date().toLocaleDateString('es-MX', {
               weekday: 'long',
               year: 'numeric',
@@ -45,7 +45,7 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
           </p>
         </div>
         <div className="md:hidden">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white">
+          <h2 className="text-base font-semibold text-foreground">
             {user?.full_name}
           </h2>
         </div>
@@ -53,7 +53,7 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
         <div className="flex items-center space-x-4">
           <button
             onClick={toggleTheme}
-            className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-2 text-muted-foreground hover:bg-accent rounded-lg transition-colors"
             aria-label="Toggle theme"
           >
             {theme === 'light' ? (
@@ -66,20 +66,20 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center space-x-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="flex items-center space-x-3 p-2 hover:bg-accent rounded-lg transition-colors"
             >
-              <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-primary-foreground" />
               </div>
               <div className="text-left hidden sm:block">
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                <p className="text-sm font-medium text-foreground">
                   {user?.full_name}
                 </p>
                 <Badge variant="purple" size="sm">
                   {user ? USER_ROLE_LABELS[user.role] : ''}
                 </Badge>
               </div>
-              <ChevronDown className="w-4 h-4 text-gray-400" />
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
             </button>
 
             {showUserMenu && (
@@ -88,18 +88,18 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
                   className="fixed inset-0 z-10"
                   onClick={() => setShowUserMenu(false)}
                 />
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-strong border border-gray-200 dark:border-gray-700 py-1 z-20">
-                  <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                <div className="absolute right-0 mt-2 w-48 bg-popover rounded-lg shadow-strong border border-border py-1 z-20">
+                  <div className="px-4 py-2 border-b border-border">
+                    <p className="text-sm font-medium text-popover-foreground">
                       {user?.full_name}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-muted-foreground">
                       {user?.email}
                     </p>
                   </div>
                   <button
                     onClick={handleSignOut}
-                    className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-error-600 dark:text-error-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-error-600 dark:text-error-400 hover:bg-accent transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
                     <span>Cerrar Sesión</span>

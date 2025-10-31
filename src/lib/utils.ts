@@ -1,12 +1,8 @@
-import { type ClassValue } from 'clsx';
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
-export function cn(...inputs: ClassValue[]): string {
-  return inputs
-    .filter(Boolean)
-    .join(' ')
-    .split(' ')
-    .filter((v, i, a) => a.indexOf(v) === i)
-    .join(' ');
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
 }
 
 export function debounce<T extends (...args: unknown[]) => void>(
@@ -78,4 +74,8 @@ export function sortBy<T>(array: T[], key: keyof T, direction: 'asc' | 'desc' = 
     if (aVal > bVal) return direction === 'asc' ? 1 : -1;
     return 0;
   });
+}
+
+export function handleOpenLink(url: string): void {
+  window.open(url, '_blank', 'noopener,noreferrer');
 }

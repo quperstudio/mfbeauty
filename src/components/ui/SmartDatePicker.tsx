@@ -1,13 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-// import Input from '../ui/Input'; // Eliminado: No se puede resolver en este entorno
 import { format, parseISO, isValid, parse } from 'date-fns';
 import { es } from 'date-fns/locale';
-// import { cn } from '../../lib/utils'; // Eliminado: No se puede resolver en este entorno
+import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-
-function cn(...inputs: (string | boolean | null | undefined)[]) {
-  return inputs.filter(Boolean).join(' ');
-}
 
 interface SmartDatePickerProps {
   value: Date | string | null;
@@ -72,7 +67,6 @@ export const SmartDatePicker: React.FC<SmartDatePickerProps> = ({
     return null;
   }, []);
 
-  // Esta función no se estaba usando, pero la dejo por si la necesitas.
   const formatDateForOutput = useCallback((date: Date | null): string => {
     if (!date || !isValid(date)) return '';
     
@@ -344,7 +338,7 @@ export const SmartDatePicker: React.FC<SmartDatePickerProps> = ({
 
   return (
     <div className={cn("relative", className)} ref={datePickerRef}>
-      {/* Reemplazado <Input> por <input> y se aplicaron los estilos de .input-field */}
+      {/* Input con la clase personalizada 'input-field' y manejo de estado de error/sugerencia */}
       <input
         ref={inputRef}
         type="text"
@@ -358,26 +352,35 @@ export const SmartDatePicker: React.FC<SmartDatePickerProps> = ({
         }}
         onFocus={(e) => e.target.select()}
         placeholder={placeholder}
+        // Se aplica la clase de componente 'input-field' y se ajustan los colores para estados
         className={cn(
-          'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200',
-          !isValidInput ? 'border-error-500' : '',
-          suggestedDate && !selectedDate && 'border-primary-500/50'
+          'input-field', // Clase personalizada que ya aplica la mayoría de los estilos
+          !isValidInput && 'border-destructive focus:ring-destructive/50', // Color de borde para error
+          suggestedDate && !selectedDate && 'border-primary/50 focus:ring-primary/80', // Borde sutil cuando hay sugerencia
         )}
       />
+      {/* Indicador visual de error/sugerencia si es necesario */}
+      {!isValidInput && (
+        <p className="text-xs text-destructive mt-1 absolute -bottom-5 left-0">Formato de fecha no válido</p>
+      )}
       {isDropdownOpen && (
+        // Contenedor del calendario. Usa colores de tarjeta/popover.
         <div className={cn(
-          "absolute top-full left-0 mt-2 w-full z-10 p-2",
-          "bg-white dark:bg-gray-800 rounded-lg shadow-soft border border-gray-200 dark:border-gray-700"
+          "absolute top-full left-0 mt-2 w-full z-10 p-4",
+          "bg-popover text-popover-foreground rounded-lg shadow-medium border border-border" // Aplicando colores base y sombra media
         )}>
-          <div className="flex justify-between items-center mb-2 text-sm pl-2 font-semibold">
-            <div>{`${MESES[viewDate.getMonth()]} ${viewDate.getFullYear()}`}</div>
-            <div className="flex space-x-2">
+          {/* Encabezado del calendario (Mes y Año) */}
+          <div className="flex justify-between items-center mb-4 text-sm font-semibold text-foreground">
+            {/* Texto del Mes y Año */}
+            <div className="text-base">{`${MESES[viewDate.getMonth()]} ${viewDate.getFullYear()}`}</div>
+            {/* Botones de navegación de mes */}
+            <div className="flex space-x-1">
               <button
                 type="button"
                 onClick={handlePrevMonth}
+                // Usando bg-accent para hover en elementos interactivos
                 className={cn(
-                  "p-1 rounded-sm transition-colors",
-                  "hover:bg-primary-100 dark:hover:bg-gray-700"
+                  "p-1 rounded-md transition-colors text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 )}
               >
                 <ChevronLeft size={16} />
@@ -385,9 +388,9 @@ export const SmartDatePicker: React.FC<SmartDatePickerProps> = ({
               <button
                 type="button"
                 onClick={handleNextMonth}
+                // Usando bg-accent para hover en elementos interactivos
                 className={cn(
-                  "p-1 rounded-sm transition-colors",
-                  "hover:bg-primary-100 dark:hover:bg-gray-700"
+                  "p-1 rounded-md transition-colors text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 )}
               >
                 <ChevronRight size={16} />
@@ -395,13 +398,14 @@ export const SmartDatePicker: React.FC<SmartDatePickerProps> = ({
             </div>
           </div>
 
+          {/* Días de la semana abreviados */}
           <div className="grid grid-cols-7 gap-1 text-center">
             {DIAS_SEMANA_ABR.map((dia) => (
               <div
                 key={dia}
                 className={cn(
                   "text-xs font-medium aspect-square flex items-center justify-center",
-                  "text-gray-400 dark:text-gray-500"
+                  "text-muted-foreground" // Usa texto de bajo contraste
                 )}
               >
                 {dia}
@@ -409,27 +413,40 @@ export const SmartDatePicker: React.FC<SmartDatePickerProps> = ({
             ))}
           </div>
 
-          <div className="grid grid-cols-7 gap-1 text-xs mt-1">
+          {/* Días del mes */}
+          <div className="grid grid-cols-7 gap-1 text-sm mt-2">
             {calendarDates.map((fecha, i) => {
               const hoy = new Date();
               const isHoy = isValid(fecha) && fecha.toDateString() === hoy.toDateString();
               const isSelected = selectedDate && isValid(fecha) && isValid(selectedDate) && fecha.toDateString() === selectedDate.toDateString();
               const isSuggestedDay = suggestedDate && isValid(fecha) && isValid(suggestedDate) && fecha.toDateString() === suggestedDate.toDateString();
               const isCurrentMonth = isValid(fecha) && fecha.getMonth() === viewDate.getMonth();
+              const isClickable = isValid(fecha);
 
               return (
                 <div
                   key={i}
                   className={cn(
-                    'select-none aspect-square flex items-center justify-center rounded-md cursor-pointer transition-colors',
-                    !isValid(fecha) && 'opacity-50 cursor-not-allowed',
-                    !isSelected && 'hover:bg-primary-100 dark:hover:bg-gray-700',
-                    isHoy && 'bg-primary-100 text-primary-700 font-semibold',
-                    isSelected && 'bg-primary-600 text-white',
-                    isSuggestedDay && !isSelected && 'border border-primary-500 text-primary-700 font-semibold',
-                    !isCurrentMonth && 'text-gray-400 dark:text-gray-500 opacity-60'
+                    'select-none aspect-square flex items-center justify-center rounded-lg transition-colors',
+                    // Estilo base
+                    'text-foreground',
+                    
+                    // Días no válidos o de meses anteriores/siguientes
+                    (!isCurrentMonth || !isClickable) ? 'text-muted-foreground/60 cursor-not-allowed opacity-60' : 'cursor-pointer',
+                    
+                    // Hover/Resaltado (para días no seleccionados)
+                    !isSelected && isClickable && isCurrentMonth && 'hover:bg-accent hover:text-accent-foreground',
+                    
+                    // DÍA DE HOY
+                    isHoy && 'bg-accent text-accent-foreground font-semibold',
+                    
+                    // DÍA SELECCIONADO (Prioridad más alta)
+                    isSelected && 'bg-primary text-primary-foreground font-semibold hover:bg-primary/90',
+
+                    // DÍA SUGERIDO (Si no está ya seleccionado)
+                    isSuggestedDay && !isSelected && 'border-2 border-ring text-foreground font-semibold bg-accent/50',
                   )}
-                  onClick={() => isValid(fecha) && handleSelectDate(fecha)}
+                  onClick={() => isClickable && handleSelectDate(fecha)}
                 >
                   {isValid(fecha) ? fecha.getDate() : ''}
                 </div>
@@ -441,4 +458,3 @@ export const SmartDatePicker: React.FC<SmartDatePickerProps> = ({
     </div>
   );
 };
-

@@ -11,13 +11,14 @@ export function useClients() {
   const queryClient = useQueryClient();
 
   // CONSULTA 1: OBTENER TODOS LOS CLIENTES
-  // Nota: Los clientes eliminados (deleted_at IS NOT NULL) son filtrados automáticamente por RLS
+  // Nota: Los clientes eliminados son filtrados por RLS Y por filtro explícito como capa defensiva
   const { data: clients = [], isLoading, error } = useQuery({
     queryKey: QUERY_KEYS.clients.all,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('clients')
         .select('*')
+        .is('deleted_at', null) // Filtro explícito para garantizar que no aparezcan clientes eliminados
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -153,6 +154,7 @@ export function useClientReferrals(clientId: string | null) {
         .from('clients')
         .select('*')
         .eq('referrer_id', clientId)
+        .is('deleted_at', null) // Filtro explícito para excluir clientes eliminados
         .order('created_at', { ascending: false });
 
       if (error) throw error;

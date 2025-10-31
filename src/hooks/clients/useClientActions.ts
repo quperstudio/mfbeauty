@@ -72,43 +72,66 @@ export function useClientActions() {
   const handleDeleteClients = useCallback(
     async (clientIds: string[], clientName?: string) => {
       try {
-        console.log(`[useClientActions] Eliminando ${clientIds.length} cliente(s)`);
+        console.log(`[useClientActions] Eliminando ${clientIds.length} cliente(s):`, clientIds);
 
-        // deleteClients ahora retorna el número de filas afectadas
+        // deleteClients retorna el número de filas afectadas
         const affectedCount = await deleteClients(clientIds);
 
-        // Invalida la caché para actualizar la lista
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
+        console.log(`[useClientActions] Resultado: ${affectedCount} cliente(s) eliminado(s) de ${clientIds.length} esperado(s)`);
 
-        console.log(`[useClientActions] Resultado: ${affectedCount} cliente(s) eliminado(s)`);
+        // Invalida la caché para actualizar la lista inmediatamente
+        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.clients.all });
 
         // Verificar si se eliminaron todos los clientes esperados
         if (affectedCount === 0) {
+          console.error('[useClientActions] No se eliminó ningún cliente. Posible problema de permisos o IDs inválidos.');
           toast.error('No se eliminaron clientes', {
-            description: 'No se pudo eliminar ningún cliente. Verifica tus permisos.',
+            description: 'No se pudo eliminar ningún cliente. Verifica que los clientes existan y que tengas permisos.',
           });
           return;
         }
 
         if (affectedCount < clientIds.length) {
+          console.warn(`[useClientActions] Eliminación parcial: ${affectedCount}/${clientIds.length}`);
           toast.warning('Eliminación parcial', {
-            description: `Solo se eliminaron ${affectedCount} de ${clientIds.length} cliente(s) seleccionado(s).`,
+            description: `Solo se eliminaron ${affectedCount} de ${clientIds.length} cliente(s). Algunos clientes podrían no existir o ya estar eliminados.`,
           });
           return;
         }
 
-        // Eliminación exitosa
+        // Eliminación exitosa completa
         if (clientIds.length === 1 && clientName) {
+          // Caso individual: mostrar nombre del cliente
           toast.success('Cliente eliminado', {
             description: `Cliente "${clientName}" eliminado con éxito.`,
           });
         } else {
-          toast.success(`Se eliminaron ${affectedCount} cliente(s) con éxito.`);
+          // Caso masivo: mostrar conteo
+          toast.success('Clientes eliminados', {
+            description: `Se eliminaron ${affectedCount} cliente(s) con éxito.`,
+          });
         }
       } catch (error: any) {
         console.error('[useClientActions] Error al eliminar:', error);
+
+        // Mejorar el mensaje de error según el tipo
+        let errorMessage = 'No se pudo completar la eliminación.';
+
+        // Error de permisos RLS
+        if (error.message?.includes('permission') || error.message?.includes('policy') || error.code === '42501') {
+          errorMessage = 'No tienes permisos para eliminar clientes. Contacta a un administrador.';
+        }
+        // Error de red o conexión
+        else if (error.message?.includes('fetch') || error.message?.includes('network')) {
+          errorMessage = 'Error de conexión. Verifica tu conexión a internet e intenta de nuevo.';
+        }
+        // Usar mensaje del error si está disponible
+        else if (error.message) {
+          errorMessage = error.message;
+        }
+
         toast.error('Error al eliminar', {
-          description: error.message || 'No se pudo completar la acción.',
+          description: errorMessage,
         });
         throw error;
       }
